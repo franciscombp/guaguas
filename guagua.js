@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.17';
+import * as nube from './nube.js?v=2026.10.25.18';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.17';
+} from './masa.js?v=2026.10.25.18';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1428,7 +1428,7 @@ const SYNE = 'Syne, Inter, system-ui, sans-serif', INTER = 'Inter, system-ui, sa
 function enLineas(ctx, texto, ancho, partir) {
   const lineas = [];
   let l = '';
-  texto.split(/\s+/).filter(Boolean).forEach((p) => {
+  texto.split(/[ \t\n]+/).filter(Boolean).forEach((p) => {   // el espacio de no separación (\u00a0) no parte
     while (partir && ctx.measureText(p).width > ancho && p.length > 1) {
       if (l) { lineas.push(l); l = ''; }
       let k = p.length - 1;
@@ -1443,7 +1443,7 @@ function enLineas(ctx, texto, ancho, partir) {
 }
 /* Dos líneas parejas: el corte entre palabras que deja la línea más larga lo más corta posible. */
 function parejas(ctx, texto, ancho) {
-  const p = texto.split(/\s+/).filter(Boolean);
+  const p = texto.split(/[ \t\n]+/).filter(Boolean);
   let mejor = null;
   for (let i = 1; i < p.length; i++) {
     const ls = [p.slice(0, i).join(' '), p.slice(i).join(' ')];
@@ -1484,6 +1484,8 @@ function escenaDe(e, memoria) {
   return escenaGuardada;
 }
 const sustantivo = (e) => queEs(e).replace(/^(una|un) /, '');
+/* «guagua de pan» (o «caballito de pan»…) va siempre junto: con espacios de no separación. */
+const dePan = (e) => (sustantivo(e) + ' de pan').replace(/ /g, '\u00a0');
 /* Los adornos que se ven: todo lo que se puso, menos los mordiscos y la cobertura. */
 const contarAdornos = (e) => e.o.filter((op) => op[0] !== 3 && !(op[0] === 8 && op[2] === COBERTURA)).length;
 
@@ -1592,13 +1594,24 @@ async function tarjeta(e, formato = 'historia', x = {}) {
       pila.push(texto(n, crema, 1.0));
     }
   } else {
-    const adornos = x.adornos != null ? x.adornos : contarAdornos(e);
-    const titular = como === 'alguien' ? `Te regalo ${queEs(e)} de pan`
-      : adornos > 1 ? `¡Decoré mi ${sustantivo(e)} con ${adornos} adornos!` : `¡Decoré mi ${sustantivo(e)} de pan!`;
+    const articulo = queEs(e).split(' ')[0];
+    const titular = como === 'alguien' ? `Te regalo ${articulo} ${dePan(e)}` : `¡Ya tengo mi ${dePan(e)}!`;
     pila.push(texto(ajustar(ctx, titular, { peso: 800, familia: SYNE, max: cuadrada ? 76 : 100, min: cuadrada ? 44 : 56, ancho, lineas: 2 }), crema, 1.04));
   }
   const iEscena = pila.length;
   pila.push(null);                                    // el lugar de la escena
+  // presúmela: los adornos, chiquito y como insignia, debajo de la escena
+  const adornos = x.adornos != null ? x.adornos : contarAdornos(e);
+  if (como === 'presume' && adornos > 0) {
+    const ti = cuadrada ? 22 : 28, rotulo = adornos === 1 ? '1 adorno' : `${adornos} adornos`;
+    ctx.font = `700 ${ti}px ${INTER}`;
+    const aw = ctx.measureText(rotulo).width + ti * 1.6, ah = ti * 1.9;
+    pila.push({ alto: ah, dibujar(y0) {
+      ctx.fillStyle = 'rgba(255,201,60,.14)'; ctx.strokeStyle = 'rgba(255,201,60,.55)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(W / 2 - aw / 2, y0, aw, ah, ah / 2); ctx.fill(); ctx.stroke();
+      ctx.font = `700 ${ti}px ${INTER}`; ctx.fillStyle = dorado; ctx.fillText(rotulo, W / 2, y0 + ah / 2 + ti * 0.36);
+    } });
+  }
   if (como === 'alguien') {
     const pd = [`Para: ${e.p || '…'}`, e.d && `De: ${e.d}`].filter(Boolean).join(' · ');
     pila.push(texto(ajustar(ctx, pd, { peso: 700, familia: INTER, max: cuadrada ? 36 : 44, min: 26, ancho, lineas: 2 }), crema, 1.25));
@@ -2560,9 +2573,9 @@ const textoRegalo = (e = estado) => {
   if (enMemoria(e)) return `🕯️ Decoré ${que} para recordar a «${e.p}». Decora y comparte la tuya:`;
   if (!e.p) {
     const n = contarAdornos(e);
-    return `🍞 ¡Decoré mi ${sustantivo(e)} de pan${n > 1 ? ` con ${n} adornos` : ''}! Decora y comparte la tuya:`;
+    return `🍞 ¡Ya tengo mi ${dePan(e)}${n > 1 ? `, con ${n} adornos` : ''}! Decora y comparte la tuya:`;
   }
-  return `🧺 ${e.p}, te regalo ${que}${e.d ? ' (' + e.d + ')' : ''}. ${e.m || '¿Compartimos una colada de verdad este finados?'} Ábrela aquí:`;
+  return `🧺 ${e.p}, te regalo ${queEs(e).split(' ')[0]} ${dePan(e)}${e.d ? ' (' + e.d + ')' : ''}. ${e.m || '¿Compartimos una colada de verdad este finados?'} Ábrela aquí:`;
 };
 /* Copiar responde en el mismo botón («¡Copiado!») y con el toast. */
 async function copiar(texto, boton) {

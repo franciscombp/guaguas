@@ -335,3 +335,6 @@ el morado casi no aparece en el glaseado (aparece en la colada).
 - **El fondo no es plano**: grano fino de papel, el punteado del mantel un poco más visible, lucecitas
   desenfocadas (bokeh) hacia los bordes, una luz de arriba y una viñeta suave. En memoria, pocas luces,
   tibias y tenues. El titular para alguien es «Te regalo una guagua de pan».
+- **Presúmela**: «¡Ya tengo mi guagua de pan!», y los adornos como insignia chiquita debajo de la escena
+  («14 adornos»; si no hay, no va). «guagua de pan» va siempre junto con espacios de no separación
+  (U+00A0); por eso las líneas se parten solo en espacios normales, no con `\s`, que también corta ahí.
