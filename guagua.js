@@ -601,7 +601,7 @@ class Visor {
       }
       if (pts.length < 2) {                         // un toque: una gotita plana
         const g = new THREE.SphereGeometry(1, 18, 12);
-        g.scale(BOQUILLAS[BOQUILLA_LISA], 0.006, BOQUILLAS[BOQUILLA_LISA]);
+        g.scale(0.06, 0.06, 0.018);                 // un punto de glaseado: ~1/12 del ancho del pan, como en las panaderías (z: la normal)
         const o = this.malla(g, this.mat.cremas[op[1]]);
         o.quaternion.setFromRotationMatrix(base(nor[0]).m);
         o.position.copy(pts[0]).addScaledVector(nor[0], 0.004);
@@ -1470,6 +1470,8 @@ function tocarDecorar(ev) {
     const q = puntoDeCrema(hit, BOQUILLAS[estado.boquilla]);
     trazo = [0, estado.crema, estado.boquilla, ent(q.x), ent(q.y), ent(q.z)];
     taller.vistaPrevia(trazo);
+  } else if (h === 'puntos') {                  // un punto de glaseado: una gotita plana
+    fijar([7, estado.crema, ...pn(hit)]);
   } else if (h === 'grageas') {
     trazo = [2, Math.floor(Math.random() * 1e9), ...pn(hit)];
     taller.vistaPrevia(trazo);
@@ -1717,7 +1719,7 @@ function montarTaller() {
     b.addEventListener('click', () => {
       estado.crema = i;
       $$('.crema', cremas).forEach((x, j) => x.setAttribute('aria-pressed', String(j === i)));
-      if (!['manga', 'roseta', 'masa'].includes(estado.herramienta)) $('button[data-herramienta="manga"]').click();
+      if (!['manga', 'roseta', 'masa', 'puntos'].includes(estado.herramienta)) $('button[data-herramienta="manga"]').click();
     });
     cremas.appendChild(b);
   });

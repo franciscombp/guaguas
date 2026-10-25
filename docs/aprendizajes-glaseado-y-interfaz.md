@@ -12,8 +12,8 @@ Las guaguas de la foto no tienen cremas gruesas. Lo que tienen:
   guagua de unos veinte centímetros).
 - **Formas simples, repetidas**: zigzags en triángulos, ondas, guirnaldas, contornos
   de la cara (ojos en media luna, sonrisa en curva).
-- **Puntitos y grageas**: bolitas blancas, azules y de colores, separadas, sin
-  amontonarse.
+- **Puntitos de glaseado**: gotas blancas, azules y de colores, separadas, sin
+  amontonarse. No son grageas: en las guaguas de panadería todo es glaseado.
 - **Plano sobre la superficie**: el glaseado se apoya en el pan. No sobresale como
   una varilla.
 - **Pocos colores por pieza**: amarillo, naranja, azul, blanco y verde, en pares.
@@ -119,8 +119,8 @@ demás. No lo implementé todavía.
    foto, a lo largo del cuerpo).
 2. **Zigzag y ondas**: el glaseado va y viene en zigzags apretados, sobre todo en
    amarillo y verde (primera y tercera foto).
-3. **Puntitos y bolitas**: grageas de colores en hileras, sin orden fijo (primera
-   foto). Son el adorno más barato y el más fácil de repetir.
+3. **Puntitos de glaseado**: gotas de colores en hileras, sin orden fijo (primera
+   foto). Son el adorno más fácil de repetir. No son grageas.
 4. **Abanico de líneas**: un grupo de hilos que salen de un punto (primera foto, verde
    lima). Pide un trazo nuevo, parecido al de la roseta pero plano.
 5. **Cara de glaseado**: ojos de puntitos o de media luna, sonrisa en curva. Los ojos
@@ -143,3 +143,42 @@ demás. No lo implementé todavía.
 
 Estos son pendientes. Lo que sí quedó hecho en el código es el hilo fino y la capa de
 baño.
+
+## 5. Corrección: no se usan grageas, todo es glaseado
+
+Lo confirmó quien conoce las guaguas: **las grageas no son comunes**. Los puntos,
+bolitas y contornos son gotas de glaseado. Tres fotos más lo muestran:
+
+- **Guagua con mano de glaseado** (primera foto): una mano rosada dibujada con
+  glaseado sobre el cuerpo, uñas en blanco; ojos de puntos verdes grandes, sonrisa
+  rosada. El glaseado puede dibujar figuras completas, no solo líneas.
+- **Plato de guaguas y figuras** (segunda foto): zigzags apretados en rojo, amarillo,
+  celeste y blanco, uno por color, en bandas paralelas; espirales, corazones y
+  rulos sueltos; ojos de punto en la cabeza. El borde de cada pieza suele llevar una
+  línea de glaseado.
+- **Guaguas con ramas** (tercera foto): una rama o "árbol" de glaseado amarillo por el
+  centro del cuerpo, con hojas en curva; puntos rosados y celestes alrededor; cara con
+  ojos y boca de puntos.
+
+### Cromática de estas fotos
+
+Rojo, amarillo, celeste, blanco, rosado y verde. Son colores primarios y vivos;
+el morado casi no aparece en el glaseado (aparece en la colada).
+
+### Estilos nuevos
+
+- **Figuras dibujadas**: manos, corazones, espirales.
+- **Bandas de zigzag**, una por color, en franjas paralelas.
+- **Rama con hojas** por el centro del cuerpo.
+- **Ojos y bocas de punto**: la cara se arma con puntos de glaseado.
+
+### Qué se aplicó en la app
+
+- La herramienta **Grageas** se cambió por **Puntos**: un toque pone una gota plana de
+  glaseado del color elegido. Las guaguas guardadas con grageas se siguen leyendo.
+
+### Pendientes
+
+- Espiral y corazón como trazos asistidos.
+- Zigzag automático a lo largo de una banda.
+- Rama con hojas como plantilla.
