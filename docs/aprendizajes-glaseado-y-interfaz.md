@@ -267,3 +267,14 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   de la vista toca el cilindro del bocado y lo ilumina con la normal de esa pared: lo que se ve es la
   cara del corte, no el hueco. El borde mordido se tuesta, como la corteza. Quien la recibe se la
   puede comer entera.
+
+## 12. El primer arranque, el nombre por defecto y el borde de abajo
+
+- **Sin guaguas tuyas, la app abre en Amasa**: una canasta vacía no invita a nada. Con al menos una
+  guardada (o una a medio decorar), abre en la canasta. Un enlace de regalo siempre gana.
+- **El nombre que se propone sale del molde**: Guagua, Caballito, Guaguau, Chanchito… y si ya hay una
+  con ese nombre, «Caballito 2». Cada pieza guarda su nombre a la vista (`item.n`) para no tener que
+  abrir todas las recetas.
+- **Safari 26 deja ver la página debajo de su barra.** Con `height:100dvh` lo de abajo quedaba como
+  una franja morada lisa. Los fondos y el lienzo van en `100lvh` (hasta el borde de la pantalla) y los
+  controles suben solo lo que la barra tapa (`100lvh − 100dvh`), más el área segura.

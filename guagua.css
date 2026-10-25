@@ -35,6 +35,10 @@
   --orilla:calc(16px + env(safe-area-inset-left));
   /* abajo: lo justo para no chocar con la barra de inicio del iPhone */
   --pie:max(12px, calc(env(safe-area-inset-bottom) - 8px));
+  /* Safari deja ver la página debajo de su barra: los fondos llegan hasta abajo (lvh) y
+     los controles suben lo que la barra tape (la diferencia con dvh), y nada más */
+  --alto:100vh;
+  --debajo:0px;
   --dur-1:var(--mal-dur-1, 120ms);
   --dur-2:var(--mal-dur-2, 220ms);
   --dur-3:var(--mal-dur-3, 360ms);
@@ -390,3 +394,16 @@ dialog.hoja--entera[open]{animation:none}
 /* ─── los bordes de arriba y abajo: se funden con el mantel en vez de cortarlo ─── */
 .juego::before{height:190px;background:linear-gradient(180deg, rgba(27,16,51,.72) 0%, rgba(27,16,51,.5) 35%, rgba(27,16,51,.2) 70%, rgba(27,16,51,0) 100%)}
 .juego::after{height:min(42dvh, 360px);background:linear-gradient(180deg, rgba(27,16,51,0) 0%, rgba(27,16,51,.12) 25%, rgba(27,16,51,.38) 50%, rgba(27,16,51,.66) 75%, rgba(27,16,51,.86) 100%)}
+
+/* ─── hasta el borde de abajo: los fondos pasan debajo de la barra de Safari ─── */
+@supports (height:100lvh){
+  :root{--alto:100lvh;--debajo:max(0px, calc(100lvh - 100dvh))}
+}
+html{background:var(--noche)}
+.pantalla,.juego{height:var(--alto)}
+dialog.hoja--entera{height:var(--alto);max-height:var(--alto)}
+.dock{bottom:var(--debajo)}
+.canasta__pie{padding-bottom:calc(var(--pie) + var(--debajo))}
+.canasta__cuerpo{padding-bottom:calc(120px + var(--debajo))}
+.regalo__tarjeta{padding-bottom:calc(var(--pie) + var(--debajo))}
+.compartir,.hoja__cuerpo{padding-bottom:calc(var(--pie) + 4px + var(--debajo))}

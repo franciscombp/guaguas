@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.10';
+import * as nube from './nube.js?v=2026.10.25.11';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.10';
+} from './masa.js?v=2026.10.25.11';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -2119,13 +2119,23 @@ let trasNombre = 'guardada';
 function abrirNombre(despues) {
   if (colocando) terminarColocar();
   trasNombre = despues;
-  $('#r-nombre').value = estado.n || 'Guagua';
+  $('#r-nombre').value = estado.n || nombrePorDefecto();
   $('#nombre-guardar').textContent = despues === 'compartir' ? 'Siguiente' : 'Guardar';
   fotoDe($('#nombre-foto'), receta());
   abrir('#d-nombre');
 }
+/* El nombre que se propone sale de lo que se amasó: Guagua, Caballito, Guaguau…
+   y si ya hay una con ese nombre en tu canasta, lleva número: «Caballito 2». */
+function nombrePorDefecto() {
+  const base = nombreDe({ f: estado.f, n: '' });
+  const usados = new Set(vitrina().filter((x) => x.t === 'mia' && x.id !== estado.id).map((x) => x.n).filter(Boolean));
+  if (!usados.has(base)) return base;
+  let k = 2;
+  while (usados.has(`${base} ${k}`)) k++;
+  return `${base} ${k}`;
+}
 async function guardarConNombre() {
-  estado.n = $('#r-nombre').value.trim().slice(0, 40) || 'Guagua';
+  estado.n = $('#r-nombre').value.trim().slice(0, 40) || nombrePorDefecto();
   await guardarYa();
   $('#d-nombre').close();
   if (trasNombre === 'compartir') abrirCompartir();
@@ -2163,7 +2173,7 @@ function pintarPendiente() {
 }
 async function guardarMia(regalo) {
   if (!estado.id) estado.id = nuevoId();
-  const item = { id: estado.id, t: 'mia', e: await codificar(receta()), f: Date.now() };
+  const item = { id: estado.id, t: 'mia', n: estado.n, e: await codificar(receta()), f: Date.now() };
   if (regalo) item.g = regalo;
   guardarEnVitrina(item);
   pintarVitrina();
@@ -2626,9 +2636,12 @@ function arrancar() {
   if (!montarTaller()) { mostrar('taller'); return; }
   montarRegalo(); montarVitrina(); montarRecibir();
   $$('dialog.hoja > *').forEach((x) => x.addEventListener('click', (e) => e.stopPropagation()));
-  // la app empieza en tu canasta; el taller se arma al tocar «Amasar otra»
+  // la app empieza en tu canasta; si todavía no hay ninguna tuya, directo a amasar
   sincronizarControles();
-  mostrar('canasta');
+  const encargo = new URLSearchParams(location.search);
+  const porEnlace = !!location.hash || encargo.has('molde') || encargo.has('para') || encargo.has('dedicada');
+  if (!porEnlace && !vitrina().some((x) => x.t === 'mia') && !almacen.leer(BORRADOR, null)) nueva();
+  else mostrar('canasta');
   const arranqueNube = nube.iniciar().then((hay) => {
     if (hay) nube.alCambiar(alCambiarCuenta);
     return hay;
@@ -2646,7 +2659,6 @@ function arrancar() {
     } catch (e) { avisa(nube.explicar(e), 'error'); }
   };
   // un enlace por encargo (?molde=…&para=…): se amasa aquí mismo y se abre como regalo
-  const encargo = new URLSearchParams(location.search);
   if (encargo.has('molde') || encargo.has('para') || encargo.has('dedicada')) {
     const args = Object.fromEntries(encargo.entries());
     codificar(amasarReceta(args)).then((cod) => {
