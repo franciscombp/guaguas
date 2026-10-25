@@ -377,6 +377,11 @@ dialog.hoja--entera[open]{animation:none}
 .compartir__vista{display:block;align-self:center;flex:none;height:clamp(180px, 38dvh, 360px);width:auto;aspect-ratio:9/16;border-radius:18px;
   background:var(--noche-2);box-shadow:0 12px 32px rgba(0,0,0,.45);transition:height var(--dur-3) ease}
 .compartir__vista--chica{height:clamp(120px, 22dvh, 200px);border-radius:12px}
+/* en cuadrado la vista previa es cuadrada y un poco más chica, para que quepa igual */
+.compartir__vista--cuadrada{aspect-ratio:1/1;height:clamp(170px, 30dvh, 300px)}
+.compartir__vista--cuadrada.compartir__vista--chica{height:clamp(120px, 20dvh, 190px)}
+.compartir__formato{align-self:center}
+.compartir__formato button{flex:none;min-width:120px}
 .compartir__paso{flex:1;display:flex;flex-direction:column;gap:14px;min-height:0}
 .compartir__fin{margin-top:auto}
 

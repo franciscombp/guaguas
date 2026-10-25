@@ -309,3 +309,26 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   la taza a la derecha y un poco atrás, con el asa hacia atrás y afuera.
 - `node --check` trata los `.js` como CommonJS y no ve un `const` repetido en un módulo: se revisa
   como `.mjs` (copiándolo) o abriendo la página.
+
+## 15. Las tarjetas para compartir: tres variantes, dos formatos
+
+- **Estructura de Duolingo**: etiqueta («FINADOS · NOVIEMBRE 2026»), titular, la escena (la guagua en
+  su canasta, protagonista), lo personal, la firma y el cierre («Decora y comparte la tuya ·
+  finados.una.red»). Nada más: sin nombre de la figura, sin vales, sin hashtags.
+- **Variantes**: Presúmela («¡Decoré mi guagua con N adornos!», firma @usuario), Envíasela a alguien
+  («Te decoré una guagua», «Para · De» y el mensaje), En memoria («Para recordar a» y el nombre entre
+  « », el texto más grande; «Con cariño, …»; paleta sobria, sin destellos, cierre discreto).
+- **Formatos**: historia 1080 × 1920 (~250 px libres arriba y abajo) y cuadrado 1080 × 1080 (márgenes
+  de 64, escena ~50 %, firma a la izquierda y cierre a la derecha en la franja de abajo). Por defecto,
+  historia para presumir y cuadrado para enviar o recordar, que van más por chat.
+- **Medir y después dibujar**: se miden etiqueta, titular, bloques y firma; la escena toma lo que queda
+  y el grupo se centra entre la etiqueta y el cierre. Así no quedan huecos.
+- **Los textos nunca se cortan**: se busca el tamaño más grande que entra en las líneas permitidas sin
+  partir palabras; dos líneas se reparten parejas; el nombre en memoria intenta primero una sola línea.
+  Solo al mínimo, y como último recurso, una palabra larguísima se parte por letras.
+- **Lo que escribe la persona se limpia**: sin caracteres de control ni de dirección, espacios simples,
+  el largo justo (24 o 120), apóstrofes y comillas tipográficos y sin « » propias.
+- **La escena 3D se guarda**: solo se vuelve a armar si cambia la guagua; cambiar textos o formato
+  redibuja la tarjeta en menos de 300 ms, así la vista previa sigue lo que se escribe.
+- Ojo con los `id`: el botón «Enviar» se llamaba `c-enviar`, igual que el de la cuenta, y la cuenta le
+  cambiaba el texto a «Entrar».

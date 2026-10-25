@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.14';
+import * as nube from './nube.js?v=2026.10.25.16';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.14';
+} from './masa.js?v=2026.10.25.16';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1413,135 +1413,216 @@ function rotuloFinados() {
   return `Faltan ${d} días para Finados`;
 }
 
-/* ─── la tarjeta para regalar (1080 × 1350) ───────────────── */
-function envolver(ctx, texto, x, y, ancho, alto, max) {
+/* ─── la tarjeta para compartir ──────────────────────────────
+   Como las de Duolingo: una etiqueta, un titular, la escena con la guagua como
+   protagonista, lo personal (para quién, un mensaje), la firma y el cierre. Nada
+   más. Tres variantes (presúmela, envíasela a alguien, en memoria) y dos formatos:
+   historia 9:16 (1080 × 1920, con ~250 px libres arriba y abajo para lo que pone la
+   red encima) y cuadrado 1:1 (1080 × 1080, márgenes de 64 px). Los textos largos
+   se achican o pasan a otra línea: nunca se cortan. */
+const ETIQUETA = 'FINADOS · NOVIEMBRE 2026';
+const CIERRE = 'Decora y comparte la tuya · finados.una.red';
+const SYNE = 'Syne, Inter, system-ui, sans-serif', INTER = 'Inter, system-ui, sans-serif';
+/* Parte un texto en líneas que caben en `ancho`. Solo si `partir`, una palabra
+   que sola no cabe se corta por letras (el último recurso, para un nombre larguísimo). */
+function enLineas(ctx, texto, ancho, partir) {
   const lineas = [];
   let l = '';
-  texto.split(/\s+/).forEach((p) => {
+  texto.split(/\s+/).filter(Boolean).forEach((p) => {
+    while (partir && ctx.measureText(p).width > ancho && p.length > 1) {
+      if (l) { lineas.push(l); l = ''; }
+      let k = p.length - 1;
+      while (k > 1 && ctx.measureText(p.slice(0, k)).width > ancho) k--;
+      lineas.push(p.slice(0, k)); p = p.slice(k);
+    }
     const prueba = l ? l + ' ' + p : p;
     if (ctx.measureText(prueba).width > ancho && l) { lineas.push(l); l = p; } else l = prueba;
   });
   if (l) lineas.push(l);
-  lineas.slice(0, max).forEach((ln, i) => ctx.fillText(i === max - 1 && lineas.length > max ? ln + '…' : ln, x, y + i * alto));
+  return lineas;
 }
-/* El vale, como un sello de papel recortado sobre la tarjeta. */
-function sello(ctx, vale, x, y) {
-  ctx.save(); ctx.translate(x, y); ctx.rotate(0.08);
-  ctx.fillStyle = 'rgba(46,15,54,.82)';
-  ctx.beginPath(); ctx.roundRect(-150, -72, 300, 144, 16); ctx.fill();
-  ctx.setLineDash([12, 8]); ctx.lineWidth = 4; ctx.strokeStyle = '#ffc93c';
-  ctx.beginPath(); ctx.roundRect(-140, -62, 280, 124, 10); ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.textAlign = 'center'; ctx.fillStyle = '#ffc93c';
-  ctx.font = '600 22px Inter, system-ui, sans-serif';
-  ctx.fillText(vale.sello[0], 0, -22, 250);
-  ctx.fillStyle = '#fff';
-  ctx.font = '800 32px Syne, Inter, system-ui, sans-serif';
-  ctx.fillText(vale.sello[1], 0, 16, 260);
-  ctx.fillText(vale.sello[2], 0, 50, 260);
-  ctx.restore();
-}
-/* Dos formatos: historia (9:16) para los estados y las historias, y
-   cuadrada (1:1) para publicar. Todo se acomoda alrededor del bodegón. */
-const FORMATOS = {
-  historia: { w: 1080, h: 1920, kicker: 300, titulo: [420, 524], fuente: 100, escena: [590, 1380], cinta: 1420, quien: 1530, msg: 1586, lineas: 2, pie: 1700 },
-  cuadrada: { w: 1080, h: 1080, kicker: 74, titulo: [156, 228], fuente: 70, escena: [256, 856], cinta: 880, quien: 980, msg: 1020, lineas: 1, pie: 1060 },
-};
-async function tarjeta(e, formato = 'historia') {
-  try { await Promise.all([document.fonts.load('800 80px Syne'), document.fonts.load('600 30px Inter'), document.fonts.load('italic 400 30px Inter')]); } catch (err) { /* sin fuentes, igual sale */ }
-  const F = FORMATOS[formato] || FORMATOS.historia, W = F.w, H = F.h;
-  const c = lienzo(W, H);
-  const ctx = c.getContext('2d');
-  const fondo = ctx.createLinearGradient(0, 0, 0, H);
-  fondo.addColorStop(0, '#2e0f36'); fondo.addColorStop(1, '#5a1c50');
-  ctx.fillStyle = fondo; ctx.fillRect(0, 0, W, H);
-  const rnd = azar(e.o.length + 7);
-  ctx.fillStyle = 'rgba(255,201,60,.08)';
-  for (let y = 30; y < H; y += 54) for (let x = (y / 54 % 2) * 27 + 20; x < W; x += 54) {
-    ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
+/* Dos líneas parejas: el corte entre palabras que deja la línea más larga lo más corta posible. */
+function parejas(ctx, texto, ancho) {
+  const p = texto.split(/\s+/).filter(Boolean);
+  let mejor = null;
+  for (let i = 1; i < p.length; i++) {
+    const ls = [p.slice(0, i).join(' '), p.slice(i).join(' ')];
+    const w = Math.max(...ls.map((l) => ctx.measureText(l).width));
+    if (w <= ancho && (!mejor || w < mejor.w)) mejor = { ls, w };
   }
-  // un resplandor tibio detrás de la mesa
-  const [e0, e1] = F.escena, ecy = (e0 + e1) / 2;
-  const luz = ctx.createRadialGradient(W / 2, ecy, 40, W / 2, ecy, (e1 - e0) * 0.75);
-  luz.addColorStop(0, 'rgba(255,170,90,.28)'); luz.addColorStop(1, 'rgba(255,170,90,0)');
-  ctx.fillStyle = luz; ctx.fillRect(0, e0 - 200, W, e1 - e0 + 400);
-  ctx.fillStyle = 'rgba(255,201,60,.55)';
-  for (let i = 0; i < 22; i++) {
-    const x = rnd() * W, y = F.kicker + 40 + rnd() * (F.pie - F.kicker - 120), r = 3 + rnd() * 5;
-    ctx.beginPath();
-    for (let j = 0; j < 8; j++) {
-      const a = j / 8 * Math.PI * 2, d = j % 2 ? r * 0.35 : r * 1.6;
-      ctx.lineTo(x + Math.cos(a) * d, y + Math.sin(a) * d);
+  return mejor && mejor.ls;
+}
+/* El tamaño más grande (de `max` a `min`) con el que el texto cabe en `lineas` líneas sin
+   partir palabras; con `una`, primero se intenta en una sola línea hasta `minUna`. Si ni
+   al mínimo cabe, se queda en el mínimo con las líneas que hagan falta: nunca se corta. */
+function ajustar(ctx, texto, { peso, familia, max, min, ancho, lineas = 2, estilo = '', una = false, minUna = min }) {
+  const fuente = (t) => `${estilo}${peso} ${t}px ${familia}`;
+  const cabe = (ls) => ls.every((l) => ctx.measureText(l).width <= ancho);
+  if (una) {
+    for (let t = max; t >= minUna; t -= 2) {
+      ctx.font = fuente(t);
+      if (ctx.measureText(texto).width <= ancho) return { t, ls: [texto], font: ctx.font };
     }
-    ctx.closePath(); ctx.fill();
   }
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#ffc93c';
-  ctx.font = '600 30px Inter, system-ui, sans-serif';
-  ctx.fillText('2 DE NOVIEMBRE · DÍA DE DIFUNTOS', W / 2, F.kicker);
-  ctx.fillStyle = '#ffffff';
-  ctx.font = `800 ${F.fuente}px Syne, Inter, system-ui, sans-serif`;
-  const que = queEs(e), memoria = enMemoria(e);
-  const titulo = memoria
-    ? (e.p ? ['En memoria', 'de ' + e.p] : ['Para recordar', 'a quien ya no está'])
-    : e.p || e.aAlguien ? ['Te regalo', que] : ['Amasé', que];   // aAlguien: la vista previa, antes de escribir el nombre
-  titulo.forEach((t, i) => ctx.fillText(t, W / 2, F.titulo[i], W - 80));
+  for (let t = max; t >= min; t -= 2) {
+    ctx.font = fuente(t);
+    let ls = enLineas(ctx, texto, ancho, false);
+    if (ls.length <= lineas && cabe(ls)) {
+      if (ls.length === 2) ls = parejas(ctx, texto, ancho) || ls;
+      return { t, ls, font: ctx.font };
+    }
+  }
+  ctx.font = fuente(min);
+  return { t: min, ls: enLineas(ctx, texto, ancho, true), font: ctx.font };
+}
+/* La escena 3D es lo más lento: se guarda la última y solo se vuelve a armar si
+   cambia la guagua (no si cambian los textos o el formato). */
+let escenaGuardada = null;
+function escenaDe(e, memoria) {
+  const clave = JSON.stringify([e.f, e.a, e.k, e.o, e.capa || 0, memoria]);
+  if (!escenaGuardada || escenaGuardada.clave !== clave) escenaGuardada = { clave, ...enCanasta(e, memoria) };
+  return escenaGuardada;
+}
+const sustantivo = (e) => queEs(e).replace(/^(una|un) /, '');
+/* Los adornos que se ven: todo lo que se puso, menos los mordiscos y la cobertura. */
+const contarAdornos = (e) => e.o.filter((op) => op[0] !== 3 && !(op[0] === 8 && op[2] === COBERTURA)).length;
 
-  // la escena: la guagua en su canasta, en 3D, grande y al centro
-  const cuadrada = formato === 'cuadrada';
-  const { img: esc, boca } = enCanasta(e, memoria);
-  const altoE = e1 - e0 + (cuadrada ? 20 : 40), anchoE = W * (cuadrada ? 0.7 : 0.86);
-  const ke = Math.min(anchoE / esc.width, altoE / esc.height);
-  const ew = esc.width * ke, eh = esc.height * ke, ex = W / 2 - ew / 2, ey = e1 - eh + (cuadrada ? 10 : 30);
+async function tarjeta(e, formato = 'historia', x = {}) {
+  try { await Promise.all([document.fonts.load('800 80px Syne'), document.fonts.load('600 30px Inter'), document.fonts.load('italic 400 30px Inter')]); } catch (err) { /* sin fuentes, igual sale */ }
+  const cuadrada = formato === 'cuadrada', W = 1080, H = cuadrada ? 1080 : 1920, M = 64, ancho = W - M * 2;
+  const memoria = enMemoria(e), como = x.como || (memoria ? 'memoria' : e.p ? 'alguien' : 'presume');
+  const c = lienzo(W, H), ctx = c.getContext('2d');
+  // el fondo: noche de colada; en memoria, más sobrio (menos saturado, sin destellos)
+  const fondo = ctx.createLinearGradient(0, 0, 0, H);
+  if (memoria) { fondo.addColorStop(0, '#1e1826'); fondo.addColorStop(1, '#2d2434'); } else { fondo.addColorStop(0, '#2e0f36'); fondo.addColorStop(1, '#5a1c50'); }
+  ctx.fillStyle = fondo; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = memoria ? 'rgba(255,236,200,.035)' : 'rgba(255,201,60,.08)';
+  for (let y = 30; y < H; y += 54) for (let xx = (y / 54 % 2) * 27 + 20; xx < W; xx += 54) { ctx.beginPath(); ctx.arc(xx, y, 3, 0, Math.PI * 2); ctx.fill(); }
+  const arriba = cuadrada ? M : 250, abajo = cuadrada ? H - M : H - 250;
+  const dorado = memoria ? '#d9c39a' : '#ffc93c', crema = memoria ? '#efe6dc' : '#ffffff';
+  ctx.textBaseline = 'alphabetic';
+
+  // 1 · la etiqueta, arriba, y el cierre, abajo: el marco de la tarjeta
+  ctx.textAlign = 'center'; ctx.fillStyle = dorado;
+  ctx.font = `700 ${cuadrada ? 24 : 30}px ${INTER}`;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '4px';
+  const yEtiqueta = arriba + (cuadrada ? 22 : 28);
+  ctx.fillText(ETIQUETA, W / 2, yEtiqueta);
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  const firma = como === 'presume' ? (x.usuario || '') : como === 'memoria' ? (x.de ? 'Con cariño, ' + x.de : 'Con cariño') : '';
+  const fCierre = memoria ? `500 ${cuadrada ? 20 : 24}px ${INTER}` : `700 ${cuadrada ? 24 : 30}px ${INTER}`;
+  const cCierre = memoria ? 'rgba(239,230,220,.5)' : dorado;
+  const fFirma = `700 ${cuadrada ? 30 : 36}px ${INTER}`;
+  let pisoZona;
+  if (cuadrada) {
+    // la franja de abajo: la firma a la izquierda y el cierre a la derecha, o el cierre debajo si no caben
+    ctx.font = fCierre; const aC = ctx.measureText(CIERRE).width;
+    ctx.font = fFirma; const aF = firma ? ctx.measureText(firma).width : 0;
+    if (!firma || aF + aC + 40 <= ancho) {
+      if (firma) { ctx.textAlign = 'left'; ctx.fillStyle = crema; ctx.fillText(firma, M, abajo); }
+      ctx.font = fCierre; ctx.fillStyle = cCierre; ctx.textAlign = firma ? 'right' : 'center';
+      ctx.fillText(CIERRE, firma ? W - M : W / 2, abajo);
+      pisoZona = abajo - 30 - 26;
+    } else {
+      ctx.font = fCierre; ctx.fillStyle = cCierre; ctx.textAlign = 'left'; ctx.fillText(CIERRE, M, abajo);
+      ctx.font = fFirma; ctx.fillStyle = crema; ctx.fillText(firma, M, abajo - 42, ancho);
+      pisoZona = abajo - 42 - 30 - 26;
+    }
+    ctx.textAlign = 'center';
+  } else {
+    ctx.font = fCierre; ctx.fillStyle = cCierre; ctx.fillText(CIERRE, W / 2, abajo, ancho);
+    pisoZona = abajo - (memoria ? 24 : 30) - 40;
+  }
+  const techoZona = yEtiqueta + (cuadrada ? 26 : 40);
+
+  // 2 · lo que va apilado al centro: titular, escena, lo personal y (en historia) la firma.
+  //     Se mide todo primero; la escena toma el espacio que queda y el grupo se centra.
+  const pila = [];
+  const texto = (b, color, il) => ({ alto: b.ls.length * b.t * il, dibujar(y0) { ctx.font = b.font; ctx.fillStyle = color; b.ls.forEach((l, i) => ctx.fillText(l, W / 2, y0 + b.t * 0.86 + i * b.t * il)); } });
+  if (como === 'memoria') {
+    const nombre = '«' + (e.p || '…') + '»', medio = cuadrada ? 44 : 60;
+    ctx.font = `800 ${medio}px ${SYNE}`;
+    const previo = 'Para recordar a ', anchoPrevio = ctx.measureText(previo).width;
+    const n = ajustar(ctx, nombre, { peso: 800, familia: SYNE, max: cuadrada ? 104 : 150, min: cuadrada ? 52 : 64, ancho, lineas: 2, una: true, minUna: cuadrada ? 76 : 96 });
+    ctx.font = n.font;
+    const anchoNombre = ctx.measureText(nombre).width;
+    if (cuadrada && n.ls.length === 1 && anchoPrevio + anchoNombre <= ancho) {
+      // corto: «Para recordar a» y el nombre en la misma línea, cada uno con su tamaño
+      pila.push({ alto: n.t * 1.02, dibujar(y0) {
+        const x0 = W / 2 - (anchoPrevio + anchoNombre) / 2, yb = y0 + n.t * 0.86;
+        ctx.textAlign = 'left';
+        ctx.font = `800 ${medio}px ${SYNE}`; ctx.fillStyle = dorado; ctx.fillText(previo, x0, yb);
+        ctx.font = n.font; ctx.fillStyle = crema; ctx.fillText(nombre, x0 + anchoPrevio, yb);
+        ctx.textAlign = 'center';
+      } });
+    } else {
+      pila.push({ alto: medio * 1.2, dibujar(y0) { ctx.font = `800 ${medio}px ${SYNE}`; ctx.fillStyle = dorado; ctx.fillText('Para recordar a', W / 2, y0 + medio * 0.86); } });
+      pila.push(texto(n, crema, 1.0));
+    }
+  } else {
+    const adornos = x.adornos != null ? x.adornos : contarAdornos(e);
+    const titular = como === 'alguien' ? `Te decoré ${queEs(e)}`
+      : adornos > 1 ? `¡Decoré mi ${sustantivo(e)} con ${adornos} adornos!` : `¡Decoré mi ${sustantivo(e)} de pan!`;
+    pila.push(texto(ajustar(ctx, titular, { peso: 800, familia: SYNE, max: cuadrada ? 76 : 100, min: cuadrada ? 44 : 56, ancho, lineas: 2 }), crema, 1.04));
+  }
+  const iEscena = pila.length;
+  pila.push(null);                                    // el lugar de la escena
+  if (como === 'alguien') {
+    const pd = [`Para: ${e.p || '…'}`, e.d && `De: ${e.d}`].filter(Boolean).join(' · ');
+    pila.push(texto(ajustar(ctx, pd, { peso: 700, familia: INTER, max: cuadrada ? 36 : 44, min: 26, ancho, lineas: 2 }), crema, 1.25));
+  }
+  if (e.m) {
+    pila.push(texto(ajustar(ctx, '“' + e.m + '”', { peso: 400, estilo: 'italic ', familia: INTER, max: cuadrada ? 32 : 38, min: 24, ancho: ancho - 40, lineas: 2 }),
+      memoria ? 'rgba(239,230,220,.86)' : 'rgba(255,255,255,.86)', 1.3));
+  }
+  if (!cuadrada && firma) pila.push(texto({ t: 36, ls: [firma], font: fFirma }, crema, 1.2));
+  const hueco = (i) => (i === iEscena || i === iEscena + 1 ? (cuadrada ? 14 : 28) : 12);   // más aire alrededor de la escena
+  const fijo = pila.reduce((s2, p2, i) => s2 + (p2 ? p2.alto : 0) + (i ? hueco(i) : 0), 0);
+  const { img: esc, boca } = escenaDe(e, memoria);
+  const altoLibre = Math.max(140, pisoZona - techoZona - fijo);
+  const ke = Math.min((cuadrada ? ancho * 0.86 : ancho) / esc.width, (cuadrada ? Math.min(altoLibre, H * 0.52) : altoLibre) / esc.height);
+  const ew = esc.width * ke, eh = esc.height * ke;
+  const total = fijo + eh;
+  let yy = techoZona + Math.max(0, (pisoZona - techoZona - total) / 2);
+  const posiciones = pila.map((p2, i) => {
+    if (i) yy += hueco(i);
+    const y0 = yy;
+    yy += i === iEscena ? eh : p2.alto;
+    return y0;
+  });
+  const ex = W / 2 - ew / 2, ey = posiciones[iEscena];
+
+  // 3 · la escena: la guagua en su canasta, protagonista
+  // un resplandor tibio detrás (sin destellos en memoria)
+  const cx2 = W / 2, cy2 = ey + eh * 0.55, luz = ctx.createRadialGradient(cx2, cy2, 30, cx2, cy2, eh * 0.75);
+  luz.addColorStop(0, memoria ? 'rgba(255,214,150,.12)' : 'rgba(255,170,90,.26)'); luz.addColorStop(1, 'rgba(255,170,90,0)');
+  ctx.fillStyle = luz; ctx.fillRect(0, ey - eh * 0.3, W, eh * 1.6);
+  if (!memoria) {
+    const rnd = azar(e.o.length + 7);
+    ctx.fillStyle = 'rgba(255,201,60,.55)';
+    for (let i = 0; i < (cuadrada ? 8 : 14); i++) {
+      const sx = M + rnd() * ancho, sy = ey + rnd() * eh * 0.8, r = 3 + rnd() * 5;
+      if (Math.abs(sx - W / 2) < ew * 0.32) continue;     // los destellos, a los lados: la guagua manda
+      ctx.beginPath();
+      for (let j = 0; j < 8; j++) { const a = j / 8 * Math.PI * 2, d = j % 2 ? r * 0.35 : r * 1.6; ctx.lineTo(sx + Math.cos(a) * d, sy + Math.sin(a) * d); }
+      ctx.closePath(); ctx.fill();
+    }
+  }
+  pila.forEach((p2, i) => { if (i !== iEscena) p2.dibujar(posiciones[i]); });
   ctx.drawImage(esc, ex, ey, ew, eh);
   const px = ex + boca.x * ke, py = ey + boca.y * ke;
   if (memoria) {
-    const brillo = ctx.createRadialGradient(px, py, 4, px, py, 170);
-    brillo.addColorStop(0, 'rgba(255,190,80,.5)'); brillo.addColorStop(1, 'rgba(255,190,80,0)');
-    ctx.fillStyle = brillo; ctx.beginPath(); ctx.arc(px, py, 170, 0, Math.PI * 2); ctx.fill();
+    const brillo = ctx.createRadialGradient(px, py, 4, px, py, 120 * ke * 1.6);
+    brillo.addColorStop(0, 'rgba(255,200,120,.32)'); brillo.addColorStop(1, 'rgba(255,200,120,0)');
+    ctx.fillStyle = brillo; ctx.beginPath(); ctx.arc(px, py, 120 * ke * 1.6, 0, Math.PI * 2); ctx.fill();
   } else {
-    // el vapor de la colada
-    ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = Math.max(3, 5 * ke * 1.4); ctx.lineCap = 'round';
+    const v = Math.max(0.45, ke * 1.4);
     [-20, 0, 20].forEach((dx, i) => {
-      const x = px + dx, y = py - 8;
-      ctx.beginPath(); ctx.moveTo(x, y);
-      ctx.bezierCurveTo(x + 16, y - 26, x - 16, y - 52 - i * 8, x, y - 84 - i * 10); ctx.stroke();
+      const sx = px + dx * v, sy = py - 8 * v;
+      ctx.beginPath(); ctx.moveTo(sx, sy);
+      ctx.bezierCurveTo(sx + 16 * v, sy - 26 * v, sx - 16 * v, sy - (52 + i * 8) * v, sx, sy - (84 + i * 10) * v); ctx.stroke();
     });
-  }
-  if (!memoria && VALES[e.l]) {
-    ctx.save();
-    if (formato === 'cuadrada') { ctx.translate(W - 175, e0 + 75); ctx.scale(0.8, 0.8); } else ctx.translate(W - 190, e0 + 40);
-    sello(ctx, VALES[e.l], 0, 0);
-    ctx.restore();
-    ctx.textAlign = 'center';
-  }
-
-  const nombre = '«' + nombreDe(e) + '»';
-  ctx.font = `800 ${formato === 'cuadrada' ? 40 : 50}px Syne, Inter, system-ui, sans-serif`;
-  const alto = formato === 'cuadrada' ? 64 : 82;
-  const an = Math.min(W - 160, ctx.measureText(nombre).width + 80);
-  ctx.fillStyle = '#e01b6a';
-  ctx.beginPath(); ctx.roundRect(W / 2 - an / 2, F.cinta, an, alto, alto / 2); ctx.fill();
-  ctx.fillStyle = '#b01254';
-  ctx.beginPath(); ctx.roundRect(W / 2 - an / 2, F.cinta + alto - 8, an, 8, 4); ctx.fill();
-  ctx.fillStyle = '#fff';
-  ctx.fillText(nombre, W / 2, F.cinta + alto * 0.7, W - 200);
-  const quien = memoria ? (e.d ? 'Con cariño, de ' + e.d : '') : [e.p && 'Para ' + e.p, e.d && 'de ' + e.d].filter(Boolean).join(' · ');
-  if (quien) {
-    ctx.font = '600 34px Inter, system-ui, sans-serif'; ctx.fillStyle = '#ffffff';
-    ctx.fillText(quien, W / 2, F.quien, W - 120);
-  }
-  if (e.m) {
-    ctx.font = 'italic 400 30px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.82)';
-    envolver(ctx, e.m, W / 2, quien ? F.msg : F.quien, W - 180, 42, F.lineas + (quien ? 0 : 1));
-  }
-  ctx.font = '600 24px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,201,60,.9)';
-  // la invitación de abajo: lo que hace que quien la ve quiera hacer la suya
-  const pie = memoria ? '¿A quién recuerdas tú? Dedica la tuya en ' : e.p ? 'Ábrela, cómetela y regala otra en ' : '¿Te animas? Amasa la tuya gratis en ';
-  ctx.fillText(pie + DIRECCION, W / 2, F.pie, W - 80);
-  if (!cuadrada) {
-    ctx.font = '700 22px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.55)';
-    ctx.fillText('#GuaguaDePan · #Finados', W / 2, F.pie + 38, W - 80);
   }
   return c;
 }
@@ -2305,7 +2386,6 @@ function sincronizarControles() {
    antes a la red ni a renderizar. Por eso la tarjeta, el archivo y el enlace
    se preparan apenas cambia algo, y el botón solo usa lo que ya está listo. */
 let preparado = null, turnoTarjeta = 0, reloj = null, relojNube = null;
-const formato = 'historia';
 const publicados = new Map();      // receta → id del regalo, para no publicar dos veces la misma
 /* Con cuenta, el regalo se publica en /guaguas y el enlace es corto (#g=…).
    Sin cuenta, o si la nube falla, la receta va entera en el enlace (#r=…). */
@@ -2321,78 +2401,107 @@ async function enlaceDeRegalo(cod) {
   }
 }
 /* ─── compartir ────────────────────────────────────────────
-   ✓ guarda; Compartir es todo lo demás. Se le pone nombre, se ve la tarjeta
-   que va a salir y se elige cómo compartirla, y cada camino pide solo lo suyo:
-   · en tus redes: tu creación, una imagen para historias o perfil (1 paso).
-   · a alguien: para quién y qué más va en la canasta; le llega un enlace para
-     abrirla, comérsela y cobrar el vale (3 pasos).
-   · en memoria de alguien: a quién recuerdas y unas palabras (2 pasos).
-   La tarjeta de arriba cambia con cada elección. */
-let como = 'redes', pasoC = 'como';
-const PASOS_COMO = { redes: ['como'], alguien: ['como', 'para', 'lleva'], memoria: ['como', 'memoria'] };
-const ACCIONES = ['#c-seguir', '#c-enviar', '#c-recordar', '[data-copiar]', '[data-descargar]'];
+   ✓ guarda; Compartir es todo lo demás. Se le pone nombre y se elige cómo y en
+   qué formato; cada camino pide solo lo suyo y la tarjeta cambia en vivo:
+   · presúmela: tu creación, en historia por defecto; solo la firma (@usuario).
+   · envíasela a alguien: para (obligatorio), de y un mensaje; en cuadrado, porque va por chat.
+   · en memoria de alguien: a quién recuerdas (obligatorio) y un mensaje; en cuadrado. */
+let como = 'presume', pasoC = 'como', formatoC = 'historia';
+const FORMATO_DE = { presume: 'historia', alguien: 'cuadrada', memoria: 'cuadrada' };
+const OBLIGATORIO = { alguien: '#r-para', memoria: '#s-memoria' };
+const ACCIONES = ['#c-presumir', '#c-mandar', '#c-recordar', '[data-copiar]', '[data-descargar]'];
+/* Lo que se escribe se limpia antes de dibujarlo o mandarlo: sin caracteres de
+   control ni de dirección, espacios simples, el largo justo, apóstrofes y comillas
+   tipográficos, y sin « » propias (la tarjeta pone las suyas al nombre). */
+function limpiar(v, max) {
+  return String(v || '')
+    .replace(/[\u0000-\u001f\u007f-\u009f​-‏‪-‮⁦-⁩]/g, ' ')
+    .replace(/[«»]/g, '')
+    .replace(/\s+/g, ' ').trim()
+    .replace(/(\w)'(\w)/g, '$1’$2').replace(/'/g, '’')
+    .replace(/"([^"]*)"/g, '“$1”').replace(/"/g, '”')
+    .slice(0, max).trim();
+}
+/* La firma de «presúmela»: @usuario, sin espacios ni tildes. */
+function comoUsuario(v) {
+  const u = limpiar(v, 30).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/^@+/, '').replace(/[^a-z0-9._]/gi, '').toLowerCase();
+  return u ? '@' + u : '';
+}
+function quienSoy() {
+  const u = nube.actual && nube.actual();
+  return estado.d || almacen.leer('guagua:firma', '') || (u && (u.nombre || '')) || '';
+}
 function pintarComo() {
   $$('#d-compartir [data-como]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.como === como)));
-  $('#c-seguir').textContent = como === 'redes' ? 'Compartir en redes' : 'Siguiente';
-  $('#c-extra-redes').hidden = como !== 'redes';
-  $$('#d-compartir [data-vale]').forEach((b) => b.setAttribute('aria-checked', String(+b.dataset.vale === estado.l)));
-  const v = VALES[estado.l];
-  $('#r-nota').textContent = 'Le llega un enlace para abrirla y comérsela' + (v ? '. ' + v.pista : '.');
-  const para = $('#r-para').value.trim();
-  $('#c-enviar').textContent = para ? 'Enviar a ' + para : 'Enviar la canasta';
+  $$('#d-compartir [data-formato]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.formato === formatoC)));
+  const vista = $('#c-vista');
+  vista.classList.toggle('compartir__vista--cuadrada', formatoC === 'cuadrada');
+  vista.width = 1080; vista.height = formatoC === 'cuadrada' ? 1080 : 1920;
+  // lo obligatorio: sin nombre no se envía
+  const falta = OBLIGATORIO[como] && !limpiar($(OBLIGATORIO[como]).value, 24);
+  $('#c-falta-para').hidden = !(como === 'alguien' && falta);
+  $('#c-falta-memoria').hidden = !(como === 'memoria' && falta);
 }
 function irPasoC(p) {
   pasoC = p;
-  const lista = PASOS_COMO[como], i = lista.indexOf(p);
   $$('#d-compartir .compartir__paso').forEach((x) => { x.hidden = x.dataset.paso !== p; });
-  $('#c-paso').textContent = lista.length > 1 ? `${i + 1} de ${lista.length}` : '';
-  // la tarjeta: grande al elegir; chica después; escondida mientras se escribe para quién
-  const vista = $('#c-vista');
-  vista.hidden = p === 'para';
-  vista.classList.toggle('compartir__vista--chica', p !== 'como');
+  $('#c-paso').textContent = p === 'como' ? '1 de 2' : '2 de 2';
+  $('#c-vista').classList.toggle('compartir__vista--chica', p !== 'como');
+  pintarComo();
   refrescarTarjeta();
+}
+function elegirComo(c) {
+  como = c;
+  formatoC = FORMATO_DE[c];                       // el formato que más se usa para ese camino
+  pintarComo(); refrescarTarjeta();
 }
 function abrirCompartir() {
   // cada camino arranca de lo que ya tenía la guagua
-  como = estado.t === 'm' ? 'memoria' : estado.p ? 'alguien' : 'redes';
+  como = estado.t === 'm' ? 'memoria' : estado.p ? 'alguien' : 'presume';
+  formatoC = FORMATO_DE[como];
   $('#r-para').value = estado.t === 'm' ? '' : estado.p;
-  $('#r-de').value = estado.d || almacen.leer('guagua:firma', '');
+  $('#r-de').value = quienSoy();
   $('#s-memoria').value = estado.t === 'm' ? estado.p : '';
   $('#r-mensaje').value = estado.t === 'm' ? '' : estado.m;
   $('#s-mensaje').value = estado.t === 'm' ? estado.m : '';
-  $$('#d-compartir [data-mensaje]').forEach((c) => { c.hidden = !c.querySelector('textarea').value; });
-  $$('#d-compartir [data-abre-mensaje]').forEach((b) => { b.hidden = !b.nextElementSibling.hidden; });
+  $('#c-usuario').value = almacen.leer('guagua:usuario', '') || comoUsuario(quienSoy());
   $('#c-vista').removeAttribute('src');
-  pintarComo();
   abrir('#d-compartir');
   irPasoC('como');
 }
+/* Lee los campos del camino elegido y devuelve lo que la tarjeta necesita aparte de la receta. */
 function leerFormulario() {
+  let usuario = '';
   if (como === 'memoria') {
-    Object.assign(estado, { t: 'm', p: $('#s-memoria').value.trim().slice(0, 40), m: $('#s-mensaje').value.trim().slice(0, 160), l: 0 });
+    Object.assign(estado, { t: 'm', p: limpiar($('#s-memoria').value, 24), m: limpiar($('#s-mensaje').value, 120), l: 0 });
   } else if (como === 'alguien') {
-    Object.assign(estado, { t: '', p: $('#r-para').value.trim().slice(0, 40), m: $('#r-mensaje').value.trim().slice(0, 160) });
+    Object.assign(estado, { t: '', p: limpiar($('#r-para').value, 24), m: limpiar($('#r-mensaje').value, 120), l: 0 });
+    const d = limpiar($('#r-de').value, 24);
+    estado.d = d;
+    if (d) almacen.poner('guagua:firma', d);
   } else {
-    Object.assign(estado, { t: '', p: '', m: '', l: 0 });   // en redes: tu creación, sin destinatario
+    Object.assign(estado, { t: '', p: '', m: '', l: 0 });   // presúmela: tu creación, sin destinatario
+    usuario = comoUsuario($('#c-usuario').value);
+    almacen.poner('guagua:usuario', usuario);
   }
-  const d = $('#r-de').value.trim().slice(0, 40);
-  if (d) { estado.d = d; almacen.poner('guagua:firma', d); }
+  return { como, usuario, de: quienSoy() };
 }
 function botonesListos(listo) {
-  ACCIONES.forEach((sel) => $$(sel).forEach((b) => { b.disabled = !listo; b.setAttribute('aria-busy', String(!listo)); }));
+  const falta = OBLIGATORIO[como] && !limpiar($(OBLIGATORIO[como]).value, 24);
+  ACCIONES.forEach((sel) => $$(sel).forEach((b) => { b.disabled = !listo || falta; b.setAttribute('aria-busy', String(!listo)); }));
 }
 async function refrescarTarjeta() {
-  leerFormulario();
+  const extra = leerFormulario();
   const turno = ++turnoTarjeta;
   preparado = null; botonesListos(false);
   const r = receta();
   const cod = await codificar(r);
-  const c = await tarjeta(como === 'alguien' ? Object.assign({ aAlguien: true }, r) : r, formato);
+  const c = await tarjeta(r, formatoC, extra);
   if (turno !== turnoTarjeta) return;
   $('#c-vista').src = c.toDataURL('image/jpeg', 0.85);
   const blob = await aBlob(c);
   if (turno !== turnoTarjeta) return;
-  const nombre = 'guagua-' + (estado.n || 'de-pan').toLowerCase().replace(/[^a-z0-9áéíóúñü]+/gi, '-') + '.png';
+  const nombre = 'guagua-' + (estado.n || 'de-pan').toLowerCase().replace(/[^a-z0-9áéíóúñü]+/gi, '-') + (formatoC === 'cuadrada' ? '-cuadrada' : '-historia') + '.png';
   preparado = { cod, blob, archivo: new File([blob], nombre, { type: 'image/png' }), nombre, url: direccion() + '#r=' + cod, id: null, texto: textoRegalo() };
   guardarBorrador();
   botonesListos(true);
@@ -2413,16 +2522,15 @@ function enlaceCorto(pr) {
     } catch (e) { /* se queda el enlace largo */ }
   }, 1200);
 }
-/* El texto que acompaña al enlace: corto, con algo que dé ganas de abrirlo y de hacer la propia. */
+/* El texto que acompaña al enlace: corto y con ganas de abrirlo y de hacer la propia. */
 const textoRegalo = (e = estado) => {
-  const que = queEs(e) + ' de pan', nombre = e.n ? ` y le puse «${e.n}»` : '';
-  if (enMemoria(e)) {
-    return `🕯️ Amasé ${que} en memoria de ${e.p}. En Finados también se recuerda con pan y colada morada. ¿A quién recuerdas tú? Dedica la tuya:`;
+  const que = queEs(e) + ' de pan';
+  if (enMemoria(e)) return `🕯️ Decoré ${que} para recordar a «${e.p}». Decora y comparte la tuya:`;
+  if (!e.p) {
+    const n = contarAdornos(e);
+    return `🍞 ¡Decoré mi ${sustantivo(e)} de pan${n > 1 ? ` con ${n} adornos` : ''}! Decora y comparte la tuya:`;
   }
-  if (!e.p) return `🍞 Amasé ${que}${nombre}. Este Finados, ¿te animas a hacer la tuya? Es gratis y se regala por WhatsApp:`;
-  const quien = e.d ? `${e.d} te mandó` : 'Te mandaron';
-  const vale = VALES[e.l] ? ' ' + VALES[e.l].texto : '';
-  return `🧺 ${e.p}, ${quien.charAt(0).toLowerCase() + quien.slice(1)} ${que}${e.n ? ' que se llama ' + e.n : ''} en una canasta por el Día de Difuntos.${vale} Ábrela antes de que se enfríe la colada:`;
+  return `🧺 ${e.p}, te decoré ${que}${e.d ? ' (' + e.d + ')' : ''}. ${e.m || '¿Compartimos una colada de verdad este finados?'} Ábrela aquí:`;
 };
 /* Copiar responde en el mismo botón («¡Copiado!») y con el toast. */
 async function copiar(texto, boton) {
@@ -2447,37 +2555,24 @@ async function copiar(texto, boton) {
   }
 }
 function montarRegalo() {
-  // escribir cambia la tarjeta, un momento después
+  // escribir cambia la tarjeta, un momento después (la escena 3D no se vuelve a armar)
   $$('#d-compartir input, #d-compartir textarea').forEach((x) => x.addEventListener('input', () => {
     preparado = null; botonesListos(false);
-    clearTimeout(reloj);
-    reloj = setTimeout(refrescarTarjeta, 350);
     pintarComo();
+    clearTimeout(reloj);
+    reloj = setTimeout(refrescarTarjeta, 300);
   }));
   $('#d-compartir').addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); e.target.blur(); }
   });
-  $$('#d-compartir [data-como]').forEach((b) => b.addEventListener('click', () => {
-    if (como === b.dataset.como) return;
-    como = b.dataset.como;
+  $$('#d-compartir [data-como]').forEach((b) => b.addEventListener('click', () => { if (como !== b.dataset.como) elegirComo(b.dataset.como); }));
+  $$('#d-compartir [data-formato]').forEach((b) => b.addEventListener('click', () => {
+    if (formatoC === b.dataset.formato) return;
+    formatoC = b.dataset.formato;
     pintarComo(); refrescarTarjeta();
   }));
-  $$('#d-compartir [data-vale]').forEach((b) => b.addEventListener('click', () => {
-    if (estado.l === +b.dataset.vale) return;
-    estado.l = +b.dataset.vale;
-    pintarComo(); refrescarTarjeta();      // el vale va sellado en la tarjeta
-  }));
-  $$('#d-compartir [data-abre-mensaje]').forEach((b) => b.addEventListener('click', () => {
-    b.hidden = true;
-    const c = b.nextElementSibling;
-    c.hidden = false;
-    c.querySelector('textarea').focus();
-  }));
-  $('#c-atras').addEventListener('click', () => {
-    const lista = PASOS_COMO[como], i = lista.indexOf(pasoC);
-    if (i <= 0) $('#d-compartir').close(); else irPasoC(lista[i - 1]);
-  });
-  $('#c-a-canasta').addEventListener('click', () => irPasoC('lleva'));
+  $('#c-atras').addEventListener('click', () => { if (pasoC === 'como') $('#d-compartir').close(); else irPasoC('como'); });
+  $('#c-seguir').addEventListener('click', () => irPasoC(como));
   // lo que pasa después de compartir no hace esperar a la hoja de compartir
   const despues = (pr) => { guardarMia(pr.id).catch(() => {}); };
   const descargar = (pr) => {
@@ -2487,30 +2582,25 @@ function montarRegalo() {
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   };
-  /* En redes y en memoria va la imagen; a alguien, un mensaje con su enlace.
-     Sin hoja de compartir (la compu): la imagen se descarga, o se abre WhatsApp. */
-  const enviar = (conImagen) => {
+  /* Se comparte la imagen con su texto y su enlace (WhatsApp, mensajes, redes);
+     si el navegador no tiene hoja de compartir, la imagen se descarga. */
+  const enviar = () => {
     const pr = preparado;
     if (!pr) return;
     const titulo = 'Una guagua de pan';
     let promesa = null;
-    if (conImagen && navigator.canShare && navigator.canShare({ files: [pr.archivo] })) {
+    if (navigator.canShare && navigator.canShare({ files: [pr.archivo] })) {
       promesa = navigator.share({ files: [pr.archivo], title: titulo, text: pr.texto + ' ' + pr.url });
     } else if (navigator.share) {
       promesa = navigator.share({ title: titulo, text: pr.texto, url: pr.url });
     }
-    if (!promesa) {
-      if (conImagen) descargar(pr); else window.open('https://wa.me/?text=' + encodeURIComponent(pr.texto + ' ' + pr.url), '_blank', 'noopener');
-      despues(pr); return;
-    }
+    if (!promesa) { descargar(pr); despues(pr); return; }
     promesa.then(() => despues(pr)).catch((e) => {
       if (e && e.name === 'AbortError') return;
-      avisa('Este navegador no dejó compartir. Copia el enlace.', 'error');
+      descargar(pr); despues(pr);
     });
   };
-  $('#c-seguir').addEventListener('click', () => { if (como === 'redes') enviar(true); else irPasoC(PASOS_COMO[como][1]); });
-  $('#c-enviar').addEventListener('click', () => enviar(false));
-  $('#c-recordar').addEventListener('click', () => enviar(true));
+  ['#c-presumir', '#c-mandar', '#c-recordar'].forEach((sel) => $(sel).addEventListener('click', enviar));
   $$('#d-compartir [data-copiar]').forEach((b) => b.addEventListener('click', () => { if (preparado) { copiar(preparado.url, b); despues(preparado); } }));
   $$('#d-compartir [data-descargar]').forEach((b) => b.addEventListener('click', () => { if (preparado) { descargar(preparado); despues(preparado); } }));
   $('#r-entrar').addEventListener('click', () => abrirCuenta());
