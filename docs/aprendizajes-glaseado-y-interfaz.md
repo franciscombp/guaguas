@@ -226,3 +226,16 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   del glaseado tenía los triángulos hacia adentro. Se veía siempre «por dentro», color crema. Los
   triángulos de una malla hecha a mano tienen que mirar hacia afuera.
 - El visor ya tiene una propiedad `figura` (el plato que gira): un método con ese nombre queda tapado.
+
+## 9. El punto del horno, el grosor y el baño
+
+- **La franja del termómetro tiene que ser la misma que juzga el horno.** El marco blanco estaba sobre
+  la zona «blanquita» (46–60 %): quien la sacaba ahí leía «le faltó horno». Ahora el marco va donde
+  `punto()` dice «en su punto» (0.92–1.08 de 1.6: 57.5–67.5 %), con el dorado dentro, y la instrucción
+  dice «sácala doradita».
+- El hilo empieza en el grosor más grueso.
+- **La brocha es un baño, no una línea.** Los trazos de cobertura no se dibujan uno encima de otro: hay
+  una sola capa que copia al pan un poco por fuera, y cada vértice guarda su distancia al trazo más
+  cercano. El borde se corta en el radio interpolando esa distancia, así sale redondo aunque la malla
+  sea gruesa. Mientras se pinta solo se calcula el tramo nuevo (unos 2 ms por trazo). Lo que se pone
+  después (hilo, puntos, figuras) queda encima de la capa.

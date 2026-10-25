@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.4';
+import * as nube from './nube.js?v=2026.10.25.5';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.4';
+} from './masa.js?v=2026.10.25.5';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -272,6 +272,8 @@ function materiales(U) {
     }), U)),
     grageas: comestible(new THREE.MeshStandardMaterial({ roughness: 0.3 }), U),
     pasa: comestible(new THREE.MeshPhysicalMaterial({ color: '#2e140a', roughness: 0.35, clearcoat: 0.6 }), U),
+    // el baño de la brocha: una sola capa que sigue al pan; lo no pintado se descarta
+    banio: comestible(new THREE.MeshPhysicalMaterial({ vertexColors: true, alphaTest: 0.5, roughness: 0.3, clearcoat: 0.7, clearcoatRoughness: 0.2 }), U),
     caras: {},
   };
 }
@@ -292,6 +294,14 @@ function entorno(renderer) {
    con el clic derecho), se acerca pellizcando o con la rueda. Lo
    que pasa al tocarla lo decide quien lo usa: el taller amasa o
    pinta, el regalo muerde, la vitrina solo deja mirar.           */
+const esCobertura = (op) => !!op && op[0] === 8 && op[2] === COBERTURA;
+const RADIO_BANIO = 0.18, GROSOR_BANIO = 0.012, RAMPA_BANIO = 0.16;
+const _s = V(), _w = V(), _p = V();      // para no crear vectores en cada vértice
+function distTramo(p, a, b) {
+  _s.subVectors(b, a); _w.subVectors(p, a);
+  const u = limita(_s.dot(_w) / Math.max(_s.lengthSq(), 1e-9), 0, 1);
+  return _w.addScaledVector(_s, -u).length();
+}
 class Visor {
   constructor(canvas, op = {}) {
     this.op = op;
@@ -369,7 +379,8 @@ class Visor {
     this.acostada = new THREE.Group();
     this.acostada.rotation.x = -Math.PI / 2;
     this.acostada.position.set(0, -PISO, 1.6);
-    this.acostada.add(this.pan, this.adornos);
+    this.banio = new THREE.Group();   // la cobertura pintada con la brocha
+    this.acostada.add(this.pan, this.banio, this.adornos);
     this.figura.add(this.acostada);
     s.add(this.figura);
 
@@ -385,7 +396,7 @@ class Visor {
     this.margen = { arriba: 0, abajo: 0, derecha: 0 };   // lo que tapan la barra y el dock
     this.piezas = [];
     this.ops = []; this.objetos = []; this.extra = [];
-    this.previa = null; this.piezaPrevia = null;
+    this.previa = null; this.piezaPrevia = null; this.previaBanio = null; this.trazosBanio = []; this.capas = [];
     this.raycaster = new THREE.Raycaster();
 
     if (!op.foto) {
@@ -437,7 +448,9 @@ class Visor {
     this.capa = e.capa || 0;
     this.ponerMasa(e.a);
     this.hornear(e.k / 100, false);
+    this.previaBanio = null;
     e.o.forEach((op) => this.agregar(op, true));
+    this.rehacerBanio();
     this.actualizarBocados();
     if (opciones.encuadrar !== false) this.encuadrar();
     this.dibujar();
@@ -670,7 +683,8 @@ class Visor {
       o.position.copy(p).addScaledVector(n, 0.006);
       return o;
     }
-    if (t === 8) {                                  // el hilo con grosor, o la cobertura pintada a mano
+    if (t === 8 && op[2] === COBERTURA) return new THREE.Object3D();   // la cobertura va en el baño
+    if (t === 8) {                                  // el hilo con grosor
       const pts = [], nor = [];
       for (let i = 3; i + 5 < op.length; i += 6) {
         pts.push(V(op[i], op[i + 1], op[i + 2]).divideScalar(Q));
@@ -703,15 +717,22 @@ class Visor {
     if (o) this.adornos.add(o);
     this.ops.push(op); this.objetos.push(o);
     if (op[0] === 3) this.actualizarBocados();
+    if (esCobertura(op) && !sinDibujar) {
+      if (op === this.previaBanio) { this.previaBanio = null; this.capas.forEach((cp) => cp.pd.fill(9)); }
+      if (this.capas && this.capas.length) { this.pintarTrazo(op, false, 0); this.componerBanio(); } else this.rehacerBanio();
+    }
     if (!sinDibujar) this.dibujar();
   }
   quitarUltimo() {
     const op = this.ops.pop(), o = this.objetos.pop();
     if (o) { this.adornos.remove(o); o.traverse((x) => { if (x.geometry) x.geometry.dispose(); }); if (o.isInstancedMesh) o.dispose(); }
     if (op && op[0] === 3) this.actualizarBocados();
+    if (esCobertura(op)) this.rehacerBanio();
     this.dibujar();
   }
   vistaPrevia(op) {
+    if (esCobertura(op)) { this.previaDeBanio(op); this.dibujar(); return; }   // la brocha pinta el baño mismo
+    if (this.previaBanio && !op) return;           // al soltar, el trazo se suma al agregarlo
     if (this.previa) { this.adornos.remove(this.previa); this.previa.geometry.dispose(); this.previa = null; }
     if (op) { this.previa = this.construir(op); if (this.previa) this.adornos.add(this.previa); }
     this.dibujar();
@@ -729,7 +750,10 @@ class Visor {
     const n = h.face.normal.clone().transformDirection(h.object.matrixWorld);
     if (n.dot(dir) > 0) n.negate();
     const inv = this.acostada.getWorldQuaternion(new THREE.Quaternion()).invert();
-    return { p: this.acostada.worldToLocal(h.point.clone()), n: n.applyQuaternion(inv).normalize(), pieza: h.object.userData.pieza };
+    const p = this.acostada.worldToLocal(h.point.clone());
+    n.applyQuaternion(inv).normalize();
+    if (!soloPan && this.cubre(p)) p.addScaledVector(n, GROSOR_BANIO);
+    return { p, n, pieza: h.object.userData.pieza };
   }
   apuntar(ev) {
     const r = this.canvas.getBoundingClientRect();
@@ -737,6 +761,108 @@ class Visor {
     this.ubicar();
     this.raycaster.setFromCamera(ndc, this.camara);
     return this.raycaster.ray.clone();
+  }
+  /* ─── el baño de la brocha ──────────────────────────────
+     Los trazos de cobertura no se dibujan uno encima de otro: juntos marcan
+     qué parte del pan está bañada, y hay una sola capa que copia al pan un
+     poco por fuera. Cada vértice guarda su distancia al trazo más cercano; el
+     borde se interpola entre vértices y se corta justo en el radio, así sale
+     redondo. El color es el del último trazo que lo cubre. Mientras se pinta,
+     solo se calcula el tramo nuevo. */
+  rehacerBanio() {
+    this.vaciar(this.banio);
+    this.capas = [];
+    this.trazosBanio = [];
+    this.previaN = 0;
+    const ops = this.ops.filter(esCobertura);
+    if (!ops.length && !this.previaBanio) return;
+    this.pan.updateMatrix();
+    const P = V(), N = V(), M = new THREE.Matrix4(), NM = new THREE.Matrix3();
+    this.pan.children.forEach((pieza) => {
+      pieza.updateMatrix();
+      M.multiplyMatrices(this.pan.matrix, pieza.matrix);
+      NM.getNormalMatrix(M);
+      const g = pieza.geometry.clone();
+      g.deleteAttribute('color');
+      const pos = g.attributes.position, nor = g.attributes.normal, n = pos.count;
+      const sobre = new Float32Array(n * 3);          // el punto del pan, sin levantar
+      for (let i = 0; i < n; i++) {
+        P.fromBufferAttribute(pos, i).applyMatrix4(M);
+        N.fromBufferAttribute(nor, i).applyMatrix3(NM).normalize();
+        sobre.set([P.x, P.y, P.z], i * 3);
+        P.addScaledVector(N, GROSOR_BANIO);
+        pos.setXYZ(i, P.x, P.y, P.z);
+        nor.setXYZ(i, N.x, N.y, N.z);
+      }
+      g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 4), 4));
+      g.computeBoundingSphere();
+      const mesh = this.malla(g, this.mat.banio);
+      this.banio.add(mesh);
+      this.capas.push({ mesh, sobre, n, d: new Float32Array(n).fill(9), rgb: new Float32Array(n * 3), pd: new Float32Array(n).fill(9) });
+    });
+    ops.forEach((op) => this.pintarTrazo(op, false, 0));
+    if (this.previaBanio) { this.pintarTrazo(this.previaBanio, true, 0); this.previaN = this.puntosDe(this.previaBanio).length; }
+    this.componerBanio();
+  }
+  puntosDe(op) {
+    const pts = [];
+    for (let i = 3; i + 5 < op.length; i += 6) pts.push(V(op[i], op[i + 1], op[i + 2]).divideScalar(Q));
+    return pts;
+  }
+  /* Suma un trazo (desde el punto `desde`) a las distancias de cada vértice. */
+  pintarTrazo(op, previa, desde) {
+    const pts = this.puntosDe(op), c = new THREE.Color(CREMAS[op[1]].c), alcance = RADIO_BANIO + RAMPA_BANIO / 2;
+    if (!previa) this.trazosBanio.push(pts);
+    else this.colorPrevia = c;
+    const caja = new THREE.Box3(), P = _p;
+    const tramos = pts.length === 1 ? [[pts[0], pts[0]]] : [];
+    for (let i = Math.max(1, desde); i < pts.length; i++) tramos.push([pts[i - 1], pts[i]]);
+    if (desde > 0 && pts.length === 1) return;
+    this.capas.forEach((cp) => {
+      tramos.forEach(([a, b]) => {
+        caja.makeEmpty().expandByPoint(a).expandByPoint(b).expandByScalar(alcance);
+        for (let i = 0; i < cp.n; i++) {
+          P.fromArray(cp.sobre, i * 3);
+          if (!caja.containsPoint(P)) continue;
+          const d = distTramo(P, a, b);
+          if (previa) { if (d < cp.pd[i]) cp.pd[i] = d; continue; }
+          if (d < cp.d[i]) cp.d[i] = d;
+          if (d <= alcance) cp.rgb.set([c.r, c.g, c.b], i * 3);   // el último trazo que lo cubre pone el color
+        }
+      });
+    });
+  }
+  componerBanio() {
+    const alcance = RADIO_BANIO + RAMPA_BANIO / 2, pc = this.colorPrevia;
+    this.capas.forEach((cp) => {
+      const col = cp.mesh.geometry.attributes.color, a = col.array;
+      for (let i = 0; i < cp.n; i++) {
+        const D = Math.min(cp.d[i], cp.pd[i]);
+        a[i * 4 + 3] = limita(0.5 + (RADIO_BANIO - D) / RAMPA_BANIO, 0, 1);
+        if (cp.pd[i] <= alcance && pc) { a[i * 4] = pc.r; a[i * 4 + 1] = pc.g; a[i * 4 + 2] = pc.b; }
+        else { a[i * 4] = cp.rgb[i * 3]; a[i * 4 + 1] = cp.rgb[i * 3 + 1]; a[i * 4 + 2] = cp.rgb[i * 3 + 2]; }
+      }
+      col.needsUpdate = true;
+    });
+  }
+  /* La brocha mientras se arrastra: solo el tramo nuevo. */
+  previaDeBanio(op) {
+    if (!this.capas || !this.capas.length) { this.previaBanio = op; this.rehacerBanio(); return; }
+    if (op !== this.previaBanio) { this.capas.forEach((cp) => cp.pd.fill(9)); this.previaN = 0; }
+    this.previaBanio = op;
+    if (op) {
+      this.pintarTrazo(op, true, Math.max(0, this.previaN - 1));
+      this.previaN = this.puntosDe(op).length;
+    }
+    this.componerBanio();
+  }
+  /* ¿Está bañado este punto? Lo que se pone encima queda sobre la capa. */
+  cubre(p) {
+    for (const pts of this.trazosBanio) {
+      if (pts.length === 1 && p.distanceTo(pts[0]) <= RADIO_BANIO) return true;
+      for (let i = 1; i < pts.length; i++) if (distTramo(p, pts[i - 1], pts[i]) <= RADIO_BANIO) return true;
+    }
+    return false;
   }
   tocar(ev, soloPan) {
     const ray = this.apuntar(ev);
@@ -1375,7 +1501,7 @@ const estado = {
   etapa: 'amasar',
   f: 'guagua', a: [], k: 0, o: [],
   mano: 'bolita', grosor: 1, masa: 0,
-  herramienta: 'manga', crema: 1, ancho: 0, tamano: 1, capa: 0,
+  herramienta: 'manga', crema: 1, ancho: 2, tamano: 1, capa: 0,
   id: null, n: '', p: '', d: '', m: '', t: '', l: 0,
 };
 let taller = null;       // el visor del taller
@@ -1664,7 +1790,7 @@ function soltarDecorar() {
    desvanece con el primer toque en el lienzo, para dejar más espacio. */
 const INTROS = {
   amasar: ['Amasa tu guagua', 'Arrastra sobre la lata: al lado sale ancha, hacia arriba sale alta'],
-  horno: ['Sácala en su punto', 'Se dora en seis segundos: sácala en la franja blanca'],
+  horno: ['Sácala doradita', 'Se dora en seis segundos: sácala cuando la aguja entre al marco blanco'],
   decorar: ['Decórala', 'Elige una manga y dibuja con el dedo sobre el pan'],
 };
 const PASOS_TALLER = { amasar: ['Amasa', 1], horno: ['Hornea', 2], decorar: ['Decora', 3] };
@@ -1769,7 +1895,7 @@ function montarTaller() {
       toca: (ev) => (estado.etapa === 'amasar' ? tocarMasa(ev) : estado.etapa === 'decorar' ? tocarDecorar(ev) : false),
       arrastra: (ev) => (estado.etapa === 'amasar' ? arrastrarMasa(ev) : arrastrarDecorar(ev)),
       suelta: () => (estado.etapa === 'amasar' ? soltarMasa() : soltarDecorar()),
-      cancela: () => { trazo = null; amase = null; taller.vistaPrevia(null); taller.previaPieza(null); },
+      cancela: () => { trazo = null; amase = null; taller.vistaPrevia(null); if (taller.previaBanio) taller.previaDeBanio(null); taller.previaPieza(null); },
     });
   } catch (err) {
     $('#sin-3d').hidden = false;

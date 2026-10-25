@@ -185,11 +185,17 @@ body.juego-cuerpo{margin:0;background:var(--noche);color:var(--crema);font-famil
 .tam[aria-pressed="true"]{border:2px solid var(--rosa);color:var(--rosa)}
 
 /* hornear */
+/* La franja sigue a punto(): cruda < 0.75 · blanquita < 0.92 · en su punto ≤ 1.08 · tostadita ≤ 1.25,
+   sobre KMAX = 1.6. El marco blanco es el punto dorado: de 57.5 % a 67.5 %. */
 .termo{position:relative;height:18px;border-radius:999px;
-  background:linear-gradient(90deg,#f6ead6 0 46%,#fff 46% 60%,#dd9a46 60% 80%,#7a2a0c 80% 100%)}
-.termo__punto{position:absolute;left:46%;top:-5px;bottom:-5px;width:14%;border-radius:6px;border:3px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.35)}
+  background:linear-gradient(90deg,#f6ead6 0 47%,#efd29c 47% 57.5%,#d98f3a 57.5% 67.5%,#9a4a16 67.5% 78%,#3a1405 78% 100%)}
+.termo__punto{position:absolute;left:57.5%;top:-5px;bottom:-5px;width:10%;border-radius:6px;border:3px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.35)}
 .termo__nivel{position:absolute;top:-9px;left:0;width:0;height:36px;border-right:4px solid #ffe03a;filter:drop-shadow(0 0 6px #ffe03a)}
-.termo__escala{display:flex;justify-content:space-between;margin:-6px 0 0;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--texto-2)}
+.termo__escala{position:relative;height:14px;margin:-6px 0 0;font-size:11px;line-height:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--texto-2)}
+.termo__escala span{position:absolute;top:0;white-space:nowrap}
+.termo__escala span:first-child{left:0}
+.termo__escala span:nth-child(2){left:62.5%;transform:translateX(-50%)}
+.termo__escala span:last-child{right:0}
 .termo__escala span:nth-child(2){color:#fff;font-weight:700}
 .dock--horno .b,.horno__fin .b--pri{width:100%}
 .horno__fin{display:flex;flex-direction:column;align-items:center;gap:6px}

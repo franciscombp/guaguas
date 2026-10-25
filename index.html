@@ -57,8 +57,8 @@
 }
 </script>
 <link rel="stylesheet" href="vendor/ds/mal/mal.css?v=1.0.18">
-<meta name="guagua-version" content="2026.10.25.4">
-<link rel="stylesheet" href="guagua.css?v=2026.10.25.4">
+<meta name="guagua-version" content="2026.10.25.5">
+<link rel="stylesheet" href="guagua.css?v=2026.10.25.5">
 </head>
 <body class="juego-cuerpo">
 <svg width="0" height="0" class="sr-only" aria-hidden="true" focusable="false">
@@ -179,7 +179,7 @@
       <i class="termo__punto" aria-hidden="true"></i>
       <i class="termo__nivel" id="termo"></i>
     </div>
-    <p class="termo__escala" aria-hidden="true"><span>Cruda</span><span id="horno-estado">En su punto</span><span>Quemada</span></p>
+    <p class="termo__escala" aria-hidden="true"><span>Cruda</span><span id="horno-estado">Doradita</span><span>Quemada</span></p>
     <button class="b b--pri" id="sacar" type="button">Sacar del horno</button>
     <div class="horno__fin" id="horno-fin" hidden>
       <button class="b b--pri" id="a-decorar" type="button">Decorarla</button>
@@ -266,9 +266,9 @@
   <div class="colores" id="cremas" role="group" aria-label="Colores"></div>
   <div class="grosor" id="grosor-fila" role="group" aria-label="Grosor del hilo">
     <span>Grosor</span>
-    <button class="tam" type="button" data-ancho="0" aria-pressed="true" aria-label="Fino"><i style="--t:5px"></i></button>
+    <button class="tam" type="button" data-ancho="0" aria-pressed="false" aria-label="Fino"><i style="--t:5px"></i></button>
     <button class="tam" type="button" data-ancho="1" aria-pressed="false" aria-label="Medio"><i style="--t:9px"></i></button>
-    <button class="tam" type="button" data-ancho="2" aria-pressed="false" aria-label="Grueso"><i style="--t:14px"></i></button>
+    <button class="tam" type="button" data-ancho="2" aria-pressed="true" aria-label="Grueso"><i style="--t:14px"></i></button>
   </div>
 </dialog>
 
@@ -426,7 +426,7 @@
   <p class="hoja__kicker" id="cuenta">Faltan unos días para Finados</p>
   <ol class="pasos-ayuda">
     <li data-paso="amasar"><i>1</i><div><b>Amasa</b><span>Arrastra sobre la lata: al lado sale ancha, hacia arriba sale alta. Bolita, chorizo, mover o quitar; o empieza con un molde.</span><em>Cuando esté lista, toca Hornear</em></div></li>
-    <li data-paso="horno"><i>2</i><div><b>Hornea</b><span>Se dora en seis segundos. Sácala en la franja blanca: si esperas mucho, se quema.</span><em>Toca Sacar del horno</em></div></li>
+    <li data-paso="horno"><i>2</i><div><b>Hornea</b><span>Se dora en seis segundos. Sácala doradita, cuando la aguja entre al marco blanco: antes queda cruda o blanquita; si esperas mucho, se quema.</span><em>Toca Sacar del horno</em></div></li>
     <li data-paso="decorar"><i>3</i><div><b>Decora</b><span>Elige una manga y dibuja con el dedo sobre el pan. La brocha pinta la cobertura donde quieras. El aro cambia el color. El + trae la carita, el mordisco y las figuras de mazapán: se ponen con un toque.</span><em>Toca el ✓ para guardarla; después la regalas o la compartes</em></div></li>
   </ol>
   <p class="hoja__texto">Dos dedos giran y acercan la guagua.</p>
@@ -441,6 +441,6 @@
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js": "./vendor/firebase/firebase-auth.js",
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js": "./vendor/firebase/firebase-firestore-lite.js"
 } }</script>
-<script type="module" src="guagua.js?v=2026.10.25.4"></script>
+<script type="module" src="guagua.js?v=2026.10.25.5"></script>
 </body>
 </html>
