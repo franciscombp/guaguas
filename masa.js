@@ -29,10 +29,10 @@ const BOQUILLA_LISA = 4;                              // el glaseado liso: un tu
 /* El hilo de glaseado en tres grosores y la cobertura, que se pinta a mano con la brocha. */
 const ANCHOS = [0.02, 0.034, 0.052, 0.13];
 const COBERTURA = 3;
-/* Las figuras de mazapán: se ponen una por una, como stickers, y vienen con su color. */
+/* Las figuras de mazapán: se ponen una por una, como stickers; cada una trae su color y se puede cambiar. */
 const FIGURAS = [
-  { id: 'flor', n: 'Flor' }, { id: 'hoja', n: 'Hoja' }, { id: 'corazon', n: 'Corazón' },
-  { id: 'estrella', n: 'Estrella' }, { id: 'mono', n: 'Moño' }, { id: 'uvas', n: 'Uvas' },
+  { id: 'flor', n: 'Flor', color: 1 }, { id: 'hoja', n: 'Hoja', color: 5 }, { id: 'corazon', n: 'Corazón', color: 2 },
+  { id: 'estrella', n: 'Estrella', color: 6 }, { id: 'mono', n: 'Moño', color: 4 }, { id: 'uvas', n: 'Uvas', color: 3 },
 ];
 /* Las capas de baño: la guagua entera se cubre con uno de estos colores. El cero es sin capa. */
 const BANOS = [
@@ -498,7 +498,7 @@ function sano(d) {
     if (t === 5) return op.length === 7;
     if (t === 6) return op.length === 8 && CREMAS[op[1]] !== undefined;
     if (t === 7) return op.length >= 8 && (op.length - 2) % 6 === 0 && CREMAS[op[1]] !== undefined;
-    if (t === 9) return op.length === 9 && FIGURAS[op[1]] !== undefined && [0, 1, 2].includes(op[2]);
+    if (t === 9) return (op.length === 9 || (op.length === 10 && CREMAS[op[3]] !== undefined)) && FIGURAS[op[1]] !== undefined && [0, 1, 2].includes(op[2]);
     if (t === 8) return op.length >= 9 && (op.length - 3) % 6 === 0 && CREMAS[op[1]] !== undefined && ANCHOS[op[2]] !== undefined;
     return false;
   });

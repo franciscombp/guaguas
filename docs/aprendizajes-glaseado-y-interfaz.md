@@ -251,3 +251,18 @@ el morado casi no aparece en el glaseado (aparece en la colada).
 - La tarjeta de arriba cambia con cada elección («Amasé una guagua», «Te regalo una guagua»,
   «En memoria de…»), así se entiende qué se va a compartir antes de compartirlo.
 - La canasta (guardada y cada pieza) tiene un solo botón: Compartirla, que lleva al mismo lugar.
+
+## 11. Vidrio con contraste, bordes, flores de color y el mordisco
+
+- **Vidrio líquido que se lee sobre cualquier fondo**: tinte de noche (no blanco translúcido), un brillo
+  arriba (inset blanco), una sombra abajo y `blur + saturate` detrás. Los nombres de las herramientas
+  llevan sombra de texto. Lo elegido sigue en rosa.
+- **Arriba y abajo se funden**: los degradados que oscurecen detrás de la barra y de la bandeja van en
+  varios pasos y más altos; con uno corto se veía un corte sobre el plato.
+- **Las figuras eligen su color**: en la barra de la figura hay una gota que abre los colores
+  («Color de la figura»). El op 9 ahora lleva el color: `[9, figura, tamaño, color, x, y, z, n…]`;
+  las primeras, sin color, se ven con el suyo de siempre.
+- **El mordisco no es un hueco**: antes atravesaba el pan de lado a lado (un cilindro) y se veía el
+  fondo. Ahora saca un bocado redondo alrededor de donde se mordió. Lo de adentro se pinta como miga
+  maciza: color parejo con poros, de frente a la cámara, más a la sombra en lo hondo; y el borde
+  mordido se tuesta, como la corteza.

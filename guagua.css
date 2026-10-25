@@ -17,6 +17,12 @@
   --linea:rgba(255,255,255,.12);
   --vidrio:rgba(255,255,255,.1);
   --vidrio-borde:rgba(255,255,255,.16);
+  /* el vidrio líquido de los controles sobre el pan: tinte de noche para que el blanco lea
+     sobre cualquier fondo, un brillo arriba, una sombra abajo y el fondo saturado detrás */
+  --liquido:linear-gradient(180deg, rgba(58,36,92,.62), rgba(30,16,52,.72));
+  --liquido-borde:rgba(255,255,255,.24);
+  --liquido-sombra:inset 0 1px 0 rgba(255,255,255,.32), inset 0 -1px 0 rgba(0,0,0,.28), 0 8px 24px rgba(10,4,24,.4);
+  --liquido-filtro:blur(20px) saturate(1.8);
   --campo:rgba(255,255,255,.06);
   --campo-borde:rgba(255,255,255,.2);
   --crema:#fff6ea;
@@ -369,3 +375,18 @@ dialog.hoja--entera[open]{animation:none}
 .compartir__vista--chica{height:clamp(120px, 22dvh, 200px);border-radius:12px}
 .compartir__paso{flex:1;display:flex;flex-direction:column;gap:14px;min-height:0}
 .compartir__fin{margin-top:auto}
+
+/* ─── vidrio líquido en los controles del taller ─── */
+.juego .redondo:not(.redondo--pri),.juego .paso,.deshacer,.bandeja,.tool i,.contexto{
+  background:var(--liquido);border:1px solid var(--liquido-borde);box-shadow:var(--liquido-sombra);
+  -webkit-backdrop-filter:var(--liquido-filtro);backdrop-filter:var(--liquido-filtro)}
+.bandeja .redondo{background:rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+.tool{color:var(--crema);text-shadow:0 1px 3px rgba(10,4,24,.85)}
+.tool[aria-pressed="true"] i{background:var(--rosa);border-color:rgba(255,255,255,.5);color:var(--noche);box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 6px 18px rgba(255,79,154,.35)}
+.paso span,.paso__i{color:#d9cbe4}
+.deshacer button:disabled{color:#9a8aae}
+.contexto__gota{display:block;width:24px;height:24px;border-radius:50%;box-shadow:0 0 0 2px var(--superficie), 0 0 0 4px rgba(255,255,255,.5)}
+
+/* ─── los bordes de arriba y abajo: se funden con el mantel en vez de cortarlo ─── */
+.juego::before{height:190px;background:linear-gradient(180deg, rgba(27,16,51,.72) 0%, rgba(27,16,51,.5) 35%, rgba(27,16,51,.2) 70%, rgba(27,16,51,0) 100%)}
+.juego::after{height:min(42dvh, 360px);background:linear-gradient(180deg, rgba(27,16,51,0) 0%, rgba(27,16,51,.12) 25%, rgba(27,16,51,.38) 50%, rgba(27,16,51,.66) 75%, rgba(27,16,51,.86) 100%)}

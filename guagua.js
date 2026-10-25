@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.7';
+import * as nube from './nube.js?v=2026.10.25.8';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.7';
+} from './masa.js?v=2026.10.25.8';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -243,19 +243,36 @@ function comestible(mat, U, horno) {
         uniform mat3 uBoca;
         uniform float uCoccion;`)
       .replace('void main() {', `void main() {
+        float bocado = 99.0;                         // cuán cerca está del mordisco más cercano (1: en el borde)
         for (int i = 0; i < ${MAX_BOCADOS}; i++) {
           if (i >= uNBocados) break;
-          // el mordisco atraviesa todo el grosor del pan, de adelante atrás
-          vec2 d = (uBoca * (vMundo - uBocados[i].xyz)).xy;
+          // el mordisco saca un bocado redondo alrededor de donde se mordió, con la
+          // marca de los dientes en el borde; no atraviesa el pan de lado a lado
+          vec3 d3 = vMundo - uBocados[i].xyz;
+          vec2 d = (uBoca * d3).xy;
           float dientes = 1.0 + 0.08 * sin(16.0 * atan(d.y, d.x));
-          if (length(d) < uBocados[i].w * dientes) discard;
+          float r = length(d3) / (uBocados[i].w * dientes);
+          if (r < 1.0) discard;
+          bocado = min(bocado, r);
         }`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         ${horno ? `
         vec3 cruda = mix(min(diffuseColor.rgb * 1.6, vec3(1.0)), vec3(0.86, 0.76, 0.56), 0.5);
         diffuseColor.rgb = mix(cruda, diffuseColor.rgb, smoothstep(0.05, 1.0, uCoccion));
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.025, 0.012, 0.006), smoothstep(1.1, 1.55, uCoccion) * 0.92);` : ''}
-        if (!gl_FrontFacing) diffuseColor.rgb = vec3(0.93, 0.80, 0.56);`);
+        if (!gl_FrontFacing) {
+          // por dentro, miga: un color parejo con sus poros, como pan partido
+          float g = fract(sin(dot(floor(vMundo * 70.0), vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+          diffuseColor.rgb = vec3(0.95, 0.83, 0.6) * (0.86 + 0.14 * g);
+          // lo más hondo del bocado, más a la sombra: así se lee el hueco del mordisco
+          diffuseColor.rgb *= mix(1.0, 0.62, smoothstep(1.0, 2.6, bocado));
+        } else if (bocado < 1.07) {
+          // el borde mordido: la corteza se ve, más tostada
+          diffuseColor.rgb *= mix(0.55, 1.0, smoothstep(1.0, 1.07, bocado));
+        }`)
+      // y la miga se ve maciza: de frente a la cámara, sin el relieve de la corteza
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+        if (!gl_FrontFacing) normal = vec3(0.0, 0.0, 1.0);`);
   };
   mat.customProgramCacheKey = () => (horno ? 'comestible-horno' : 'comestible');
   return mat;
@@ -524,8 +541,8 @@ class Visor {
   }
   /* Las figuras se arman de frente, en el plano XY, con la z hacia afuera
      del pan; miden unos 0.2 de ancho, como una flor de mazapán de verdad. */
-  mazapan(id) {
-    const g = new THREE.Group(), cr = this.mat.cremas;
+  mazapan(id, color) {
+    const g = new THREE.Group(), cr = this.mat.cremas, c = cr[color] || cr[1];
     const bola = (x, y, z, sx, sy, sz, m) => {
       const e = new THREE.SphereGeometry(1, 16, 12); e.scale(sx, sy, sz);
       const o = this.malla(e, m); o.position.set(x, y, z); g.add(o); return o;
@@ -537,13 +554,13 @@ class Visor {
     if (id === 'flor') {
       for (let i = 0; i < 5; i++) {
         const a = i / 5 * Math.PI * 2;
-        bola(Math.cos(a) * 0.05, Math.sin(a) * 0.05, 0.012, 0.045, 0.032, 0.016, cr[1]).rotation.z = a;
+        bola(Math.cos(a) * 0.05, Math.sin(a) * 0.05, 0.012, 0.045, 0.032, 0.016, c).rotation.z = a;
       }
-      bola(0, 0, 0.022, 0.026, 0.026, 0.018, cr[6]);
+      bola(0, 0, 0.022, 0.026, 0.026, 0.018, color === 6 ? cr[0] : cr[6]);   // el centro, amarillo (o blanco si la flor es amarilla)
     } else if (id === 'hoja') {
       const f = new THREE.Shape();
       f.moveTo(0, -0.1); f.quadraticCurveTo(0.07, 0, 0, 0.1); f.quadraticCurveTo(-0.07, 0, 0, -0.1);
-      plana(f, cr[5]);
+      plana(f, c);
     } else if (id === 'corazon') {
       const f = new THREE.Shape();
       f.moveTo(0, -0.08);
@@ -551,7 +568,7 @@ class Visor {
       f.bezierCurveTo(-0.015, 0.07, 0, 0.045, 0, 0.03);
       f.bezierCurveTo(0, 0.045, 0.015, 0.07, 0.045, 0.07);
       f.bezierCurveTo(0.09, 0.07, 0.1, -0.02, 0, -0.08);
-      plana(f, cr[2]);
+      plana(f, c);
     } else if (id === 'estrella') {
       const f = new THREE.Shape();
       for (let i = 0; i < 10; i++) {
@@ -559,14 +576,14 @@ class Visor {
         if (i) f.lineTo(Math.cos(a) * r, Math.sin(a) * r); else f.moveTo(Math.cos(a) * r, Math.sin(a) * r);
       }
       f.closePath();
-      plana(f, cr[6]);
+      plana(f, c);
     } else if (id === 'mono') {
-      bola(-0.05, 0, 0.01, 0.05, 0.034, 0.016, cr[4]).rotation.z = 0.25;
-      bola(0.05, 0, 0.01, 0.05, 0.034, 0.016, cr[4]).rotation.z = -0.25;
-      bola(0, 0, 0.018, 0.02, 0.024, 0.018, cr[4]);
+      bola(-0.05, 0, 0.01, 0.05, 0.034, 0.016, c).rotation.z = 0.25;
+      bola(0.05, 0, 0.01, 0.05, 0.034, 0.016, c).rotation.z = -0.25;
+      bola(0, 0, 0.018, 0.02, 0.024, 0.018, c);
     } else if (id === 'uvas') {
       [[0, 0.05], [-0.028, 0.02], [0.028, 0.02], [-0.014, -0.01], [0.014, -0.01], [0, -0.04], [-0.04, -0.012], [0.04, -0.012]]
-        .forEach(([x, y]) => bola(x, y, 0.018, 0.024, 0.024, 0.02, cr[3]));
+        .forEach(([x, y]) => bola(x, y, 0.018, 0.024, 0.024, 0.02, c));
       const f = new THREE.Shape();
       f.moveTo(0, 0.07); f.quadraticCurveTo(0.05, 0.11, 0.07, 0.09); f.quadraticCurveTo(0.04, 0.07, 0, 0.07);
       plana(f, cr[5]);
@@ -584,7 +601,7 @@ class Visor {
      6 masa de colores [6, color, x, y, z, nx, ny, nz]
      7 glaseado plano [7, color, x, y, z, nx, ny, nz…]
      8 hilo o cobertura [8, color, grosor, x, y, z, nx, ny, nz…]
-     9 figura de mazapán [9, figura, tamaño, x, y, z, nx, ny, nz]  */
+     9 figura de mazapán [9, figura, tamaño, color, x, y, z, nx, ny, nz] (las primeras, sin color)  */
   construir(op) {
     const t = op[0];
     const pn = (i) => [V(op[i], op[i + 1], op[i + 2]).divideScalar(Q), V(op[i + 3], op[i + 4], op[i + 5]).normalize()];
@@ -676,8 +693,9 @@ class Visor {
       return this.malla(cinta(pts, nor, BOQUILLAS[BOQUILLA_LISA], 0.006), this.mat.cremas[op[1]]);
     }
     if (t === 9) {                                  // una figura de mazapán, apoyada sobre el pan
-      const [p, n] = pn(3);
-      const o = this.mazapan(FIGURAS[op[1]].id);
+      const nuevo = op.length === 10;              // las primeras no traían color: el suyo de siempre
+      const [p, n] = pn(nuevo ? 4 : 3);
+      const o = this.mazapan(FIGURAS[op[1]].id, nuevo ? op[3] : FIGURAS[op[1]].color);
       o.scale.setScalar([1.3, 1.8, 2.4][op[2]]);
       o.quaternion.setFromRotationMatrix(base(n).m);
       o.position.copy(p).addScaledVector(n, 0.006);
@@ -1710,7 +1728,7 @@ function tocarDecorar(ev) {
 let colocando = null;         // { tipo, figura, tam, hit, n }: n es cuántos trazos puso
 const nombreFigura = (f) => (f === 'pasa' ? 'la pasa' : 'la ' + FIGURAS[f].n.toLowerCase()).replace('la moño', 'el moño');
 function empezarColocar(tipo, figura) {
-  colocando = { tipo, figura, tam: 1, hit: null, n: 0 };
+  colocando = { tipo, figura, tam: 1, hit: null, n: 0, color: tipo === 'figura' && figura !== 'pasa' ? FIGURAS[figura].color : null };
   $('#intro').classList.add('oculta');
   pintarContexto();
 }
@@ -1718,7 +1736,7 @@ function opsDe(c, hit) {
   if (c.tipo === 'carita') return chapitas(hit, c.tam, caraPintada(hit, c.tam, taller), taller);
   if (c.tipo === 'mordisco') return [[3, ent(hit.p.x), ent(hit.p.y), ent(hit.p.z)]];
   if (c.figura === 'pasa') return [[5, ...pn(hit)]];
-  return [[9, c.figura, c.tam, ...pn(hit)]];
+  return [[9, c.figura, c.tam, c.color, ...pn(hit)]];
 }
 function quitarPuesta() {
   for (let i = 0; i < colocando.n; i++) { estado.o.pop(); taller.quitarUltimo(); }
@@ -1752,6 +1770,9 @@ function pintarContexto() {
   $('#contexto-tam').hidden = !puesta || c.tipo === 'mordisco' || c.figura === 'pasa';
   $$('#contexto-tam [data-ctam]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.ctam === c.tam)));
   $('#contexto-otra').hidden = !puesta || c.tipo !== 'figura';
+  // las figuras (no la pasa) eligen su color, como el texto en el Marcado
+  $('#contexto-color').hidden = !puesta || c.color == null;
+  if (c.color != null) $('#contexto-color i').style.background = CREMAS[c.color].c;
   $('#contexto-quitar').hidden = !puesta;
   $('#contexto-listo').textContent = puesta ? 'Listo' : 'Cancelar';
 }
@@ -1766,6 +1787,7 @@ function montarColocar() {
     colocando.tam = +b.dataset.ctam;
     if (colocando.hit) ponerEn(colocando.hit); else pintarContexto();
   }));
+  $('#contexto-color').addEventListener('click', () => abrirColor(true));
   $('#contexto-otra').addEventListener('click', () => { colocando.n = 0; colocando.hit = null; pintarContexto(); });
   $('#contexto-quitar').addEventListener('click', () => { quitarPuesta(); terminarColocar(); });
   $('#contexto-listo').addEventListener('click', terminarColocar);
@@ -1887,6 +1909,15 @@ function elegirHerramienta(h) {
   $$('.bandeja .manga').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.herramienta === h)));
   $('#grosor-fila').hidden = h !== 'manga';
 }
+let colorDeFigura = false;
+function abrirColor(deFigura) {
+  colorDeFigura = deFigura && !!colocando;
+  const actual = colorDeFigura ? colocando.color : estado.crema;
+  $('#d-color-t').textContent = colorDeFigura ? 'Color de la figura' : 'Color del glaseado';
+  $('#grosor-fila').hidden = colorDeFigura || estado.herramienta !== 'manga';
+  $$('#cremas .color').forEach((x, j) => x.setAttribute('aria-pressed', String(j === actual)));
+  abrir('#d-color');
+}
 function pintarAro() {
   $('#aro-color').style.background = CREMAS[estado.crema].c;
   $('.bandeja').style.setProperty('--manga', CREMAS[estado.crema].c);   // las mangas llevan el glaseado elegido
@@ -1928,13 +1959,19 @@ function montarTaller() {
     b.innerHTML = '<i aria-hidden="true"></i>';
     b.append(cr.n);
     b.addEventListener('click', () => {
-      estado.crema = i;
       $$('.color', cremas).forEach((x, j) => x.setAttribute('aria-pressed', String(j === i)));
+      if (colorDeFigura && colocando) {           // pinta la figura que se está poniendo
+        colocando.color = i;
+        if (colocando.hit) ponerEn(colocando.hit); else pintarContexto();
+        $('#d-color').close();
+        return;
+      }
+      estado.crema = i;
       pintarAro();
     });
     cremas.appendChild(b);
   });
-  $('#abrir-color').addEventListener('click', () => abrir('#d-color'));
+  $('#abrir-color').addEventListener('click', () => abrirColor(false));
   $('#abrir-mas').addEventListener('click', () => abrir('#d-mas'));
   $('#abrir-moldes').addEventListener('click', () => abrir('#d-moldes'));
   $$('[data-molde]').forEach((b) => b.addEventListener('click', () => {
