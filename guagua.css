@@ -98,6 +98,20 @@ body.juego-cuerpo{margin:0;background:var(--mantel-1);color:var(--mal-on-surface
 .redondo:disabled{opacity:.4;cursor:default}
 .redondo__cuenta{position:absolute;top:-3px;right:-3px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;
   background:var(--mal-primary);color:#fff;font:800 11px/19px var(--mal-texto);font-style:normal}
+/* la cuenta en la barra: sin sesión, un botón de acción; con sesión, tu nombre con un punto verde */
+.cuenta-pill{display:inline-flex;align-items:center;gap:7px;height:var(--toque-2);max-width:11rem;padding:0 14px;flex:none;
+  border-radius:999px;border:1px solid var(--vidrio-borde);background:var(--mal-primary);color:#fff;
+  font:700 13px/1 var(--mal-texto);cursor:pointer;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.cuenta-pill[hidden]{display:none}
+.cuenta-pill__punto{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.7);flex:none}
+.cuenta-pill__texto{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cuenta-pill--dentro{background:var(--vidrio-juego);color:var(--texto-1)}
+.cuenta-pill--dentro .cuenta-pill__punto{background:#4ade80;box-shadow:0 0 0 3px rgba(74,222,128,.25)}
+@media (max-width:520px){
+  .cuenta-pill{max-width:none;padding:0 12px}
+  .cuenta-pill--dentro{width:var(--toque-2);padding:0;justify-content:center}
+  .cuenta-pill--dentro .cuenta-pill__texto{display:none}
+}
 
 /* ─── la barra de arriba ──────────────────────────────────── */
 .barra{

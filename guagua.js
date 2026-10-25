@@ -1952,6 +1952,7 @@ function montarRegalo() {
   // lo que pasa después de compartir no hace esperar a la hoja de compartir
   const despues = (pr) => { guardarMia(pr.id).catch(() => {}); };
   $('#r-entrar').addEventListener('click', () => abrirCuenta());
+  $('#abrir-cuenta').addEventListener('click', () => abrirCuenta());
   $('#r-compartir').addEventListener('click', () => {
     const pr = preparado;
     if (!pr) return;
@@ -2265,8 +2266,20 @@ function abrirCuenta() {
   $('#c-error').textContent = '';
   window.malDS.abrir('#d-cuenta');
 }
+/* La píldora de la barra: sin sesión, «Entrar»; con sesión, tu nombre. */
+function pintarCuentaBarra() {
+  const u = nube.actual();
+  const pastilla = $('#abrir-cuenta');
+  const rotulo = u ? (u.nombre || u.correo.split('@')[0]) : 'Entrar';
+  pastilla.hidden = !nube.disponible();
+  pastilla.classList.toggle('cuenta-pill--dentro', !!u);
+  $('#cuenta-rotulo').textContent = rotulo;
+  pastilla.setAttribute('aria-label', u ? `Tu cuenta: ${u.nombre || u.correo}` : 'Entrar con tu cuenta');
+  pastilla.title = pastilla.getAttribute('aria-label');
+}
 function pintarCuentaEnVitrina() {
   const u = nube.actual();
+  pintarCuentaBarra();
   $('#v-cuenta').hidden = !nube.disponible();
   $('#v-cuenta-texto').textContent = u
     ? `Tu vitrina se guarda en tu cuenta (${u.nombre || u.correo}).`
