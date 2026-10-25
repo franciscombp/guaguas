@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.12';
+import * as nube from './nube.js?v=2026.10.25.13';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.12';
+} from './masa.js?v=2026.10.25.13';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1170,6 +1170,72 @@ function vela3d() {
   g.userData.boca = V(0, 1.6, 0);          // aquí brilla la llama
   return g;
 }
+/* La canasta de mimbre, como las de juguete: tiras redondeadas que pasan por
+   delante y por detrás de las varas, un borde de soga trenzada y un asa torcida.
+   Se arma a medida: `R` es el radio de la boca y `alto` la altura del cesto; el asa
+   sube `asa` por encima del borde y va un poco atrás, para no atravesar lo de adentro. */
+function canasta3d(R, alto, asa) {
+  const g = new THREE.Group();
+  const mimbre = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.72 });
+  const tono = ['#d39456', '#c98a4b', '#d79b5d', '#c2834a'].map(mimbre);
+  const oscuro = mimbre('#9a5f2f'), soga = mimbre('#c07c42');
+  const rb = R * 0.74;                                   // el fondo es más angosto que la boca
+  const radio = (t) => rb + (R - rb) * Math.pow(t, 0.75) + Math.sin(t * Math.PI) * R * 0.03;
+  const N = 16, gruesa = R * 0.04, filas = Math.max(4, Math.round(alto / (gruesa * 2.9)));
+  // las varas
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * Math.PI * 2, pts = [];
+    for (let k = 0; k <= 6; k++) { const t = k / 6, r = radio(t); pts.push(V(Math.cos(a) * r, t * alto, Math.sin(a) * r)); }
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 12, gruesa * 0.7, 8), oscuro));
+  }
+  // las tiras: cada tramo entre dos varas va por fuera o por dentro, alternando
+  for (let f = 0; f < filas; f++) {
+    const t = (f + 0.6) / (filas + 0.3), y = t * alto, r = radio(t);
+    for (let i = 0; i < N; i++) {
+      const fuera = (i + f) % 2 ? gruesa * 1.1 : -gruesa * 0.5, pts = [];   // por fuera o por dentro de la vara
+      for (let k = 0; k <= 6; k++) {
+        const a = ((i + k / 6) / N) * Math.PI * 2, rr = r + fuera * Math.sin((k / 6) * Math.PI) + gruesa * 0.15;
+        pts.push(V(Math.cos(a) * rr, y, Math.sin(a) * rr));
+      }
+      const tira = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 10, gruesa, 8), tono[(f + i * 3) % tono.length]);
+      tira.scale.y = 1.25;
+      tira.position.y = y * (1 - 1.25);                 // la tira se aplana hacia los lados, no se corre
+      g.add(tira);
+    }
+  }
+  // la soga: dos hebras torcidas alrededor de un círculo (el borde, y abajo el pie)
+  const trenza = (rc, y, grosor, vueltas) => {
+    [0, Math.PI].forEach((fase) => {
+      const pts = [];
+      for (let k = 0; k <= 360; k++) {
+        const th = (k / 360) * Math.PI * 2, q = th * vueltas + fase;
+        const rr = rc + Math.cos(q) * grosor * 0.7;
+        pts.push(V(Math.cos(th) * rr, y + Math.sin(q) * grosor * 0.7, Math.sin(th) * rr));
+      }
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 720, grosor, 8, true), soga));
+    });
+  };
+  trenza(radio(1) + gruesa * 0.4, alto + gruesa * 0.6, gruesa * 1.1, 70);
+  trenza(rb + gruesa * 0.3, gruesa * 0.8, gruesa * 0.9, 60);
+  const fondo = new THREE.Mesh(new THREE.CylinderGeometry(rb, rb, gruesa, 48), oscuro);
+  fondo.position.y = gruesa * 0.5;
+  g.add(fondo);
+  // el asa, torcida, un poco atrás
+  const z = -R * 0.35, x = Math.sqrt(R * R - z * z) * 0.97;
+  const camino = new THREE.CubicBezierCurve3(V(-x, alto, z), V(-x * 1.05, alto + asa * 1.3, z), V(x * 1.05, alto + asa * 1.3, z), V(x, alto, z));
+  [0, Math.PI].forEach((fase) => {
+    const pts = [];
+    for (let k = 0; k <= 160; k++) {
+      const t = k / 160, p = camino.getPoint(t), tg = camino.getTangent(t);
+      const lado = V().crossVectors(tg, V(0, 0, 1)).normalize(), q = t * 26 + fase;
+      p.addScaledVector(lado, Math.cos(q) * gruesa * 0.8).add(V(0, 0, Math.sin(q) * gruesa * 0.8));
+      pts.push(p);
+    }
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 320, gruesa * 1.1, 8), mimbre('#a8693a')));
+  });
+  g.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  return g;
+}
 let bodega = null;
 /* Las piezas del bodegón se renderizan por separado y sin plato, cada una
    recortada a lo que tiene: así la tarjeta las acomoda como mejor queden. */
@@ -1217,6 +1283,55 @@ function retrato(e, lado = 1400) {
   encuadrarBodegon(b, b.figura, b.cabeceo);
   b.renderer.render(b.scene, b.camara);
   return recortado(b, lado).img;
+}
+/* La tarjeta en 3D: la guagua parada dentro de la canasta, la colada morada (o la
+   velita) a su lado y unas flores de mazapán asomando. Todo en la misma escena, así
+   el tejido tapa de verdad lo que va adentro y las sombras caen donde deben. Devuelve
+   la imagen recortada y dónde queda la boca de la taza (para el vapor o el brillo). */
+function enCanasta(e, memoria, lado = 1600) {
+  const b = estudioBodegon(lado);
+  Object.assign(b, posturaDe(e));
+  b.cabeceo = echada(e) ? 0.8 : 0.22;
+  b.cargar(e);
+  b.ubicar();
+  b.figura.updateMatrixWorld(true);
+  const caja = new THREE.Box3().setFromObject(b.pan);
+  const H = caja.max.y - caja.min.y, A = Math.max(caja.max.x - caja.min.x, caja.max.z - caja.min.z);
+  const R = Math.max(A * 0.62, H * 0.5), alto = H * (echada(e) ? 0.55 : 0.36);
+  if (b.canasta) { b.scene.remove(b.canasta); b.vaciar(b.canasta); }
+  b.canasta = canasta3d(R, alto, H - alto + R * 0.25);
+  // la guagua adentro, un poco a la izquierda; la canasta con el fondo bajo sus pies
+  const cx = (caja.min.x + caja.max.x) / 2, cz = (caja.min.z + caja.max.z) / 2;
+  b.canasta.position.set(cx + R * 0.22, caja.min.y - R * 0.05, cz);
+  b.scene.add(b.canasta);
+  const cosa = memoria ? b.vela : b.taza;
+  cosa.visible = true;
+  const k = alto * (memoria ? 1.5 : 1.15) / (memoria ? 1.65 : 1.2);
+  cosa.scale.setScalar(k);
+  cosa.rotation.y = memoria ? 0 : Math.PI * 0.62;          // el asa de la taza, hacia atrás
+  cosa.position.set(cx + R * 0.66, caja.min.y + R * 0.04, cz + R * 0.1);
+  // flores de mazapán asomando atrás, a la izquierda
+  const flores = new THREE.Group();
+  [[0.42, -0.42, 1.55, 6], [0.66, -0.3, 1.32, 1], [0.2, -0.5, 1.4, memoria ? 6 : 0]].forEach(([fx, fz, fy, c]) => {
+    const fl = b.mazapan('flor', memoria ? 6 : c);
+    fl.scale.setScalar(R * 1.5);
+    fl.position.set(cx + R * 0.22 + fx * R, caja.min.y + alto * fy, cz - R * 0.3 + fz * R);
+    fl.lookAt(fl.position.clone().add(V(-0.3, 0.4, 1)));
+    flores.add(fl);
+  });
+  b.canasta.add(flores); flores.position.sub(b.canasta.position);
+  const marco = new THREE.Box3().setFromObject(b.canasta).union(new THREE.Box3().setFromObject(b.pan)).union(new THREE.Box3().setFromObject(cosa));
+  const centro = marco.getCenter(V()), r = marco.getSize(V()).length() / 2;
+  const d = r / Math.sin(THREE.MathUtils.degToRad(b.camara.fov / 2)) * 0.98;
+  b.camara.position.set(centro.x, centro.y + Math.sin(0.28) * d, centro.z + Math.cos(0.28) * d);
+  b.camara.lookAt(centro);
+  b.renderer.render(b.scene, b.camara);
+  const boca = cosa.localToWorld(cosa.userData.boca.clone()).project(b.camara);
+  const { img, r: rec } = recortado(b, lado);
+  // la bodega queda como estaba: sin canasta, la taza y la vela en su lugar
+  b.scene.remove(b.canasta);
+  cosa.visible = false; cosa.scale.setScalar(1); cosa.position.set(0, -0.12, 0);
+  return { img, boca: { x: (boca.x + 1) / 2 * lado - rec.x, y: (1 - boca.y) / 2 * lado - rec.y } };
 }
 /* La taza de colada o la velita, solas, y dónde queda su boca en la imagen. */
 function adorno(memoria, lado = 900) {
@@ -1368,96 +1483,27 @@ async function tarjeta(e, formato = 'historia') {
     : e.p || e.aAlguien ? ['Te regalo', que] : ['Amasé', que];   // aAlguien: la vista previa, antes de escribir el nombre
   titulo.forEach((t, i) => ctx.fillText(t, W / 2, F.titulo[i], W - 80));
 
-  /* La canasta: la guagua va adentro, con la colada morada (o la velita, si es en
-     memoria) y unas flores secas. El asa, las flores y el fondo van detrás de la
-     guagua; el tejido, delante, tapándole los pies. */
-  const sombra = (x, y, rx, ry, a) => {
-    const g = ctx.createRadialGradient(x, y, 0, x, y, rx);
-    g.addColorStop(0, `rgba(0,0,0,${a})`); g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.save(); ctx.translate(x, y); ctx.scale(1, ry / rx); ctx.translate(-x, -y);
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rx, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-  };
+  // la escena: la guagua en su canasta, en 3D, grande y al centro
   const cuadrada = formato === 'cuadrada';
-  const bw = W * (cuadrada ? 0.66 : 0.8), bh = (e1 - e0) * (cuadrada ? 0.32 : 0.28);
-  const bx = W / 2 - bw / 2, borde = e1 - bh, fondoX = bw * 0.1;
-  sombra(W / 2, e1 + 8, bw * 0.56, bw * 0.08, 0.55);
-  // el asa, detrás de todo
-  ctx.lineCap = 'round';
-  const asa = () => { ctx.beginPath(); ctx.moveTo(bx + bw * 0.14, borde + 6); ctx.bezierCurveTo(bx + bw * 0.12, e0 - 40, bx + bw * 0.88, e0 - 40, bx + bw * 0.86, borde + 6); };
-  ctx.strokeStyle = '#a8763a'; ctx.lineWidth = cuadrada ? 22 : 28; asa(); ctx.stroke();
-  ctx.strokeStyle = '#e3bd6e'; ctx.lineWidth = cuadrada ? 7 : 9; ctx.setLineDash([6, 16]); asa(); ctx.stroke(); ctx.setLineDash([]);
-  // lo hondo de la canasta
-  ctx.fillStyle = '#4a2a14';
-  ctx.beginPath(); ctx.ellipse(W / 2, borde + 4, bw / 2 - 6, bh * 0.16, 0, 0, Math.PI * 2); ctx.fill();
-  // flores secas asomando por la izquierda (en memoria, de cempasúchil)
-  const flor = memoria ? ['#ffb23f', '#e9761c'] : ['#f6dcc0', '#e8a25a'];
-  [[0.22, 0.42, -0.5], [0.3, 0.55, -0.15], [0.16, 0.3, -0.8]].forEach(([fx, alto, inc], i) => {
-    const x0 = bx + bw * fx, y0 = borde + 10, x1 = x0 + Math.sin(inc) * bh * 1.2, y1 = borde - (e1 - e0) * alto;
-    ctx.strokeStyle = '#8a6a34'; ctx.lineWidth = 5;
-    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(x0, (y0 + y1) / 2, x1, y1); ctx.stroke();
-    const r = (cuadrada ? 20 : 26) - i * 3;
-    ctx.fillStyle = flor[0];
-    for (let k = 0; k < 8; k++) {
-      const q = (k / 8) * Math.PI * 2;
-      ctx.beginPath(); ctx.ellipse(x1 + Math.cos(q) * r * 0.7, y1 + Math.sin(q) * r * 0.7, r * 0.55, r * 0.32, q, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.fillStyle = flor[1]; ctx.beginPath(); ctx.arc(x1, y1, r * 0.38, 0, Math.PI * 2); ctx.fill();
-  });
-  // la guagua, adentro: los pies quedan bajo el borde
-  const g3 = retrato(e);
-  const altoG = (e1 - e0) * (echada(e) ? 0.6 : 0.86), anchoG = bw * 0.6;
-  const kg = Math.min(anchoG / g3.width, altoG / g3.height);
-  const gw = g3.width * kg, gh = g3.height * kg;
-  const gx = W / 2 - gw / 2 - bw * 0.1, gy = borde + gh * (echada(e) ? 0.3 : 0.22) - gh;
-  ctx.drawImage(g3, gx, gy, gw, gh);
-  // la colada morada (o la velita), adentro, a la derecha
-  const { img: a3, boca } = adorno(memoria);
-  const ka = bh * (memoria ? 1.7 : 1.05) / a3.height;
-  const aw = a3.width * ka, ah = a3.height * ka;
-  const ax = bx + bw * 0.97 - aw, ay = borde + ah * 0.3 - ah;
-  ctx.drawImage(a3, ax, ay, aw, ah);
-  const px = ax + boca.x * ka, py = ay + boca.y * ka;
+  const { img: esc, boca } = enCanasta(e, memoria);
+  const altoE = e1 - e0 + (cuadrada ? 20 : 40), anchoE = W * (cuadrada ? 0.7 : 0.86);
+  const ke = Math.min(anchoE / esc.width, altoE / esc.height);
+  const ew = esc.width * ke, eh = esc.height * ke, ex = W / 2 - ew / 2, ey = e1 - eh + (cuadrada ? 10 : 30);
+  ctx.drawImage(esc, ex, ey, ew, eh);
+  const px = ex + boca.x * ke, py = ey + boca.y * ke;
   if (memoria) {
-    const brillo = ctx.createRadialGradient(px, py, 4, px, py, 190);
-    brillo.addColorStop(0, 'rgba(255,190,80,.55)'); brillo.addColorStop(1, 'rgba(255,190,80,0)');
-    ctx.fillStyle = brillo; ctx.beginPath(); ctx.arc(px, py, 190, 0, Math.PI * 2); ctx.fill();
+    const brillo = ctx.createRadialGradient(px, py, 4, px, py, 170);
+    brillo.addColorStop(0, 'rgba(255,190,80,.5)'); brillo.addColorStop(1, 'rgba(255,190,80,0)');
+    ctx.fillStyle = brillo; ctx.beginPath(); ctx.arc(px, py, 170, 0, Math.PI * 2); ctx.fill();
   } else {
     // el vapor de la colada
-    ctx.strokeStyle = 'rgba(255,255,255,.42)'; ctx.lineWidth = 5; ctx.lineCap = 'round';
-    [-24, 0, 24].forEach((dx, i) => {
-      const x = px + dx, y = py - 10;
+    ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+    [-20, 0, 20].forEach((dx, i) => {
+      const x = px + dx, y = py - 8;
       ctx.beginPath(); ctx.moveTo(x, y);
-      ctx.bezierCurveTo(x + 18, y - 30, x - 18, y - 60 - i * 8, x, y - 95 - i * 10); ctx.stroke();
+      ctx.bezierCurveTo(x + 16, y - 26, x - 16, y - 52 - i * 8, x, y - 84 - i * 10); ctx.stroke();
     });
   }
-  // el tejido, delante: un cesto de mimbre con su borde trenzado
-  const cuerpo = () => {
-    ctx.beginPath();
-    ctx.moveTo(bx, borde);
-    ctx.lineTo(bx + bw, borde);
-    ctx.lineTo(bx + bw - fondoX, e1 - 18);
-    ctx.quadraticCurveTo(bx + bw - fondoX, e1, bx + bw - fondoX - 30, e1);
-    ctx.lineTo(bx + fondoX + 30, e1);
-    ctx.quadraticCurveTo(bx + fondoX, e1, bx + fondoX, e1 - 18);
-    ctx.closePath();
-  };
-  const mimbre = ctx.createLinearGradient(0, borde, 0, e1);
-  mimbre.addColorStop(0, '#d9a066'); mimbre.addColorStop(1, '#8f5528');
-  ctx.fillStyle = mimbre; cuerpo(); ctx.fill();
-  ctx.save(); cuerpo(); ctx.clip();
-  ctx.strokeStyle = 'rgba(110,62,26,.75)'; ctx.lineWidth = cuadrada ? 4 : 5;
-  const fila = bh / 7, paso = cuadrada ? 30 : 38;
-  for (let y = borde + fila, f = 0; y < e1; y += fila, f++) {
-    for (let x = bx - paso + (f % 2) * paso / 2; x < bx + bw + paso; x += paso) {
-      ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + paso / 2, y - fila * 0.7, x + paso, y); ctx.stroke();
-    }
-  }
-  ctx.restore();
-  const rh = bh * 0.16;
-  ctx.fillStyle = '#c4874d';
-  ctx.beginPath(); ctx.roundRect(bx - 12, borde - rh / 2, bw + 24, rh, rh / 2); ctx.fill();
-  ctx.strokeStyle = '#ecbd86'; ctx.lineWidth = 4; ctx.setLineDash([16, 10]);
-  ctx.beginPath(); ctx.moveTo(bx + 6, borde); ctx.lineTo(bx + bw - 6, borde); ctx.stroke(); ctx.setLineDash([]);
   if (!memoria && VALES[e.l]) {
     ctx.save();
     if (formato === 'cuadrada') { ctx.translate(W - 175, e0 + 75); ctx.scale(0.8, 0.8); } else ctx.translate(W - 190, e0 + 40);
@@ -1486,7 +1532,13 @@ async function tarjeta(e, formato = 'historia') {
     envolver(ctx, e.m, W / 2, quien ? F.msg : F.quien, W - 180, 42, F.lineas + (quien ? 0 : 1));
   }
   ctx.font = '600 24px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,201,60,.9)';
-  ctx.fillText((memoria ? '¿A quién recuerdas tú? Dedica la tuya en ' : 'Amasa y decora la tuya en ') + DIRECCION, W / 2, F.pie, W - 80);
+  // la invitación de abajo: lo que hace que quien la ve quiera hacer la suya
+  const pie = memoria ? '¿A quién recuerdas tú? Dedica la tuya en ' : e.p ? 'Ábrela, cómetela y regala otra en ' : '¿Te animas? Amasa la tuya gratis en ';
+  ctx.fillText(pie + DIRECCION, W / 2, F.pie, W - 80);
+  if (!cuadrada) {
+    ctx.font = '700 22px Inter, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.55)';
+    ctx.fillText('#GuaguaDePan · #Finados', W / 2, F.pie + 38, W - 80);
+  }
   return c;
 }
 const aBlob = (c) => new Promise((ok) => c.toBlob(ok, 'image/png'));
@@ -2357,15 +2409,16 @@ function enlaceCorto(pr) {
     } catch (e) { /* se queda el enlace largo */ }
   }, 1200);
 }
+/* El texto que acompaña al enlace: corto, con algo que dé ganas de abrirlo y de hacer la propia. */
 const textoRegalo = (e = estado) => {
-  const que = queEs(e) + ' de pan';
+  const que = queEs(e) + ' de pan', nombre = e.n ? ` y le puse «${e.n}»` : '';
   if (enMemoria(e)) {
-    return `Amasé ${que} en memoria de ${e.p}. En Finados también se recuerda. ¿A quién recuerdas tú? Dedica la tuya:`;
+    return `🕯️ Amasé ${que} en memoria de ${e.p}. En Finados también se recuerda con pan y colada morada. ¿A quién recuerdas tú? Dedica la tuya:`;
   }
-  if (!e.p) return `Amasé ${que}${e.n ? ', ' + e.n + ',' : ''} por el Día de Difuntos. Amasa la tuya:`;
-  const quien = e.d ? e.d + ' te regaló' : 'Te regalaron';
+  if (!e.p) return `🍞 Amasé ${que}${nombre}. Este Finados, ¿te animas a hacer la tuya? Es gratis y se regala por WhatsApp:`;
+  const quien = e.d ? `${e.d} te mandó` : 'Te mandaron';
   const vale = VALES[e.l] ? ' ' + VALES[e.l].texto : '';
-  return `${quien} ${que}${e.n ? ' que se llama ' + e.n : ''} por el Día de Difuntos.${vale} Ábrela aquí:`;
+  return `🧺 ${e.p}, ${quien.charAt(0).toLowerCase() + quien.slice(1)} ${que}${e.n ? ' que se llama ' + e.n : ''} en una canasta por el Día de Difuntos.${vale} Ábrela antes de que se enfríe la colada:`;
 };
 /* Copiar responde en el mismo botón («¡Copiado!») y con el toast. */
 async function copiar(texto, boton) {

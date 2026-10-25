@@ -290,3 +290,17 @@ el morado casi no aparece en el glaseado (aparece en la colada).
 - **La tarjeta es la canasta**: la guagua adentro con la colada morada humeando y flores secas; en
   memoria, la velita y flores de cempasúchil. El asa y las flores van detrás; el tejido, delante,
   tapándole los pies. El vale sigue sellado en la esquina.
+
+## 14. La canasta en 3D y los textos para compartir
+
+- **La tarjeta es una sola escena 3D**: la guagua parada dentro de la canasta, la colada morada (o la
+  velita) a su lado y flores de mazapán asomando. Así el tejido tapa de verdad lo que va adentro y las
+  sombras caen en su lugar; pegar recortes 2D nunca se ve igual.
+- **La canasta se arma a medida de la guagua** (`canasta3d(R, alto, asa)`): varas verticales, tiras
+  redondeadas que pasan por fuera y por dentro alternando (eso es lo que hace que se lea como tejido),
+  un borde y un pie de soga trenzada (dos hebras en hélice) y un asa torcida, corrida hacia atrás para
+  no atravesar a la guagua. La taza va con el asa hacia atrás para que no salga por el costado.
+- **Textos que invitan a hacer la propia**: abajo de la tarjeta, una invitación según el camino
+  («¿Te animas? Amasa la tuya gratis…», «Ábrela, cómetela y regala otra…», «¿A quién recuerdas tú?…»)
+  y los hashtags #GuaguaDePan · #Finados. El mensaje que acompaña al enlace lleva el nombre de quien la
+  recibe, un emoji y una razón para abrirla ya («antes de que se enfríe la colada»).
