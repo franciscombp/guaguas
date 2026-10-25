@@ -57,8 +57,8 @@
 }
 </script>
 <link rel="stylesheet" href="vendor/ds/mal/mal.css?v=1.0.18">
-<meta name="guagua-version" content="2026.10.25.19">
-<link rel="stylesheet" href="guagua.css?v=2026.10.25.19">
+<meta name="guagua-version" content="2026.10.25.20">
+<link rel="stylesheet" href="guagua.css?v=2026.10.25.20">
 </head>
 <body class="juego-cuerpo">
 <svg width="0" height="0" class="sr-only" aria-hidden="true" focusable="false">
@@ -316,7 +316,10 @@
     <span class="barra__hueco" aria-hidden="true"></span>
   </div>
   <div class="compartir">
-    <img class="compartir__vista" id="c-vista" alt="La tarjeta que vas a compartir" width="1080" height="1920">
+    <div class="compartir__vistaw">
+      <img class="compartir__vista" id="c-vista" alt="La tarjeta que vas a compartir" width="1080" height="1920">
+      <button class="compartir__formato" id="c-formato" type="button" data-formato="cuadrada" aria-label="Cambiar a cuadrado"><svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="7" width="10" height="10" rx="2"/><rect x="15" y="3" width="6" height="18" rx="1.5"/></g></svg></button>
+    </div>
 
     <!-- 1 · cómo y en qué formato -->
     <section class="compartir__paso" data-paso="como" aria-labelledby="d-compartir-t">
@@ -325,10 +328,6 @@
         <button class="radio" type="button" role="radio" data-como="presume" aria-checked="true"><span><b>Presúmela</b><span>en tus historias o tu perfil</span></span><i aria-hidden="true"></i></button>
         <button class="radio" type="button" role="radio" data-como="alguien" aria-checked="false"><span><b>Envíasela a alguien</b><span>para compartir una colada de verdad</span></span><i aria-hidden="true"></i></button>
         <button class="radio" type="button" role="radio" data-como="memoria" aria-checked="false"><span><b>En memoria de alguien</b><span>para recordar a quien ya no está</span></span><i aria-hidden="true"></i></button>
-      </div>
-      <div class="segmento compartir__formato" role="group" aria-label="Formato de la tarjeta">
-        <button type="button" data-formato="historia" aria-pressed="true">Historia</button>
-        <button type="button" data-formato="cuadrada" aria-pressed="false">Cuadrado</button>
       </div>
       <div class="pila compartir__fin">
         <button class="b b--pri" id="c-seguir" type="button">Siguiente</button>
@@ -442,6 +441,6 @@
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js": "./vendor/firebase/firebase-auth.js",
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js": "./vendor/firebase/firebase-firestore-lite.js"
 } }</script>
-<script type="module" src="guagua.js?v=2026.10.25.19"></script>
+<script type="module" src="guagua.js?v=2026.10.25.20"></script>
 </body>
 </html>

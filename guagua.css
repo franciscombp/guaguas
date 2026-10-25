@@ -380,8 +380,12 @@ dialog.hoja--entera[open]{animation:none}
 /* en cuadrado la vista previa es cuadrada y un poco más chica, para que quepa igual */
 .compartir__vista--cuadrada{aspect-ratio:1/1;height:clamp(170px, 30dvh, 300px)}
 .compartir__vista--cuadrada.compartir__vista--chica{height:clamp(120px, 20dvh, 190px)}
-.compartir__formato{align-self:center}
-.compartir__formato button{flex:none;min-width:120px}
+/* la vista previa con su botoncito para cambiar el formato, al lado y discreto */
+.compartir__vistaw{position:relative;align-self:center;display:flex;align-items:flex-end;gap:8px;flex:none;margin-right:-44px}
+.compartir__formato{width:36px;height:36px;padding:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+  border:1px solid var(--linea);background:rgba(255,255,255,.08);color:var(--texto-2)}
+.compartir__formato .icono{width:18px;height:18px}
+.con-teclado .compartir__vistaw{display:none}
 .compartir__paso{flex:1;display:flex;flex-direction:column;gap:14px;min-height:0}
 .compartir__fin{margin-top:auto}
 

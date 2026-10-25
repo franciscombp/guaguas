@@ -343,3 +343,7 @@ el morado casi no aparece en el glaseado (aparece en la colada).
 - **Lo de abajo tiene que leerse en un teléfono**: la tarjeta se ve a un tercio de su tamaño. Cierre en
   30–38 px (en memoria 26–32, más discreto pero legible), firma 34–42, «Para · De» 42–52, mensaje 36–44,
   insignia 28–34. Nada de texto de pie por debajo de ~26 px.
+- **El formato va solo**: vertical para presumir y recordar, cuadrado para regalar (va por chat). En vez
+  de un selector, un botoncito discreto junto a la vista previa lo cambia.
+- **Flores al pie de la canasta**: además de las que asoman atrás, flores y hojas de mazapán sobre la
+  mesa a los dos lados, mirando hacia arriba; en memoria, amarillas y blancas.

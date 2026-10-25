@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.19';
+import * as nube from './nube.js?v=2026.10.25.20';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.19';
+} from './masa.js?v=2026.10.25.20';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1323,6 +1323,19 @@ function enCanasta(e, memoria, lado = 1600) {
     fl.lookAt(fl.position.clone().add(V(-0.3, 0.4, 1)));
     flores.add(fl);
   });
+  // y al pie de la canasta, a los dos lados: flores y hojas sobre la mesa, mirando hacia arriba
+  const suelo = caja.min.y - R * 0.05 + R * 0.03;
+  const colores = memoria ? [6, 0, 6, 0, 6] : [1, 6, 0, 2, 3];
+  [[-1.12, 0.38, 'flor', 0, 1.6], [-0.92, 0.78, 'flor', 1, 1.25], [-1.32, 0.02, 'hoja', 5, 1.5], [-0.7, 1.02, 'flor', 2, 1.05],
+    [1.1, 0.46, 'flor', 3, 1.55], [1.3, 0.08, 'flor', 4, 1.25], [0.92, 0.86, 'hoja', 5, 1.35], [0.66, 1.06, 'flor', 0, 1.0]]
+    .forEach(([fx, fz, id, k, esc], i) => {
+      const fl = b.mazapan(id, id === 'hoja' ? 5 : colores[k]);
+      fl.scale.setScalar(R * esc);
+      fl.position.set(medio + fx * R, suelo, cz + fz * R);
+      fl.lookAt(fl.position.clone().add(V(fx * 0.25, 1, 0.55)));
+      fl.rotateZ(i * 1.3);                             // cada una girada a su modo
+      flores.add(fl);
+    });
   b.canasta.add(flores); flores.position.sub(b.canasta.position);
   const marco = new THREE.Box3().setFromObject(b.canasta).union(new THREE.Box3().setFromObject(b.pan)).union(new THREE.Box3().setFromObject(cosa));
   const centro = marco.getCenter(V()), r = marco.getSize(V()).length() / 2;
@@ -2449,12 +2462,14 @@ async function enlaceDeRegalo(cod) {
 /* ─── compartir ────────────────────────────────────────────
    ✓ guarda; Compartir es todo lo demás. Se le pone nombre y se elige cómo y en
    qué formato; cada camino pide solo lo suyo y la tarjeta cambia en vivo:
-   · presúmela: tu creación, en historia por defecto; se comparte desde el primer paso
+   El formato va solo: vertical para presumir y recordar, cuadrado para regalar (va
+   por chat); un botoncito junto a la vista previa lo cambia.
+   · presúmela: tu creación; se comparte desde el primer paso
      (sin @usuario: el de la app podría no ser el de sus redes).
    · envíasela a alguien: para (obligatorio), de y un mensaje; en cuadrado, porque va por chat.
    · en memoria de alguien: a quién recuerdas (obligatorio) y un mensaje; en cuadrado. */
 let como = 'presume', pasoC = 'como', formatoC = 'historia';
-const FORMATO_DE = { presume: 'historia', alguien: 'cuadrada', memoria: 'cuadrada' };
+const FORMATO_DE = { presume: 'historia', alguien: 'cuadrada', memoria: 'historia' };
 const OBLIGATORIO = { alguien: '#r-para', memoria: '#s-memoria' };
 const ACCIONES = ['#c-mandar', '#c-recordar', '[data-copiar]', '[data-descargar]'];
 /* Lo que se escribe se limpia antes de dibujarlo o mandarlo: sin caracteres de
@@ -2475,7 +2490,10 @@ function quienSoy() {
 }
 function pintarComo() {
   $$('#d-compartir [data-como]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.como === como)));
-  $$('#d-compartir [data-formato]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.formato === formatoC)));
+  const otro = formatoC === 'cuadrada' ? 'historia' : 'cuadrada';
+  $('#c-formato').dataset.formato = otro;
+  $('#c-formato').setAttribute('aria-label', otro === 'cuadrada' ? 'Cambiar a cuadrado' : 'Cambiar a vertical');
+  $('#c-formato').title = $('#c-formato').getAttribute('aria-label');
   $('#c-seguir').textContent = como === 'presume' ? 'Compartir' : 'Siguiente';
   $('#c-extra-presume').hidden = como !== 'presume';
   if (pasoC === 'como') $('#c-paso').textContent = como === 'presume' ? '' : '1 de 2';
@@ -2607,11 +2625,11 @@ function montarRegalo() {
     if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); e.target.blur(); }
   });
   $$('#d-compartir [data-como]').forEach((b) => b.addEventListener('click', () => { if (como !== b.dataset.como) elegirComo(b.dataset.como); }));
-  $$('#d-compartir [data-formato]').forEach((b) => b.addEventListener('click', () => {
-    if (formatoC === b.dataset.formato) return;
-    formatoC = b.dataset.formato;
+  // el botoncito junto a la vista previa: cambia entre vertical y cuadrado
+  $('#c-formato').addEventListener('click', () => {
+    formatoC = formatoC === 'cuadrada' ? 'historia' : 'cuadrada';
     pintarComo(); refrescarTarjeta();
-  }));
+  });
   $('#c-atras').addEventListener('click', () => { if (pasoC === 'como') $('#d-compartir').close(); else irPasoC('como'); });
   $('#c-seguir').addEventListener('click', () => { if (como === 'presume') enviar(); else irPasoC(como); });
   // lo que pasa después de compartir no hace esperar a la hoja de compartir
