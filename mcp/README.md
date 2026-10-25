@@ -14,7 +14,7 @@ Si no puedes instalar nada, no hace falta el MCP: el juego amasa la guagua solo 
 dirección. Una IA (o cualquiera) escribe algo así y listo:
 
 ```
-https://franciscombp.github.io/finados/?molde=dormilon&para=Lobita&de=Francisco&dedicada=1&decoracion=carita
+https://finados.una.red/?molde=dormilon&para=Lobita&de=Francisco&dedicada=1&decoracion=carita
 ```
 
 Acepta los mismos parámetros que `crear_guagua`: `molde`, `nombre`, `para`, `de`, `mensaje`,
@@ -55,7 +55,7 @@ Con Claude Desktop u otro cliente, en su configuración de servidores MCP:
 ```
 
 La variable `GUAGUA_URL` cambia la dirección del juego en los enlaces (por defecto,
-`https://franciscombp.github.io/finados/`).
+`https://finados.una.red/`).
 
 ## Un ejemplo de conversación
 

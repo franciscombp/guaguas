@@ -21,7 +21,7 @@ bodegón en 3D: la guagua en su plato junto a una taza de colada morada (o una v
 dedicada). La tarjeta, el archivo y el enlace se preparan apenas cambia algo, porque los
 navegadores solo dejan abrir la hoja de compartir o WhatsApp si el toque no espera a la red.
 
-Vive en `franciscombp.github.io/finados/` y el repositorio se basta solo: Three.js va en
+Vive en `finados.una.red/` y el repositorio se basta solo: Three.js va en
 `vendor/` (r170, licencia MIT en `vendor/LICENSE-three.txt`) y el sistema de diseño
 ([mal-ds](https://franciscombp.github.io/mal/ds/) 1.0.18: `mal.css`, `mal.js`, `iconos.svg` y
 las fuentes) va copiado en `vendor/ds/`. Para actualizarlo, se copian de nuevo esos archivos
@@ -64,7 +64,7 @@ Dos parámetros en la URL:
 Para EL MERCIO., en un bloque HTML de WordPress:
 
 ```html
-<iframe src="https://franciscombp.github.io/finados/?embed&marca=mercio"
+<iframe src="https://finados.una.red/?embed&marca=mercio"
   title="Decora tu guagua de pan" loading="lazy"
   style="width:100%;height:min(88vh, 820px);border:0;border-radius:16px"
   allow="web-share; clipboard-write; fullscreen"></iframe>
@@ -125,7 +125,7 @@ Para ponerla en marcha en el proyecto real:
 amasa la guagua en el navegador de quien la abre y la muestra como regalo:
 
 ```
-https://franciscombp.github.io/finados/?molde=dormilon&nombre=Lobita&para=Lobita&de=Francisco&dedicada=1&decoracion=carita&mensaje=Duerme%20tranquila
+https://finados.una.red/?molde=dormilon&nombre=Lobita&para=Lobita&de=Francisco&dedicada=1&decoracion=carita&mensaje=Duerme%20tranquila
 ```
 
 Parámetros: `molde` (guagua, tradicional, guaguau, dormilon, caballito, chanchito, gallinita),
