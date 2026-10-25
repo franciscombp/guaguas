@@ -24,7 +24,8 @@ const CREMAS = [
   { n: 'Yema', c: '#ffcf3d' },
   { n: 'Chocolate', c: '#4a2614' },
 ];
-const BOQUILLAS = [0.026, 0.05, 0.085, 0.13];   // pincel, fina, media, gruesa
+const BOQUILLAS = [0.026, 0.05, 0.085, 0.13, 0.07];   // pincel, fina, media, gruesa, lisa (redonda, sin estrías)
+const BOQUILLA_LISA = 4;                              // el glaseado liso: un tubo redondo, sin el dibujo de la estrella
 const GROSORES = [0.1, 0.17, 0.26];             // los chorizos de masa
 /* Las masas: la natural y las teñidas que se ven en las panaderías.
    Cada una con su tono tostado (cantos y base) y su dorado (arriba). */
@@ -668,5 +669,5 @@ function amasarReceta(args = {}) {
 }
 
 export {
-  amasarReceta, COCCION, dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa,
+  amasarReceta, COCCION, dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa,
 };

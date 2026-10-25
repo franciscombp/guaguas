@@ -26,7 +26,7 @@ import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
 import * as nube from './nube.js?v=2026.10.23.2';
 import {
-  DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
+  DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
 } from './masa.js?v=2026.10.23.2';
 
 const $ = (s, r) => (r || document).querySelector(s);
@@ -520,7 +520,7 @@ class Visor {
         g.translate(pts[0].x, pts[0].y, pts[0].z);
         return this.malla(g, this.mat.cremas[op[1]]);
       }
-      return this.malla(tubo(pts, r), this.mat.cremas[op[1]]);
+      return this.malla(tubo(pts, r, op[2] === BOQUILLA_LISA ? 0 : 6), this.mat.cremas[op[1]]);
     }
     if (t === 1) {
       const R = BOQUILLAS[op[2]] * 2.3;
@@ -1532,7 +1532,7 @@ function resumenDock() {
   } else if (estado.etapa === 'decorar') {
     const h = { manga: 'Manga', roseta: 'Roseta', grageas: 'Grageas', carita: 'Carita', pasa: 'Pasas', mordisco: 'Mordisco' }[estado.herramienta];
     const con = estado.herramienta === 'manga' || estado.herramienta === 'roseta'
-      ? ' · ' + CREMAS[estado.crema].n.toLowerCase() + ' · ' + ['pincel', 'fina', 'media', 'gruesa'][estado.boquilla] : '';
+      ? ' · ' + CREMAS[estado.crema].n.toLowerCase() + ' · ' + ['pincel', 'fina', 'media', 'gruesa', 'lisa'][estado.boquilla] : '';
     r.textContent = h + con;
   }
 }
