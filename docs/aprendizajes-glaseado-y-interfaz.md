@@ -332,3 +332,6 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   redibuja la tarjeta en menos de 300 ms, así la vista previa sigue lo que se escribe.
 - Ojo con los `id`: el botón «Enviar» se llamaba `c-enviar`, igual que el de la cuenta, y la cuenta le
   cambiaba el texto a «Entrar».
+- **El fondo no es plano**: grano fino de papel, el punteado del mantel un poco más visible, lucecitas
+  desenfocadas (bokeh) hacia los bordes, una luz de arriba y una viñeta suave. En memoria, pocas luces,
+  tibias y tenues. El titular para alguien es «Te regalo una guagua de pan».

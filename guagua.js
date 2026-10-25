@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.16';
+import * as nube from './nube.js?v=2026.10.25.17';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.16';
+} from './masa.js?v=2026.10.25.17';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1487,6 +1487,39 @@ const sustantivo = (e) => queEs(e).replace(/^(una|un) /, '');
 /* Los adornos que se ven: todo lo que se puso, menos los mordiscos y la cobertura. */
 const contarAdornos = (e) => e.o.filter((op) => op[0] !== 3 && !(op[0] === 8 && op[2] === COBERTURA)).length;
 
+/* El fondo no es plano: un grano fino de papel, el punteado del mantel, unas
+   lucecitas desenfocadas (bokeh) y una viñeta suave que lleva la vista al centro.
+   En memoria, menos luces, más tenues y tibias, como de vela. */
+function fondoVivo(ctx, W, H, memoria, rnd) {
+  // la luz de arriba, como una lámpara sobre la mesa
+  const cielo = ctx.createRadialGradient(W / 2, H * 0.32, 0, W / 2, H * 0.32, H * 0.75);
+  cielo.addColorStop(0, memoria ? 'rgba(255,226,180,.07)' : 'rgba(255,150,210,.14)'); cielo.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = cielo; ctx.fillRect(0, 0, W, H);
+  // el punteado del mantel
+  ctx.fillStyle = memoria ? 'rgba(255,236,200,.05)' : 'rgba(255,201,60,.1)';
+  for (let y = 30; y < H; y += 54) for (let x = (y / 54 % 2) * 27 + 20; x < W; x += 54) { ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill(); }
+  // las lucecitas: círculos suaves de varios tamaños, más hacia los bordes
+  const colores = memoria ? ['255,200,130'] : ['255,201,60', '255,120,180', '255,236,200'];
+  const n = Math.round((memoria ? 9 : 22) * H / 1920 + (memoria ? 3 : 6));
+  for (let i = 0; i < n; i++) {
+    const lado = rnd() < 0.5 ? rnd() * 0.3 : 0.7 + rnd() * 0.3;
+    const x = (rnd() < 0.7 ? lado : rnd()) * W, y = rnd() * H, r = 12 + rnd() * rnd() * 70;
+    const a = (memoria ? 0.08 : 0.14) + rnd() * (memoria ? 0.08 : 0.16);
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    const c = colores[i % colores.length];
+    g.addColorStop(0, `rgba(${c},${a})`); g.addColorStop(0.55, `rgba(${c},${a * 0.6})`); g.addColorStop(1, `rgba(${c},0)`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  }
+  // grano de papel: puntitos claros y oscuros, casi invisibles
+  for (let i = 0; i < W * H / 260; i++) {
+    ctx.fillStyle = rnd() < 0.5 ? 'rgba(255,255,255,.035)' : 'rgba(0,0,0,.05)';
+    ctx.fillRect(rnd() * W, rnd() * H, 1.5, 1.5);
+  }
+  // la viñeta: los bordes un poco más oscuros
+  const v = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.hypot(W, H) * 0.6);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, memoria ? 'rgba(0,0,0,.32)' : 'rgba(10,0,20,.3)');
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+}
 async function tarjeta(e, formato = 'historia', x = {}) {
   try { await Promise.all([document.fonts.load('800 80px Syne'), document.fonts.load('600 30px Inter'), document.fonts.load('italic 400 30px Inter')]); } catch (err) { /* sin fuentes, igual sale */ }
   const cuadrada = formato === 'cuadrada', W = 1080, H = cuadrada ? 1080 : 1920, M = 64, ancho = W - M * 2;
@@ -1496,8 +1529,7 @@ async function tarjeta(e, formato = 'historia', x = {}) {
   const fondo = ctx.createLinearGradient(0, 0, 0, H);
   if (memoria) { fondo.addColorStop(0, '#1e1826'); fondo.addColorStop(1, '#2d2434'); } else { fondo.addColorStop(0, '#2e0f36'); fondo.addColorStop(1, '#5a1c50'); }
   ctx.fillStyle = fondo; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = memoria ? 'rgba(255,236,200,.035)' : 'rgba(255,201,60,.08)';
-  for (let y = 30; y < H; y += 54) for (let xx = (y / 54 % 2) * 27 + 20; xx < W; xx += 54) { ctx.beginPath(); ctx.arc(xx, y, 3, 0, Math.PI * 2); ctx.fill(); }
+  fondoVivo(ctx, W, H, memoria, azar(e.o.length + (cuadrada ? 3 : 5)));
   const arriba = cuadrada ? M : 250, abajo = cuadrada ? H - M : H - 250;
   const dorado = memoria ? '#d9c39a' : '#ffc93c', crema = memoria ? '#efe6dc' : '#ffffff';
   ctx.textBaseline = 'alphabetic';
@@ -1561,7 +1593,7 @@ async function tarjeta(e, formato = 'historia', x = {}) {
     }
   } else {
     const adornos = x.adornos != null ? x.adornos : contarAdornos(e);
-    const titular = como === 'alguien' ? `Te decoré ${queEs(e)}`
+    const titular = como === 'alguien' ? `Te regalo ${queEs(e)} de pan`
       : adornos > 1 ? `¡Decoré mi ${sustantivo(e)} con ${adornos} adornos!` : `¡Decoré mi ${sustantivo(e)} de pan!`;
     pila.push(texto(ajustar(ctx, titular, { peso: 800, familia: SYNE, max: cuadrada ? 76 : 100, min: cuadrada ? 44 : 56, ancho, lineas: 2 }), crema, 1.04));
   }
@@ -2530,7 +2562,7 @@ const textoRegalo = (e = estado) => {
     const n = contarAdornos(e);
     return `🍞 ¡Decoré mi ${sustantivo(e)} de pan${n > 1 ? ` con ${n} adornos` : ''}! Decora y comparte la tuya:`;
   }
-  return `🧺 ${e.p}, te decoré ${que}${e.d ? ' (' + e.d + ')' : ''}. ${e.m || '¿Compartimos una colada de verdad este finados?'} Ábrela aquí:`;
+  return `🧺 ${e.p}, te regalo ${que}${e.d ? ' (' + e.d + ')' : ''}. ${e.m || '¿Compartimos una colada de verdad este finados?'} Ábrela aquí:`;
 };
 /* Copiar responde en el mismo botón («¡Copiado!») y con el toast. */
 async function copiar(texto, boton) {
