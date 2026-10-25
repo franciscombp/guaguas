@@ -347,3 +347,7 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   de un selector, un botoncito discreto junto a la vista previa lo cambia.
 - **Flores al pie de la canasta**: además de las que asoman atrás, flores y hojas de mazapán sobre la
   mesa a los dos lados, mirando hacia arriba; en memoria, amarillas y blancas.
+- **Menos es más**: las flores sobre la mesa llenaban demasiado; quedan solo las que asoman atrás.
+  La canasta va en mimbre tostado (más oscuro que el pan) para que la guagua dorada resalte.
+- **Guardada se cierra hacia la canasta**: si ya está guardada, cerrar esa hoja (✕, fondo o Esc) lleva
+  a tu canasta; solo «Compartirla» y «Amasar otra» siguen su propio camino.

@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.20';
+import * as nube from './nube.js?v=2026.10.25.21';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.20';
+} from './masa.js?v=2026.10.25.21';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1177,8 +1177,8 @@ function vela3d() {
 function canasta3d(R, alto, asa) {
   const g = new THREE.Group();
   const mimbre = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.72 });
-  const tono = ['#d39456', '#c98a4b', '#d79b5d', '#c2834a'].map(mimbre);
-  const oscuro = mimbre('#9a5f2f'), soga = mimbre('#c07c42');
+  const tono = ['#7e5132', '#74492b', '#86583a', '#6c4428'].map(mimbre);   // tostado: más oscuro que el pan, para que la guagua resalte
+  const oscuro = mimbre('#4f2f18'), soga = mimbre('#6a4024');
   const rb = R * 0.74;                                   // el fondo es más angosto que la boca
   const radio = (t) => rb + (R - rb) * Math.pow(t, 0.75) + Math.sin(t * Math.PI) * R * 0.03;
   const N = 16, gruesa = R * 0.04, filas = Math.max(4, Math.round(alto / (gruesa * 2.9)));
@@ -1231,7 +1231,7 @@ function canasta3d(R, alto, asa) {
       p.addScaledVector(lado, Math.cos(q) * gruesa * 0.8).add(V(0, 0, Math.sin(q) * gruesa * 0.8));
       pts.push(p);
     }
-    g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 320, gruesa * 1.1, 8), mimbre('#a8693a')));
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 320, gruesa * 1.1, 8), mimbre('#5e3920')));
   });
   g.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
   return g;
@@ -1323,19 +1323,6 @@ function enCanasta(e, memoria, lado = 1600) {
     fl.lookAt(fl.position.clone().add(V(-0.3, 0.4, 1)));
     flores.add(fl);
   });
-  // y al pie de la canasta, a los dos lados: flores y hojas sobre la mesa, mirando hacia arriba
-  const suelo = caja.min.y - R * 0.05 + R * 0.03;
-  const colores = memoria ? [6, 0, 6, 0, 6] : [1, 6, 0, 2, 3];
-  [[-1.12, 0.38, 'flor', 0, 1.6], [-0.92, 0.78, 'flor', 1, 1.25], [-1.32, 0.02, 'hoja', 5, 1.5], [-0.7, 1.02, 'flor', 2, 1.05],
-    [1.1, 0.46, 'flor', 3, 1.55], [1.3, 0.08, 'flor', 4, 1.25], [0.92, 0.86, 'hoja', 5, 1.35], [0.66, 1.06, 'flor', 0, 1.0]]
-    .forEach(([fx, fz, id, k, esc], i) => {
-      const fl = b.mazapan(id, id === 'hoja' ? 5 : colores[k]);
-      fl.scale.setScalar(R * esc);
-      fl.position.set(medio + fx * R, suelo, cz + fz * R);
-      fl.lookAt(fl.position.clone().add(V(fx * 0.25, 1, 0.55)));
-      fl.rotateZ(i * 1.3);                             // cada una girada a su modo
-      flores.add(fl);
-    });
   b.canasta.add(flores); flores.position.sub(b.canasta.position);
   const marco = new THREE.Box3().setFromObject(b.canasta).union(new THREE.Box3().setFromObject(b.pan)).union(new THREE.Box3().setFromObject(cosa));
   const centro = marco.getCenter(V()), r = marco.getSize(V()).length() / 2;
@@ -2309,8 +2296,11 @@ function montarTaller() {
   $('#salir-guardar').addEventListener('click', () => { $('#d-salir').close(); abrirNombre('salir'); });
   $('#nombre-guardar').addEventListener('click', guardarConNombre);
   $('#r-nombre').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); guardarConNombre(); } });
-  $('#g-otra').addEventListener('click', () => { $('#d-guardada').close(); nueva(); });
-  $('#g-compartir').addEventListener('click', () => { $('#d-guardada').close(); abrirCompartir(); });
+  // ya está guardada: cerrar esta hoja (la ✕, el fondo o Esc) lleva a tu canasta, no deja en el editor
+  let sigueEnGuardada = false;
+  $('#d-guardada').addEventListener('close', () => { if (!sigueEnGuardada) mostrar('canasta'); sigueEnGuardada = false; });
+  $('#g-otra').addEventListener('click', () => { sigueEnGuardada = true; $('#d-guardada').close(); nueva(); });
+  $('#g-compartir').addEventListener('click', () => { sigueEnGuardada = true; $('#d-guardada').close(); abrirCompartir(); });
   return true;
 }
 
