@@ -21,15 +21,20 @@ bodegón en 3D: la guagua en su plato junto a una taza de colada morada (o una v
 dedicada). La tarjeta, el archivo y el enlace se preparan apenas cambia algo, porque los
 navegadores solo dejan abrir la hoja de compartir o WhatsApp si el toque no espera a la red.
 
-Vive en `franciscombp.github.io/mal/guagua/` y la carpeta se basta sola: Three.js va en
-`vendor/` (r170, licencia MIT en `vendor/LICENSE-three.txt`) y el sistema de diseño se pide
-con ruta relativa desde `../ds/`.
+Vive en `franciscombp.github.io/finados/` y el repositorio se basta solo: Three.js va en
+`vendor/` (r170, licencia MIT en `vendor/LICENSE-three.txt`) y el sistema de diseño
+([mal-ds](https://franciscombp.github.io/mal/ds/) 1.0.18: `mal.css`, `mal.js`, `iconos.svg` y
+las fuentes) va copiado en `vendor/ds/`. Para actualizarlo, se copian de nuevo esos archivos
+desde `ds/` del repositorio [mal](https://github.com/franciscombp/mal) y se sube el `?v=` en
+`index.html`.
+
+Antes vivía en `mal/guagua/`; de ahí viene su historial.
 
 ## Versiones y caché
 
 La versión va en el `<meta name="guagua-version">`, en los `?v=` de `guagua.css`, `guagua.js`,
 `masa.js`, `nube.js` y `nube-config.js`, y en `version.json`. Al publicar, se sube la misma
-cadena en todos (`grep -rn 2026.10.23.2 guagua/`). Al abrir, el juego pide `version.json`
+cadena en todos (`grep -rn 2026.10.23.2 --exclude-dir=vendor .`). Al abrir, el juego pide `version.json`
 sin caché y, si hay una versión más nueva, se recarga una sola vez: así nadie se queda con el
 juego viejo por el caché del navegador.
 
@@ -59,7 +64,7 @@ Dos parámetros en la URL:
 Para EL MERCIO., en un bloque HTML de WordPress:
 
 ```html
-<iframe src="https://franciscombp.github.io/mal/guagua/?embed&marca=mercio"
+<iframe src="https://franciscombp.github.io/finados/?embed&marca=mercio"
   title="Decora tu guagua de pan" loading="lazy"
   style="width:100%;height:min(88vh, 820px);border:0;border-radius:16px"
   allow="web-share; clipboard-write; fullscreen"></iframe>
@@ -101,9 +106,9 @@ Las reglas (`firebase/firestore.rules`) son un prototipo para revisar antes de d
 Para probar todo en local, con los emuladores:
 
 ```bash
-cd guagua/firebase
+cd firebase
 npx -y firebase-tools@latest emulators:start --only auth,firestore --project demo-guagua
-# y abrir http://localhost:<puerto>/guagua/?emuladores
+# y abrir http://localhost:<puerto>/?emuladores
 ```
 
 Para ponerla en marcha en el proyecto real:
@@ -112,7 +117,7 @@ Para ponerla en marcha en el proyecto real:
 2. Crear la base de datos de Firestore (edición Standard).
 3. Activar en Authentication los proveedores «Correo/contraseña» y «Google», y agregar en
    *Dominios autorizados*: `franciscombp.github.io`, `elmercio.com` y `una.red`.
-4. Publicar las reglas: `cd guagua/firebase && npx -y firebase-tools@latest deploy --only firestore`.
+4. Publicar las reglas: `cd firebase && npx -y firebase-tools@latest deploy --only firestore`.
 
 ## Desde un chat de IA
 
@@ -120,7 +125,7 @@ Para ponerla en marcha en el proyecto real:
 amasa la guagua en el navegador de quien la abre y la muestra como regalo:
 
 ```
-https://franciscombp.github.io/mal/guagua/?molde=dormilon&nombre=Lobita&para=Lobita&de=Francisco&dedicada=1&decoracion=carita&mensaje=Duerme%20tranquila
+https://franciscombp.github.io/finados/?molde=dormilon&nombre=Lobita&para=Lobita&de=Francisco&dedicada=1&decoracion=carita&mensaje=Duerme%20tranquila
 ```
 
 Parámetros: `molde` (guagua, tradicional, guaguau, dormilon, caballito, chanchito, gallinita),

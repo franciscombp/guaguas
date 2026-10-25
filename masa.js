@@ -13,7 +13,7 @@ import * as THREE from './vendor/three.module.min.js';
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const Q = 100;                       // las coordenadas viajan en centésimas
 const ent = (v) => Math.round(v * Q);
-const DIRECCION = 'franciscombp.github.io/mal/guagua';
+const DIRECCION = 'franciscombp.github.io/finados';
 const CREMAS = [
   { n: 'Merengue', c: '#fff6ea' },
   { n: 'Rosa', c: '#f6a3c3' },

@@ -14,7 +14,7 @@ Si no puedes instalar nada, no hace falta el MCP: el juego amasa la guagua solo 
 dirección. Una IA (o cualquiera) escribe algo así y listo:
 
 ```
-https://franciscombp.github.io/mal/guagua/?molde=dormilon&para=Lobita&de=Francisco&dedicada=1&decoracion=carita
+https://franciscombp.github.io/finados/?molde=dormilon&para=Lobita&de=Francisco&dedicada=1&decoracion=carita
 ```
 
 Acepta los mismos parámetros que `crear_guagua`: `molde`, `nombre`, `para`, `de`, `mensaje`,
@@ -37,7 +37,7 @@ Acepta los mismos parámetros que `crear_guagua`: `molde`, `nombre`, `para`, `de
 ## Usarlo
 
 ```sh
-cd guagua/mcp && npm install
+cd mcp && npm install
 node servidor.mjs          # habla MCP por stdio
 npm test                   # prueba de humo: crea y lee una guagua
 ```
@@ -45,17 +45,17 @@ npm test                   # prueba de humo: crea y lee una guagua
 Con Claude Code:
 
 ```sh
-claude mcp add guagua -- node /ruta/al/repo/guagua/mcp/servidor.mjs
+claude mcp add guagua -- node /ruta/al/repo/mcp/servidor.mjs
 ```
 
 Con Claude Desktop u otro cliente, en su configuración de servidores MCP:
 
 ```json
-{ "mcpServers": { "guagua": { "command": "node", "args": ["/ruta/al/repo/guagua/mcp/servidor.mjs"] } } }
+{ "mcpServers": { "guagua": { "command": "node", "args": ["/ruta/al/repo/mcp/servidor.mjs"] } } }
 ```
 
 La variable `GUAGUA_URL` cambia la dirección del juego en los enlaces (por defecto,
-`https://franciscombp.github.io/mal/guagua/`).
+`https://franciscombp.github.io/finados/`).
 
 ## Un ejemplo de conversación
 
