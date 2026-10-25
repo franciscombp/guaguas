@@ -24,7 +24,7 @@ const CREMAS = [
   { n: 'Yema', c: '#ffcf3d' },
   { n: 'Chocolate', c: '#4a2614' },
 ];
-const BOQUILLAS = [0.026, 0.05, 0.085, 0.13, 0.07];   // pincel, fina, media, gruesa, lisa (redonda, sin estrías)
+const BOQUILLAS = [0.026, 0.05, 0.085, 0.13, 0.02];   // pincel, fina, media, gruesa, lisa (el glaseado: finísimo y plano)
 const BOQUILLA_LISA = 4;                              // el glaseado liso: un tubo redondo, sin el dibujo de la estrella
 /* Las capas de baño: la guagua entera se cubre con uno de estos colores. El cero es sin capa. */
 const BANOS = [

@@ -601,13 +601,13 @@ class Visor {
       }
       if (pts.length < 2) {                         // un toque: una gotita plana
         const g = new THREE.SphereGeometry(1, 18, 12);
-        g.scale(BOQUILLAS[BOQUILLA_LISA], 0.018, BOQUILLAS[BOQUILLA_LISA]);
+        g.scale(BOQUILLAS[BOQUILLA_LISA], 0.006, BOQUILLAS[BOQUILLA_LISA]);
         const o = this.malla(g, this.mat.cremas[op[1]]);
         o.quaternion.setFromRotationMatrix(base(nor[0]).m);
-        o.position.copy(pts[0]).addScaledVector(nor[0], 0.012);
+        o.position.copy(pts[0]).addScaledVector(nor[0], 0.004);
         return o;
       }
-      return this.malla(cinta(pts, nor, BOQUILLAS[BOQUILLA_LISA], 0.018), this.mat.cremas[op[1]]);
+      return this.malla(cinta(pts, nor, BOQUILLAS[BOQUILLA_LISA], 0.006), this.mat.cremas[op[1]]);
     }
     if (t === 6) {                                  // una bolita de masa de colores, como las que se hacen al amasar
       const [p, n] = pn(2);
