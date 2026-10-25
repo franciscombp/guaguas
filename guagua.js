@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.11';
+import * as nube from './nube.js?v=2026.10.25.12';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.11';
+} from './masa.js?v=2026.10.25.12';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1368,8 +1368,9 @@ async function tarjeta(e, formato = 'historia') {
     : e.p || e.aAlguien ? ['Te regalo', que] : ['Amasé', que];   // aAlguien: la vista previa, antes de escribir el nombre
   titulo.forEach((t, i) => ctx.fillText(t, W / 2, F.titulo[i], W - 80));
 
-  // la guagua, grande y al centro; la colada (o la velita) abajo a un lado,
-  // un poco por delante, como en una mesa; cada una con su sombra en el mantel
+  /* La canasta: la guagua va adentro, con la colada morada (o la velita, si es en
+     memoria) y unas flores secas. El asa, las flores y el fondo van detrás de la
+     guagua; el tejido, delante, tapándole los pies. */
   const sombra = (x, y, rx, ry, a) => {
     const g = ctx.createRadialGradient(x, y, 0, x, y, rx);
     g.addColorStop(0, `rgba(0,0,0,${a})`); g.addColorStop(1, 'rgba(0,0,0,0)');
@@ -1377,18 +1378,43 @@ async function tarjeta(e, formato = 'historia') {
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rx, 0, Math.PI * 2); ctx.fill(); ctx.restore();
   };
   const cuadrada = formato === 'cuadrada';
+  const bw = W * (cuadrada ? 0.66 : 0.8), bh = (e1 - e0) * (cuadrada ? 0.32 : 0.28);
+  const bx = W / 2 - bw / 2, borde = e1 - bh, fondoX = bw * 0.1;
+  sombra(W / 2, e1 + 8, bw * 0.56, bw * 0.08, 0.55);
+  // el asa, detrás de todo
+  ctx.lineCap = 'round';
+  const asa = () => { ctx.beginPath(); ctx.moveTo(bx + bw * 0.14, borde + 6); ctx.bezierCurveTo(bx + bw * 0.12, e0 - 40, bx + bw * 0.88, e0 - 40, bx + bw * 0.86, borde + 6); };
+  ctx.strokeStyle = '#a8763a'; ctx.lineWidth = cuadrada ? 22 : 28; asa(); ctx.stroke();
+  ctx.strokeStyle = '#e3bd6e'; ctx.lineWidth = cuadrada ? 7 : 9; ctx.setLineDash([6, 16]); asa(); ctx.stroke(); ctx.setLineDash([]);
+  // lo hondo de la canasta
+  ctx.fillStyle = '#4a2a14';
+  ctx.beginPath(); ctx.ellipse(W / 2, borde + 4, bw / 2 - 6, bh * 0.16, 0, 0, Math.PI * 2); ctx.fill();
+  // flores secas asomando por la izquierda (en memoria, de cempasúchil)
+  const flor = memoria ? ['#ffb23f', '#e9761c'] : ['#f6dcc0', '#e8a25a'];
+  [[0.22, 0.42, -0.5], [0.3, 0.55, -0.15], [0.16, 0.3, -0.8]].forEach(([fx, alto, inc], i) => {
+    const x0 = bx + bw * fx, y0 = borde + 10, x1 = x0 + Math.sin(inc) * bh * 1.2, y1 = borde - (e1 - e0) * alto;
+    ctx.strokeStyle = '#8a6a34'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(x0, (y0 + y1) / 2, x1, y1); ctx.stroke();
+    const r = (cuadrada ? 20 : 26) - i * 3;
+    ctx.fillStyle = flor[0];
+    for (let k = 0; k < 8; k++) {
+      const q = (k / 8) * Math.PI * 2;
+      ctx.beginPath(); ctx.ellipse(x1 + Math.cos(q) * r * 0.7, y1 + Math.sin(q) * r * 0.7, r * 0.55, r * 0.32, q, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = flor[1]; ctx.beginPath(); ctx.arc(x1, y1, r * 0.38, 0, Math.PI * 2); ctx.fill();
+  });
+  // la guagua, adentro: los pies quedan bajo el borde
   const g3 = retrato(e);
-  const altoG = (e1 - e0 - (cuadrada ? 50 : 90)) * (echada(e) ? 0.92 : 1), anchoG = W * (cuadrada ? 0.56 : 0.72);
+  const altoG = (e1 - e0) * (echada(e) ? 0.6 : 0.86), anchoG = bw * 0.6;
   const kg = Math.min(anchoG / g3.width, altoG / g3.height);
   const gw = g3.width * kg, gh = g3.height * kg;
-  const gx = W / 2 - gw / 2 - (cuadrada ? 70 : 40), gy = e1 - gh - (cuadrada ? 30 : 60);
-  sombra(gx + gw / 2, gy + gh + 4, gw * 0.62, gw * 0.16, 0.55);
+  const gx = W / 2 - gw / 2 - bw * 0.1, gy = borde + gh * (echada(e) ? 0.3 : 0.22) - gh;
   ctx.drawImage(g3, gx, gy, gw, gh);
+  // la colada morada (o la velita), adentro, a la derecha
   const { img: a3, boca } = adorno(memoria);
-  const ka = (cuadrada ? 250 : 330) / a3.height;
+  const ka = bh * (memoria ? 1.7 : 1.05) / a3.height;
   const aw = a3.width * ka, ah = a3.height * ka;
-  const ax = Math.min(W - aw - 40, gx + gw - aw * 0.08), ay = e1 - ah + (cuadrada ? 30 : 50);
-  sombra(ax + aw / 2, ay + ah + 2, aw * 0.6, aw * 0.16, 0.5);
+  const ax = bx + bw * 0.97 - aw, ay = borde + ah * 0.3 - ah;
   ctx.drawImage(a3, ax, ay, aw, ah);
   const px = ax + boca.x * ka, py = ay + boca.y * ka;
   if (memoria) {
@@ -1398,12 +1424,40 @@ async function tarjeta(e, formato = 'historia') {
   } else {
     // el vapor de la colada
     ctx.strokeStyle = 'rgba(255,255,255,.42)'; ctx.lineWidth = 5; ctx.lineCap = 'round';
-    [-30, 0, 30].forEach((dx, i) => {
+    [-24, 0, 24].forEach((dx, i) => {
       const x = px + dx, y = py - 10;
       ctx.beginPath(); ctx.moveTo(x, y);
       ctx.bezierCurveTo(x + 18, y - 30, x - 18, y - 60 - i * 8, x, y - 95 - i * 10); ctx.stroke();
     });
   }
+  // el tejido, delante: un cesto de mimbre con su borde trenzado
+  const cuerpo = () => {
+    ctx.beginPath();
+    ctx.moveTo(bx, borde);
+    ctx.lineTo(bx + bw, borde);
+    ctx.lineTo(bx + bw - fondoX, e1 - 18);
+    ctx.quadraticCurveTo(bx + bw - fondoX, e1, bx + bw - fondoX - 30, e1);
+    ctx.lineTo(bx + fondoX + 30, e1);
+    ctx.quadraticCurveTo(bx + fondoX, e1, bx + fondoX, e1 - 18);
+    ctx.closePath();
+  };
+  const mimbre = ctx.createLinearGradient(0, borde, 0, e1);
+  mimbre.addColorStop(0, '#d9a066'); mimbre.addColorStop(1, '#8f5528');
+  ctx.fillStyle = mimbre; cuerpo(); ctx.fill();
+  ctx.save(); cuerpo(); ctx.clip();
+  ctx.strokeStyle = 'rgba(110,62,26,.75)'; ctx.lineWidth = cuadrada ? 4 : 5;
+  const fila = bh / 7, paso = cuadrada ? 30 : 38;
+  for (let y = borde + fila, f = 0; y < e1; y += fila, f++) {
+    for (let x = bx - paso + (f % 2) * paso / 2; x < bx + bw + paso; x += paso) {
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + paso / 2, y - fila * 0.7, x + paso, y); ctx.stroke();
+    }
+  }
+  ctx.restore();
+  const rh = bh * 0.16;
+  ctx.fillStyle = '#c4874d';
+  ctx.beginPath(); ctx.roundRect(bx - 12, borde - rh / 2, bw + 24, rh, rh / 2); ctx.fill();
+  ctx.strokeStyle = '#ecbd86'; ctx.lineWidth = 4; ctx.setLineDash([16, 10]);
+  ctx.beginPath(); ctx.moveTo(bx + 6, borde); ctx.lineTo(bx + bw - 6, borde); ctx.stroke(); ctx.setLineDash([]);
   if (!memoria && VALES[e.l]) {
     ctx.save();
     if (formato === 'cuadrada') { ctx.translate(W - 175, e0 + 75); ctx.scale(0.8, 0.8); } else ctx.translate(W - 190, e0 + 40);
@@ -2628,8 +2682,25 @@ function abrirSecretos() {
   }
   $$('[data-molde][data-secreto]').forEach((b) => { b.hidden = !llaves.has(b.dataset.molde); });
 }
+/* El teclado: iOS no achica la página, la empuja. Las hojas que ocupan toda la
+   pantalla se ajustan al área que queda visible (visualViewport), y mientras se
+   escribe se esconde lo secundario: queda el campo y el botón principal a la vista. */
+function seguirTeclado() {
+  const vv = window.visualViewport;
+  if (!vv) return;
+  const raiz = document.documentElement;
+  const ajustar = () => {
+    raiz.style.setProperty('--vv', vv.height + 'px');
+    raiz.style.setProperty('--vv-arriba', vv.offsetTop + 'px');
+    raiz.classList.toggle('con-teclado', window.innerHeight - vv.height > 120);
+  };
+  vv.addEventListener('resize', ajustar);
+  vv.addEventListener('scroll', ajustar);
+  ajustar();
+}
 function arrancar() {
   vigilarVersion();
+  seguirTeclado();
   abrirSecretos();
   $('#cuenta').textContent = rotuloFinados();
   montarHojas();

@@ -278,3 +278,15 @@ el morado casi no aparece en el glaseado (aparece en la colada).
 - **Safari 26 deja ver la página debajo de su barra.** Con `height:100dvh` lo de abajo quedaba como
   una franja morada lisa. Los fondos y el lienzo van en `100lvh` (hasta el borde de la pantalla) y los
   controles suben solo lo que la barra tapa (`100lvh − 100dvh`), más el área segura.
+
+## 13. El teclado y la tarjeta en canasta
+
+- **iOS no achica la página al abrir el teclado: la empuja.** La hoja de compartir perdía la barra de
+  arriba y el autocompletado de Safari tapaba los enlaces. Con `visualViewport` se sigue el área que
+  queda visible (`--vv`, `--vv-arriba`, y la clase `con-teclado`): las hojas enteras miden eso, las de
+  abajo se apoyan sobre el teclado, y mientras se escribe se esconde lo secundario (la tarjeta, copiar,
+  guardar la imagen). Quedan el campo y el botón principal.
+- El foco de los campos es un solo borde rosa con un halo suave, no dos bordes.
+- **La tarjeta es la canasta**: la guagua adentro con la colada morada humeando y flores secas; en
+  memoria, la velita y flores de cempasúchil. El asa y las flores van detrás; el tejido, delante,
+  tapándole los pies. El vale sigue sellado en la esquina.

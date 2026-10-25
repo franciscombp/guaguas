@@ -94,7 +94,7 @@ body.juego-cuerpo{margin:0;background:var(--noche);color:var(--crema);font-famil
 .campo label{font-size:13px;font-weight:700}
 .campo input,.campo textarea{height:52px;padding:0 16px;border-radius:14px;border:1px solid var(--campo-borde);background:var(--campo);color:var(--crema);font-size:16px;font-family:inherit}
 .campo textarea{height:auto;padding:12px 16px;resize:none;line-height:1.4}
-.campo input:focus,.campo textarea:focus{outline:0;border:2px solid var(--rosa)}
+.campo input:focus,.campo textarea:focus,.campo input:focus-visible,.campo textarea:focus-visible{outline:0;border-color:var(--rosa);box-shadow:0 0 0 3px rgba(255,79,154,.28)}
 .campo input::placeholder,.campo textarea::placeholder{color:var(--texto-3)}
 .campo--grande{height:60px!important;font-family:var(--mal-display);font-weight:800;font-size:24px!important}
 .error{min-height:1.2em;margin:0;color:#ff8a7a;font-size:14px}
@@ -407,3 +407,12 @@ dialog.hoja--entera{height:var(--alto);max-height:var(--alto)}
 .canasta__cuerpo{padding-bottom:calc(120px + var(--debajo))}
 .regalo__tarjeta{padding-bottom:calc(var(--pie) + var(--debajo))}
 .compartir,.hoja__cuerpo{padding-bottom:calc(var(--pie) + 4px + var(--debajo))}
+
+/* ─── con el teclado abierto ─── */
+.con-teclado dialog.hoja--entera{height:var(--vv);max-height:var(--vv);transform:translateY(var(--vv-arriba, 0px))}
+.con-teclado .compartir,.con-teclado .hoja__cuerpo{padding-bottom:10px}
+.con-teclado .compartir__vista,.con-teclado .compartir .fila-ter,.con-teclado .regalar__nota,.con-teclado .sobre{display:none}
+/* las hojas de abajo (ponle nombre) se apoyan sobre el teclado */
+.con-teclado dialog.hoja:not(.hoja--entera){inset:auto 0 auto 0;top:calc(var(--vv-arriba, 0px) + var(--vv));transform:translateY(-100%);
+  margin:0 auto;max-height:calc(var(--vv) - 12px);animation:none}
+.con-teclado .hoja__foto{display:none}
