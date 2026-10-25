@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.6';
+import * as nube from './nube.js?v=2026.10.25.7';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.6';
+} from './masa.js?v=2026.10.25.7';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1526,6 +1526,10 @@ function actualizarEtiqueta() {
 }
 
 /* ─── 1. amasar ───────────────────────────────────────────── */
+/* La masa tal como salió del molde: si sigue igual, cambiar de molde o salir
+   no pierde nada y no hace falta preguntar. */
+let masaDelMolde = null;
+const masaTocada = () => estado.a.length > 0 && JSON.stringify(estado.a) !== masaDelMolde;
 function recordar() {
   historia.push(JSON.stringify(estado.a));
   if (historia.length > 50) historia.shift();
@@ -1935,10 +1939,11 @@ function montarTaller() {
   $('#abrir-moldes').addEventListener('click', () => abrir('#d-moldes'));
   $$('[data-molde]').forEach((b) => b.addEventListener('click', () => {
     const f = b.dataset.molde;
-    if (estado.a.length && !confirm(f === 'libre' ? '¿Vaciar la lata?' : 'Se reemplaza la masa que tienes. ¿Continuar?')) return;
+    if (masaTocada() && !confirm(f === 'libre' ? '¿Vaciar la lata?' : 'Se reemplaza la masa que tienes. ¿Continuar?')) return;
     recordar();
     const a = MOLDES[f]();
     taller.ponerMasa(a); cambiarMasa(a, f);
+    masaDelMolde = JSON.stringify(a);
     taller.encuadrar(); taller.dibujar();
     $('#d-moldes').close();
   }));
@@ -2043,7 +2048,7 @@ const sinGuardar = () => estado.o.length > 0 && huella() !== ultimaGuardada;
 function cerrarTaller() {
   if (colocando) terminarColocar();
   const cruda = estado.etapa !== 'decorar';
-  const hayAlgo = cruda ? historia.length > 0 || estado.k > 0 : sinGuardar();
+  const hayAlgo = cruda ? masaTocada() || estado.k > 0 : sinGuardar();
   if (!hayAlgo) { mostrar('canasta'); return; }
   $('#d-salir-t').textContent = cruda ? '¿Salir y dejar la masa?' : '¿Salir sin guardar?';
   $('#d-salir-p').textContent = cruda ? 'La masa cruda no se guarda: si sales, se perderá.' : 'Si no la guardas, se perderán tus cambios.';
@@ -2078,6 +2083,7 @@ async function guardarYa() {
 }
 function nueva(molde = 'guagua') {
   Object.assign(estado, { a: MOLDES[molde](), f: molde, k: 0, o: [], id: null, n: '', p: '', m: '', t: '', l: 0, capa: 0 });
+  masaDelMolde = JSON.stringify(estado.a);
   historia = []; futuro = [];
   ultimaGuardada = null;
   sincronizarControles();
