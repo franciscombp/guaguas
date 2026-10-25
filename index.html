@@ -57,8 +57,8 @@
 }
 </script>
 <link rel="stylesheet" href="vendor/ds/mal/mal.css?v=1.0.18">
-<meta name="guagua-version" content="2026.10.25.2">
-<link rel="stylesheet" href="guagua.css?v=2026.10.25.2">
+<meta name="guagua-version" content="2026.10.25.4">
+<link rel="stylesheet" href="guagua.css?v=2026.10.25.4">
 </head>
 <body class="juego-cuerpo">
 <svg width="0" height="0" class="sr-only" aria-hidden="true" focusable="false">
@@ -87,6 +87,8 @@
   <symbol id="x-perfil" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></g></symbol>
   <symbol id="x-molde" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="12" cy="10" r="3"/><path d="M8 18q4-5 8 0"/></g></symbol>
   <symbol id="x-papelera" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+  <symbol id="x-flor" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2.5"/><path d="M12 9.5C9 3 15 3 12 9.5M14.5 12C21 9 21 15 14.5 12M12 14.5C15 21 9 21 12 14.5M9.5 12C3 15 3 9 9.5 12"/></g></symbol>
+  <symbol id="x-otra" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="3"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2M14 11v6M11 14h6"/></g></symbol>
   <symbol id="x-guagua" viewBox="0 0 30 30"><rect width="30" height="30" rx="8" fill="#fff6ea"/><ellipse cx="15" cy="19" rx="6" ry="8" fill="#c97a24"/><circle cx="15" cy="9" r="4.5" fill="#c97a24"/><path d="M10 17l2-2 2 2 2-2 2 2 2-2" fill="none" stroke="#e8442e" stroke-width="1.3"/></symbol>
 </svg>
 
@@ -131,6 +133,21 @@
   <div class="intro" id="intro" aria-live="polite">
     <h2 id="intro-t">Amasa tu guagua</h2>
     <p id="intro-p">Arrastra sobre la lata: al lado sale ancha, hacia arriba sale alta</p>
+  </div>
+
+
+  <!-- lo que se está poniendo (carita, mordisco, figura): un estado aparte, con su barra -->
+  <div class="contexto" id="contexto" hidden>
+    <p class="contexto__msg" id="contexto-msg"></p>
+    <div class="contexto__tam" id="contexto-tam" role="group" aria-label="Tamaño">
+      <button class="tam" type="button" data-ctam="0" aria-label="Chica"><i style="--t:8px"></i></button>
+      <button class="tam" type="button" data-ctam="1" aria-label="Mediana"><i style="--t:12px"></i></button>
+      <button class="tam" type="button" data-ctam="2" aria-label="Grande"><i style="--t:17px"></i></button>
+      <i class="contexto__sep" aria-hidden="true"></i>
+    </div>
+    <button class="contexto__b" id="contexto-otra" type="button" aria-label="Poner otra"><svg class="icono" aria-hidden="true"><use href="#x-otra"/></svg></button>
+    <button class="contexto__b contexto__b--quitar" id="contexto-quitar" type="button" aria-label="Quitar"><svg class="icono" aria-hidden="true"><use href="#x-papelera"/></svg></button>
+    <button class="contexto__listo" id="contexto-listo" type="button">Listo</button>
   </div>
 
   <!-- 1 · amasar -->
@@ -183,7 +200,6 @@
       <button class="manga" type="button" data-herramienta="manga" aria-pressed="true" aria-label="Hilo de glaseado"><svg aria-hidden="true" viewBox="0 0 44 96"><path d="M18 22h8l-3-18h-2z" fill="#eef1f4"/><rect x="13" y="22" width="18" height="6" rx="2" fill="#b9bec5"/><path class="manga__bolsa" d="M8 28q14-6 28 0l4 68H4z"/><path d="M13 32q5-2 9 0l1 60h-11z" fill="#fff" opacity=".35"/></svg></button>
       <button class="manga" type="button" data-herramienta="puntos" aria-pressed="false" aria-label="Puntos de glaseado"><svg aria-hidden="true" viewBox="0 0 44 96"><path d="M16 22h12l-4-12h-4z" fill="#eef1f4"/><circle cx="22" cy="6" r="3" fill="#eef1f4"/><rect x="13" y="22" width="18" height="6" rx="2" fill="#b9bec5"/><path class="manga__bolsa" d="M8 28q14-6 28 0l4 68H4z"/><path d="M13 32q5-2 9 0l1 60h-11z" fill="#fff" opacity=".35"/></svg></button>
       <button class="manga" type="button" data-herramienta="cobertura" aria-pressed="false" aria-label="Cobertura: pinta a mano"><svg aria-hidden="true" viewBox="0 0 44 96"><path class="manga__bolsa" d="M6 4h32q2 0 2 3v18H4V7q0-3 2-3z"/><rect x="5" y="24" width="34" height="12" rx="2" fill="#c9ced5"/><rect x="5" y="28" width="34" height="2" fill="#9aa0a8"/><path d="M13 36h18l-3 60H16z" fill="#d79a5a"/><path d="M17 38h4l-1 56h-3z" fill="#fff" opacity=".3"/></svg></button>
-      <span class="bandeja__otra" id="otra-herr" hidden></span>
       <div class="bandeja__fin">
         <button class="aro" id="abrir-color" type="button" aria-haspopup="dialog" aria-label="Color y grosor"><i id="aro-color"></i></button>
         <button class="redondo" id="abrir-mas" type="button" aria-haspopup="dialog" aria-label="Más: carita, pasas, mordisco"><svg class="icono" aria-hidden="true"><use href="#x-mas"/></svg></button>
@@ -256,12 +272,18 @@
   </div>
 </dialog>
 
-<!-- más adornos -->
+<!-- más: lo que se pone una vez, como los stickers del Marcado -->
 <dialog class="hoja hoja--flota hoja--menu" id="d-mas" aria-label="Más adornos">
-  <button class="menu__op" type="button" data-adorno="carita"><svg class="icono" aria-hidden="true"><use href="#g-carita"/></svg>Carita</button>
-  <button class="menu__op" type="button" data-adorno="pasa"><svg class="icono" aria-hidden="true"><use href="#g-pasa"/></svg>Pasas</button>
-  <button class="menu__op" type="button" data-adorno="mordisco"><svg class="icono" aria-hidden="true"><use href="#g-mordisco"/></svg>Mordisco</button>
+  <button class="menu__op" type="button" data-colocar="carita"><svg class="icono" aria-hidden="true"><use href="#g-carita"/></svg>Carita</button>
+  <button class="menu__op" type="button" data-colocar="mordisco"><svg class="icono" aria-hidden="true"><use href="#g-mordisco"/></svg>Mordisco</button>
+  <button class="menu__op" type="button" id="abrir-figuras"><svg class="icono" aria-hidden="true"><use href="#x-flor"/></svg>Figuras de mazapán</button>
   <button class="menu__op" type="button" id="sorpresa"><svg class="icono" aria-hidden="true"><use href="#g-dado"/></svg>Sorpréndeme</button>
+</dialog>
+
+<!-- las figuras de mazapán -->
+<dialog class="hoja" id="d-figuras" aria-labelledby="d-figuras-t">
+  <div class="hoja__cab"><h2 id="d-figuras-t">Figuras de mazapán</h2><button class="redondo redondo--plano" type="button" data-cierra aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#x-cerrar"/></svg></button></div>
+  <div class="figuras"><button class="figura" type="button" data-figura="0"><svg viewBox="0 0 48 48" aria-hidden="true"><g fill="#f6a3c3"><circle cx="24" cy="12" r="8"/><circle cx="35" cy="20" r="8"/><circle cx="31" cy="34" r="8"/><circle cx="17" cy="34" r="8"/><circle cx="13" cy="20" r="8"/></g><circle cx="24" cy="24" r="6" fill="#ffcf3d"/></svg>Flor</button><button class="figura" type="button" data-figura="1"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6Q40 24 24 42Q8 24 24 6Z" fill="#93c84a"/><path d="M24 10v28" stroke="#6f9a33" stroke-width="2"/></svg>Hoja</button><button class="figura" type="button" data-figura="2"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 40C8 30 6 18 14 12c5-3 9 0 10 4c1-4 5-7 10-4c8 6 6 18-10 28Z" fill="#e01b6a"/></svg>Corazón</button><button class="figura" type="button" data-figura="3"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5l5 12 13 1-10 8 3 13-11-7-11 7 3-13-10-8 13-1z" fill="#ffcf3d"/></svg>Estrella</button><button class="figura" type="button" data-figura="4"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 24L8 14v20zM24 24l16-10v20z" fill="#8fd0f2"/><circle cx="24" cy="24" r="5" fill="#6fb6dd"/></svg>Moño</button><button class="figura" type="button" data-figura="5"><svg viewBox="0 0 48 48" aria-hidden="true"><g fill="#7d3c98"><circle cx="24" cy="16" r="6"/><circle cx="17" cy="24" r="6"/><circle cx="31" cy="24" r="6"/><circle cx="20" cy="32" r="6"/><circle cx="28" cy="32" r="6"/><circle cx="24" cy="39" r="5"/></g><path d="M24 10q6-6 12-4" stroke="#93c84a" stroke-width="3" fill="none"/></svg>Uvas</button><button class="figura" type="button" data-figura="pasa"><svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="24" rx="12" ry="9" fill="#4a2614"/><path d="M16 22q8-4 16 0" stroke="#2e140a" stroke-width="2" fill="none"/></svg>Pasa</button></div>
 </dialog>
 
 <!-- ponle nombre: al tocar listo o regalar -->
@@ -405,7 +427,7 @@
   <ol class="pasos-ayuda">
     <li data-paso="amasar"><i>1</i><div><b>Amasa</b><span>Arrastra sobre la lata: al lado sale ancha, hacia arriba sale alta. Bolita, chorizo, mover o quitar; o empieza con un molde.</span><em>Cuando esté lista, toca Hornear</em></div></li>
     <li data-paso="horno"><i>2</i><div><b>Hornea</b><span>Se dora en seis segundos. Sácala en la franja blanca: si esperas mucho, se quema.</span><em>Toca Sacar del horno</em></div></li>
-    <li data-paso="decorar"><i>3</i><div><b>Decora</b><span>Elige una manga y dibuja con el dedo sobre el pan. La brocha pinta la cobertura donde quieras. El aro cambia el color; el + trae carita, pasas y mordisco.</span><em>Toca el ✓ para guardarla; después la regalas o la compartes</em></div></li>
+    <li data-paso="decorar"><i>3</i><div><b>Decora</b><span>Elige una manga y dibuja con el dedo sobre el pan. La brocha pinta la cobertura donde quieras. El aro cambia el color. El + trae la carita, el mordisco y las figuras de mazapán: se ponen con un toque.</span><em>Toca el ✓ para guardarla; después la regalas o la compartes</em></div></li>
   </ol>
   <p class="hoja__texto">Dos dedos giran y acercan la guagua.</p>
   <button class="b b--pri" type="button" data-cierra>Entendido</button>
@@ -419,6 +441,6 @@
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js": "./vendor/firebase/firebase-auth.js",
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js": "./vendor/firebase/firebase-firestore-lite.js"
 } }</script>
-<script type="module" src="guagua.js?v=2026.10.25.2"></script>
+<script type="module" src="guagua.js?v=2026.10.25.4"></script>
 </body>
 </html>

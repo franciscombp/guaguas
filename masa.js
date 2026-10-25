@@ -29,6 +29,11 @@ const BOQUILLA_LISA = 4;                              // el glaseado liso: un tu
 /* El hilo de glaseado en tres grosores y la cobertura, que se pinta a mano con la brocha. */
 const ANCHOS = [0.02, 0.034, 0.052, 0.13];
 const COBERTURA = 3;
+/* Las figuras de mazapán: se ponen una por una, como stickers, y vienen con su color. */
+const FIGURAS = [
+  { id: 'flor', n: 'Flor' }, { id: 'hoja', n: 'Hoja' }, { id: 'corazon', n: 'Corazón' },
+  { id: 'estrella', n: 'Estrella' }, { id: 'mono', n: 'Moño' }, { id: 'uvas', n: 'Uvas' },
+];
 /* Las capas de baño: la guagua entera se cubre con uno de estos colores. El cero es sin capa. */
 const BANOS = [
   { n: 'Sin capa', c: null },
@@ -345,7 +350,7 @@ function cinta(puntos, normales, ancho, grosor) {
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < rad; j++) {
       const a = i * (rad + 1) + j, b = a + rad + 1;
-      idx.push(a, a + 1, b, b, a + 1, b + 1);
+      idx.push(a, b, a + 1, b, b + 1, a + 1);    // hacia afuera: la cara de atrás se pinta del color de la miga
     }
   }
   const g = new THREE.BufferGeometry();
@@ -493,6 +498,7 @@ function sano(d) {
     if (t === 5) return op.length === 7;
     if (t === 6) return op.length === 8 && CREMAS[op[1]] !== undefined;
     if (t === 7) return op.length >= 8 && (op.length - 2) % 6 === 0 && CREMAS[op[1]] !== undefined;
+    if (t === 9) return op.length === 9 && FIGURAS[op[1]] !== undefined && [0, 1, 2].includes(op[2]);
     if (t === 8) return op.length >= 9 && (op.length - 3) % 6 === 0 && CREMAS[op[1]] !== undefined && ANCHOS[op[2]] !== undefined;
     return false;
   });
@@ -728,5 +734,5 @@ function amasarReceta(args = {}) {
 }
 
 export {
-  amasarReceta, COCCION, dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa,
+  amasarReceta, COCCION, dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa,
 };

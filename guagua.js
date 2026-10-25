@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.2';
+import * as nube from './nube.js?v=2026.10.25.4';
 import {
-  DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.2';
+  DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
+} from './masa.js?v=2026.10.25.4';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -427,7 +427,7 @@ class Visor {
   vaciar(grupo) {
     grupo.children.slice().forEach((o) => {
       grupo.remove(o);
-      if (o.geometry) o.geometry.dispose();
+      o.traverse((x) => { if (x.geometry) x.geometry.dispose(); });
       if (o.isInstancedMesh) o.dispose();
     });
   }
@@ -509,6 +509,57 @@ class Visor {
     o.castShadow = true; o.receiveShadow = true;
     return o;
   }
+  /* Las figuras se arman de frente, en el plano XY, con la z hacia afuera
+     del pan; miden unos 0.2 de ancho, como una flor de mazapán de verdad. */
+  mazapan(id) {
+    const g = new THREE.Group(), cr = this.mat.cremas;
+    const bola = (x, y, z, sx, sy, sz, m) => {
+      const e = new THREE.SphereGeometry(1, 16, 12); e.scale(sx, sy, sz);
+      const o = this.malla(e, m); o.position.set(x, y, z); g.add(o); return o;
+    };
+    const plana = (forma, m) => {
+      const e = new THREE.ExtrudeGeometry(forma, { depth: 0.016, bevelEnabled: true, bevelThickness: 0.008, bevelSize: 0.008, bevelSegments: 3, curveSegments: 14 });
+      g.add(this.malla(e, m));
+    };
+    if (id === 'flor') {
+      for (let i = 0; i < 5; i++) {
+        const a = i / 5 * Math.PI * 2;
+        bola(Math.cos(a) * 0.05, Math.sin(a) * 0.05, 0.012, 0.045, 0.032, 0.016, cr[1]).rotation.z = a;
+      }
+      bola(0, 0, 0.022, 0.026, 0.026, 0.018, cr[6]);
+    } else if (id === 'hoja') {
+      const f = new THREE.Shape();
+      f.moveTo(0, -0.1); f.quadraticCurveTo(0.07, 0, 0, 0.1); f.quadraticCurveTo(-0.07, 0, 0, -0.1);
+      plana(f, cr[5]);
+    } else if (id === 'corazon') {
+      const f = new THREE.Shape();
+      f.moveTo(0, -0.08);
+      f.bezierCurveTo(-0.1, -0.02, -0.09, 0.07, -0.045, 0.07);
+      f.bezierCurveTo(-0.015, 0.07, 0, 0.045, 0, 0.03);
+      f.bezierCurveTo(0, 0.045, 0.015, 0.07, 0.045, 0.07);
+      f.bezierCurveTo(0.09, 0.07, 0.1, -0.02, 0, -0.08);
+      plana(f, cr[2]);
+    } else if (id === 'estrella') {
+      const f = new THREE.Shape();
+      for (let i = 0; i < 10; i++) {
+        const a = Math.PI / 2 + i / 10 * Math.PI * 2, r = i % 2 ? 0.04 : 0.09;
+        if (i) f.lineTo(Math.cos(a) * r, Math.sin(a) * r); else f.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+      }
+      f.closePath();
+      plana(f, cr[6]);
+    } else if (id === 'mono') {
+      bola(-0.05, 0, 0.01, 0.05, 0.034, 0.016, cr[4]).rotation.z = 0.25;
+      bola(0.05, 0, 0.01, 0.05, 0.034, 0.016, cr[4]).rotation.z = -0.25;
+      bola(0, 0, 0.018, 0.02, 0.024, 0.018, cr[4]);
+    } else if (id === 'uvas') {
+      [[0, 0.05], [-0.028, 0.02], [0.028, 0.02], [-0.014, -0.01], [0.014, -0.01], [0, -0.04], [-0.04, -0.012], [0.04, -0.012]]
+        .forEach(([x, y]) => bola(x, y, 0.018, 0.024, 0.024, 0.02, cr[3]));
+      const f = new THREE.Shape();
+      f.moveTo(0, 0.07); f.quadraticCurveTo(0.05, 0.11, 0.07, 0.09); f.quadraticCurveTo(0.04, 0.07, 0, 0.07);
+      plana(f, cr[5]);
+    }
+    return g;
+  }
 
   /* ─── la decoración ─────────────────────────────────────
      0 manga [0, crema, boquilla, x, y, z…]
@@ -519,7 +570,8 @@ class Visor {
      5 pasa [5, x, y, z, nx, ny, nz]
      6 masa de colores [6, color, x, y, z, nx, ny, nz]
      7 glaseado plano [7, color, x, y, z, nx, ny, nz…]
-     8 hilo o cobertura [8, color, grosor, x, y, z, nx, ny, nz…]  */
+     8 hilo o cobertura [8, color, grosor, x, y, z, nx, ny, nz…]
+     9 figura de mazapán [9, figura, tamaño, x, y, z, nx, ny, nz]  */
   construir(op) {
     const t = op[0];
     const pn = (i) => [V(op[i], op[i + 1], op[i + 2]).divideScalar(Q), V(op[i + 3], op[i + 4], op[i + 5]).normalize()];
@@ -610,6 +662,14 @@ class Visor {
       }
       return this.malla(cinta(pts, nor, BOQUILLAS[BOQUILLA_LISA], 0.006), this.mat.cremas[op[1]]);
     }
+    if (t === 9) {                                  // una figura de mazapán, apoyada sobre el pan
+      const [p, n] = pn(3);
+      const o = this.mazapan(FIGURAS[op[1]].id);
+      o.scale.setScalar([1.3, 1.8, 2.4][op[2]]);
+      o.quaternion.setFromRotationMatrix(base(n).m);
+      o.position.copy(p).addScaledVector(n, 0.006);
+      return o;
+    }
     if (t === 8) {                                  // el hilo con grosor, o la cobertura pintada a mano
       const pts = [], nor = [];
       for (let i = 3; i + 5 < op.length; i += 6) {
@@ -647,7 +707,7 @@ class Visor {
   }
   quitarUltimo() {
     const op = this.ops.pop(), o = this.objetos.pop();
-    if (o) { this.adornos.remove(o); o.geometry.dispose(); if (o.isInstancedMesh) o.dispose(); }
+    if (o) { this.adornos.remove(o); o.traverse((x) => { if (x.geometry) x.geometry.dispose(); }); if (o.isInstancedMesh) o.dispose(); }
     if (op && op[0] === 3) this.actualizarBocados();
     this.dibujar();
   }
@@ -1503,22 +1563,82 @@ function fijar(op) {
 function tocarDecorar(ev) {
   const hit = taller.tocar(ev);
   if (!hit) return false;
+  if (colocando) { ponerEn(hit); return true; }
   const h = estado.herramienta;
   if (h === 'manga' || h === 'cobertura') {
     trazo = [8, estado.crema, h === 'cobertura' ? COBERTURA : estado.ancho, ...pn(hit)];
     taller.vistaPrevia(trazo);
   } else if (h === 'puntos') {                  // un punto de glaseado: una gotita plana
     fijar([7, estado.crema, ...pn(hit)]);
-  } else if (h === 'pasa') {
-    fijar([5, ...pn(hit)]);
-  } else if (h === 'carita') {
-    chapitas(hit, estado.tamano, caraPintada(hit, estado.tamano, taller), taller).forEach((op) => fijar(op));
-  } else if (h === 'mordisco') {
-    if (estado.o.filter((op) => op[0] === 3).length >= BOCADOS_TALLER) {
-      avisa('Ya tiene suficientes mordiscos. Deja algo para quien la reciba.');
-    } else { fijar([3, ent(hit.p.x), ent(hit.p.y), ent(hit.p.z)]); crunch(); }
   }
   return true;
+}
+/* ─── poner algo: carita, mordisco o una figura de mazapán ────
+   No son herramientas de la bandeja: como los stickers del Marcado, se eligen
+   en el +, se ponen con un toque y quedan elegidas con su propia barra
+   (tamaño, otra, quitar, listo). Tocar otra vez el pan las cambia de lugar. */
+let colocando = null;         // { tipo, figura, tam, hit, n }: n es cuántos trazos puso
+const nombreFigura = (f) => (f === 'pasa' ? 'la pasa' : 'la ' + FIGURAS[f].n.toLowerCase()).replace('la moño', 'el moño');
+function empezarColocar(tipo, figura) {
+  colocando = { tipo, figura, tam: 1, hit: null, n: 0 };
+  $('#intro').classList.add('oculta');
+  pintarContexto();
+}
+function opsDe(c, hit) {
+  if (c.tipo === 'carita') return chapitas(hit, c.tam, caraPintada(hit, c.tam, taller), taller);
+  if (c.tipo === 'mordisco') return [[3, ent(hit.p.x), ent(hit.p.y), ent(hit.p.z)]];
+  if (c.figura === 'pasa') return [[5, ...pn(hit)]];
+  return [[9, c.figura, c.tam, ...pn(hit)]];
+}
+function quitarPuesta() {
+  for (let i = 0; i < colocando.n; i++) { estado.o.pop(); taller.quitarUltimo(); }
+  colocando.n = 0;
+}
+function ponerEn(hit) {
+  if (colocando.tipo === 'mordisco' && !colocando.n && estado.o.filter((op) => op[0] === 3).length >= BOCADOS_TALLER) {
+    avisa('Ya tiene suficientes mordiscos. Deja algo para quien la reciba.');
+    return;
+  }
+  if (colocando.n) quitarPuesta();
+  const ops = opsDe(colocando, hit);
+  ops.forEach((op) => fijar(op));
+  colocando.hit = hit; colocando.n = ops.length;
+  if (colocando.tipo === 'mordisco') crunch();
+  pintarContexto();
+}
+function terminarColocar() {
+  colocando = null;
+  $('#contexto').hidden = true;
+  guardarBorrador(); actualizarEtiqueta();
+}
+function pintarContexto() {
+  const c = colocando, puesta = c.n > 0;
+  $('#contexto').hidden = false;
+  $('#contexto').classList.toggle('contexto--puesta', puesta);
+  $('#contexto-msg').textContent = c.tipo === 'carita' ? 'Toca el centro de la cara'
+    : c.tipo === 'mordisco' ? 'Toca donde le das el mordisco' : 'Toca donde va ' + nombreFigura(c.figura);
+  $('#contexto-msg').hidden = puesta;
+  // la carita y las figuras tienen tamaño; la pasa y el mordisco, no
+  $('#contexto-tam').hidden = !puesta || c.tipo === 'mordisco' || c.figura === 'pasa';
+  $$('#contexto-tam [data-ctam]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.ctam === c.tam)));
+  $('#contexto-otra').hidden = !puesta || c.tipo !== 'figura';
+  $('#contexto-quitar').hidden = !puesta;
+  $('#contexto-listo').textContent = puesta ? 'Listo' : 'Cancelar';
+}
+function montarColocar() {
+  $$('[data-colocar]').forEach((b) => b.addEventListener('click', () => { $('#d-mas').close(); empezarColocar(b.dataset.colocar); }));
+  $('#abrir-figuras').addEventListener('click', () => { $('#d-mas').close(); abrir('#d-figuras'); });
+  $$('[data-figura]').forEach((b) => b.addEventListener('click', () => {
+    $('#d-figuras').close();
+    empezarColocar('figura', b.dataset.figura === 'pasa' ? 'pasa' : +b.dataset.figura);
+  }));
+  $$('[data-ctam]').forEach((b) => b.addEventListener('click', () => {
+    colocando.tam = +b.dataset.ctam;
+    if (colocando.hit) ponerEn(colocando.hit); else pintarContexto();
+  }));
+  $('#contexto-otra').addEventListener('click', () => { colocando.n = 0; colocando.hit = null; pintarContexto(); });
+  $('#contexto-quitar').addEventListener('click', () => { quitarPuesta(); terminarColocar(); });
+  $('#contexto-listo').addEventListener('click', terminarColocar);
 }
 function arrastrarDecorar(ev) {
   if (!trazo) return;
@@ -1577,6 +1697,7 @@ function medirTaller() {
   taller.dibujar();
 }
 function irA(etapa) {
+  if (colocando) terminarColocar();
   if (etapa !== 'horno') apagarHorno();
   estado.etapa = etapa;
   futuro = [];
@@ -1628,16 +1749,12 @@ function aDecorar() {
   taller.cargar(estado);
   irA('decorar');
 }
-/* Las herramientas del + no están en la bandeja: cuando una está elegida,
-   el + se marca y su nombre aparece al lado de las mangas. */
+/* La bandeja: hilo, puntos y cobertura. Elegir una termina lo que se estaba poniendo. */
 function elegirHerramienta(h) {
+  if (colocando) terminarColocar();
   estado.herramienta = h;
   $('#taller').dataset.herramienta = h;
   $$('.bandeja .manga').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.herramienta === h)));
-  const otra = { carita: 'Carita', pasa: 'Pasas', mordisco: 'Mordisco' }[h];
-  $('#otra-herr').hidden = !otra;
-  $('#otra-herr').textContent = otra || '';
-  $('#abrir-mas').setAttribute('aria-pressed', String(!!otra));
   $('#grosor-fila').hidden = h !== 'manga';
 }
 function pintarAro() {
@@ -1671,7 +1788,7 @@ function montarTaller() {
   grupoDe('data-grosor', 'grosor', true);
   grupoDe('data-ancho', 'ancho', true);
   $$('.bandeja .manga').forEach((b) => b.addEventListener('click', () => elegirHerramienta(b.dataset.herramienta)));
-  $$('[data-adorno]').forEach((b) => b.addEventListener('click', () => { elegirHerramienta(b.dataset.adorno); $('#d-mas').close(); }));
+  montarColocar();
   const cremas = $('#cremas');
   CREMAS.forEach((cr, i) => {
     const b = document.createElement('button');
@@ -1683,7 +1800,6 @@ function montarTaller() {
     b.addEventListener('click', () => {
       estado.crema = i;
       $$('.color', cremas).forEach((x, j) => x.setAttribute('aria-pressed', String(j === i)));
-      if (!['manga', 'puntos', 'cobertura'].includes(estado.herramienta)) elegirHerramienta('manga');
       pintarAro();
     });
     cremas.appendChild(b);
@@ -1763,6 +1879,7 @@ function montarTaller() {
 }
 
 function deshacer() {
+  if (colocando) { colocando.n = 0; terminarColocar(); }
   if (estado.etapa === 'amasar') {
     if (!historia.length) return;
     futuro.push(JSON.stringify(estado.a));
@@ -1776,6 +1893,7 @@ function deshacer() {
   guardarBorrador(); actualizarEtiqueta();
 }
 function rehacer() {
+  if (colocando) terminarColocar();
   if (!futuro.length) return;
   if (estado.etapa === 'amasar') {
     historia.push(JSON.stringify(estado.a));
@@ -1798,6 +1916,7 @@ const sinGuardar = () => estado.o.length > 0 && huella() !== ultimaGuardada;
 /* La ✕ vuelve a tu canasta. Si hay algo que se perdería, avisa antes:
    la decoración se puede guardar; la masa cruda no se guarda. */
 function cerrarTaller() {
+  if (colocando) terminarColocar();
   const cruda = estado.etapa !== 'decorar';
   const hayAlgo = cruda ? historia.length > 0 || estado.k > 0 : sinGuardar();
   if (!hayAlgo) { mostrar('canasta'); return; }
@@ -1812,6 +1931,7 @@ const fotoDe = (img, e) => { img.src = foto(e, 240, 300).toDataURL(); };
 /* Ponle nombre: sale al tocar listo, regalar o guardar antes de salir. */
 let trasNombre = 'guardada';
 function abrirNombre(despues) {
+  if (colocando) terminarColocar();
   trasNombre = despues;
   $('#r-nombre').value = estado.n || 'Guagua';
   fotoDe($('#nombre-foto'), receta());

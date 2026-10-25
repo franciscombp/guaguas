@@ -202,7 +202,6 @@ body.juego-cuerpo{margin:0;background:var(--noche);color:var(--crema);font-famil
 .manga[aria-pressed="true"]{margin-bottom:0}
 .manga__bolsa{fill:var(--manga, #ff4f9a)}
 .manga[data-herramienta="cobertura"] .manga__bolsa{fill:#3b1d0e}
-.bandeja__otra{align-self:center;padding:6px 12px;border-radius:999px;background:var(--rosa);color:var(--noche);font-weight:800;font-size:13px}
 .bandeja__fin{margin-left:auto;align-self:center;display:flex;gap:10px}
 .bandeja .redondo{width:44px;height:44px;background:rgba(255,255,255,.16)}
 .bandeja .redondo[aria-pressed="true"]{background:var(--rosa)}
@@ -342,3 +341,25 @@ dialog.hoja--entera[open]{animation:none}
 .campo__opc{font-weight:400;color:var(--texto-2)}
 .compartir__vista{display:block;align-self:center;height:clamp(160px, 34dvh, 300px);width:auto;aspect-ratio:9/16;border-radius:16px;background:var(--noche-2);box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .compartir__fin{margin-top:auto}
+
+/* lo que se está poniendo: una barra flotante, como la del Marcado al elegir un sticker */
+.contexto{position:absolute;z-index:3;left:50%;top:calc(74px + env(safe-area-inset-top));transform:translateX(-50%);
+  display:flex;align-items:center;gap:6px;max-width:calc(100% - 32px);box-sizing:border-box;min-height:52px;padding:4px 6px 4px 18px;border-radius:999px;
+  background:var(--superficie);border:1px solid var(--linea);box-shadow:0 12px 32px rgba(0,0,0,.4);animation:contexto-entra var(--dur-2) ease}
+.contexto--puesta{padding-left:8px}
+@keyframes contexto-entra{from{opacity:0;transform:translate(-50%, -6px)}to{opacity:1;transform:translateX(-50%)}}
+.contexto__msg{margin:0 6px 0 0;font-size:15px;font-weight:600;line-height:1.2;white-space:nowrap}
+.contexto__tam{display:flex;align-items:center;gap:4px}
+.contexto__tam .tam{width:40px;height:40px;border:0;background:none}
+.contexto__tam .tam[aria-pressed="true"]{background:rgba(255,79,154,.18);color:var(--rosa)}
+.contexto__sep{width:1px;height:28px;margin:0 4px;background:var(--linea)}
+.contexto__b{width:44px;height:44px;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:none;color:var(--crema);cursor:pointer}
+.contexto__b--quitar{color:#ff8a7a}
+.contexto__listo{height:40px;padding:0 16px;border:0;border-radius:999px;background:rgba(255,255,255,.14);color:var(--crema);font-weight:800;font-size:15px;line-height:1;cursor:pointer}
+.contexto--puesta .contexto__listo{background:var(--rosa);color:var(--noche)}
+
+/* las figuras de mazapán: una rejilla como la de stickers */
+.figuras{display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:12px 6px}
+.figura{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 0;border:0;border-radius:18px;background:none;color:var(--crema);font-size:13px;font-weight:600;line-height:1.2;cursor:pointer}
+.figura svg{width:60px;height:60px;padding:6px;border-radius:18px;background:var(--campo)}
+.figura:active svg{background:rgba(255,79,154,.18)}

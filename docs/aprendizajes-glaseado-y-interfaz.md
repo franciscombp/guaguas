@@ -213,3 +213,16 @@ el morado casi no aparece en el glaseado (aparece en la colada).
 - Los botones y las píldoras llevan `line-height:1`: con el 1.6 del cuerpo, el texto no se centra.
 - Abajo basta `max(12px, área segura − 8px)`: la barra de inicio del iPhone ya deja aire.
 - El rojo de los botones es `#d63a22` (blanco encima 4.7:1); el texto terciario sobre vidrio, `#b3a2c2`.
+
+## 8. Poner cosas: carita, mordisco y figuras de mazapán
+
+- **No son herramientas de la bandeja.** Como los stickers y el texto del Marcado, se eligen en el +,
+  se ponen con un toque y quedan elegidas con su propia barra flotante: tamaño (carita y figuras),
+  otra (figuras), quitar y listo. Tocar otra vez el pan las cambia de lugar. Elegir una manga, deshacer
+  o cambiar de paso termina lo que se estaba poniendo.
+- **Figuras de mazapán** (op 9 `[9, figura, tamaño, x, y, z, nx, ny, nz]`): flor, hoja, corazón,
+  estrella, moño y uvas, con su color de mazapán. La pasa va en la misma rejilla.
+- **El color que no cambiaba:** el material pinta las caras de atrás del color de la miga, y la cinta
+  del glaseado tenía los triángulos hacia adentro. Se veía siempre «por dentro», color crema. Los
+  triángulos de una malla hecha a mano tienen que mirar hacia afuera.
+- El visor ya tiene una propiedad `figura` (el plato que gira): un método con ese nombre queda tapado.
