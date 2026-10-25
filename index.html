@@ -185,7 +185,6 @@
           <button class="tool" type="button" data-herramienta="grageas" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-grageas"/></svg><span>Grageas</span></button>
           <button class="tool" type="button" data-herramienta="carita" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-carita"/></svg><span>Carita</span></button>
           <button class="tool" type="button" data-herramienta="pasa" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-pasa"/></svg><span>Pasas</span></button>
-          <button class="tool" type="button" data-herramienta="masa" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-bolita"/></svg><span>Masa</span></button>
         </div>
       </div>
       <div class="herr-grupo" role="group" aria-label="Probar">
@@ -194,11 +193,20 @@
           <button class="tool" type="button" data-herramienta="mordisco" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-mordisco"/></svg><span>Mordisco</span></button>
         </div>
       </div>
+      <div class="herr-grupo" role="group" aria-label="Baño">
+        <span class="herr-grupo__t" aria-hidden="true">Baño</span>
+        <div class="herr-grupo__b">
+          <button class="tool" type="button" data-herramienta="capa" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#i-gota"/></svg><span>Capa</span></button>
+        </div>
+      </div>
     </div>
-    <div class="dock__fila dock__fila--desliza" data-con="manga roseta masa" role="group" aria-label="Color del glaseado o de la masa">
+    <div class="dock__fila dock__fila--desliza" data-con="manga roseta" role="group" aria-label="Color del glaseado">
       <div class="cremas" id="cremas"></div>
     </div>
-    <p class="dock__fila dock__nota" data-con="masa">Toca para poner una bolita de masa del color elegido.</p>
+    <div class="dock__fila dock__fila--desliza" data-con="capa" role="group" aria-label="Color de la capa de baño">
+      <div class="cremas" id="banos"></div>
+    </div>
+    <p class="dock__fila dock__nota" data-con="capa">Toca un color: la guagua entera se cubre con esa capa.</p>
     <div class="dock__fila" data-con="manga roseta" role="group" aria-label="Boquilla">
       <span class="dock__rotulo">Boquilla</span>
       <button class="tam" type="button" data-boquilla="0" aria-pressed="false" aria-label="Pincel"><i style="--t:5px"></i></button>

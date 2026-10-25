@@ -26,6 +26,17 @@ const CREMAS = [
 ];
 const BOQUILLAS = [0.026, 0.05, 0.085, 0.13, 0.07];   // pincel, fina, media, gruesa, lisa (redonda, sin estrías)
 const BOQUILLA_LISA = 4;                              // el glaseado liso: un tubo redondo, sin el dibujo de la estrella
+/* Las capas de baño: la guagua entera se cubre con uno de estos colores. El cero es sin capa. */
+const BANOS = [
+  { n: 'Sin capa', c: null },
+  { n: 'Chocolate oscuro', c: '#3b1d0e' },
+  { n: 'Chocolate con leche', c: '#7a4420' },
+  { n: 'Chocolate blanco', c: '#f6efe0' },
+  { n: 'Rosa', c: '#f6a3c3' },
+  { n: 'Morado', c: '#7b3fa0' },
+  { n: 'Azul', c: '#8fd0f2' },
+  { n: 'Verde', c: '#8fc94a' },
+];
 const GROSORES = [0.1, 0.17, 0.26];             // los chorizos de masa
 /* Las masas: la natural y las teñidas que se ven en las panaderías.
    Cada una con su tono tostado (cantos y base) y su dorado (arriba). */
@@ -487,6 +498,7 @@ function sano(d) {
     f: typeof d.f === 'string' && MOLDES[d.f] ? d.f : 'libre',
     n: txt(d.n, 40), p: txt(d.p, 40), d: txt(d.d, 40), m: txt(d.m, 160),
     t: d.t === 'm' ? 'm' : '',
+    capa: Number.isInteger(d.capa) && BANOS[d.capa] ? d.capa : 0,
     l: d.t !== 'm' && Number.isInteger(d.l) && VALES[d.l] ? d.l : 0,
   };
 }
@@ -712,5 +724,5 @@ function amasarReceta(args = {}) {
 }
 
 export {
-  amasarReceta, COCCION, dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa,
+  amasarReceta, COCCION, dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa,
 };

@@ -26,7 +26,7 @@ import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
 import * as nube from './nube.js?v=2026.10.23.2';
 import {
-  DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
+  DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
 } from './masa.js?v=2026.10.23.2';
 
 const $ = (s, r) => (r || document).querySelector(s);
@@ -71,15 +71,18 @@ function lienzo(w, h) {
 /* El dorado del horno, horneado en los vértices: más tostado en los
    cantos y en la base que tocó la lata, más claro arriba. */
 const TONOS = MASAS.map((m) => [new THREE.Color(m.tostado), new THREE.Color(m.dorado)]);
-function dorar(g, masa = 0) {
+function dorar(g, masa = 0, banio = null) {
   const n = g.attributes.normal, p = g.attributes.position;
   const col = new Float32Array(n.count * 3);
   const L = V(0.25, 0.55, 0.8).normalize(), c = new THREE.Color();
   const [TOSTADO, DORADO] = TONOS[masa] || TONOS[0];
+  const capa = banio ? new THREE.Color(banio) : null;
   for (let i = 0; i < n.count; i++) {
     const t = 0.5 + 0.5 * (n.getX(i) * L.x + n.getY(i) * L.y + n.getZ(i) * L.z);
     const piso = limita((p.getZ(i) - PISO) / 0.3, 0, 1);
-    c.copy(TOSTADO).lerp(DORADO, THREE.MathUtils.smoothstep(t, 0.1, 0.95) * (0.55 + 0.45 * piso));
+    if (capa) {                                     // la capa sigue el relieve: más clara arriba, más oscura abajo
+      c.copy(capa).multiplyScalar(0.72 + 0.28 * THREE.MathUtils.smoothstep(t, 0.1, 0.95));
+    } else c.copy(TOSTADO).lerp(DORADO, THREE.MathUtils.smoothstep(t, 0.1, 0.95) * (0.55 + 0.45 * piso));
     col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
   }
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
@@ -372,6 +375,7 @@ class Visor {
 
     this.objetivo = V(0, 1.9, 0);
     this.giro = op.giro != null ? op.giro : -0.25;
+    this.capa = 0;                 // la capa de baño, un índice de BANOS (0: sin capa)
     this.cabeceo = 0.9;            // desde arriba y un poco de frente: así se mira una lata
     this.dist = 10.5;
     this.zoom = 1;
@@ -430,12 +434,18 @@ class Visor {
   cargar(e, opciones = {}) {
     this.vaciar(this.adornos);
     this.ops = []; this.objetos = []; this.extra = []; this.previa = null;
+    this.capa = e.capa || 0;
     this.ponerMasa(e.a);
     this.hornear(e.k / 100, false);
     e.o.forEach((op) => this.agregar(op, true));
     this.actualizarBocados();
     if (opciones.encuadrar !== false) this.encuadrar();
     this.dibujar();
+  }
+  /* Cambia la capa de baño: vuelve a pintar el pan con el color elegido. */
+  ponerCapa(i) {
+    this.capa = i;
+    this.ponerMasa(this.piezas || []);
   }
   ponerMasa(piezas) {
     this.vaciar(this.pan);
@@ -445,7 +455,7 @@ class Visor {
     this.dibujar();
   }
   mallaPieza(p, i) {
-    const o = this.malla(dorar(geometriaPieza(p), masaDe(p)), this.mat.pan);
+    const o = this.malla(dorar(geometriaPieza(p), masaDe(p), BANOS[this.capa].c), this.mat.pan);
     o.userData.pieza = i;
     return o;
   }
@@ -1255,7 +1265,7 @@ const estado = {
   etapa: 'amasar',
   f: 'guagua', a: [], k: 0, o: [],
   mano: 'bolita', grosor: 1, masa: 0,
-  herramienta: 'manga', crema: 1, boquilla: 2, tamano: 1,
+  herramienta: 'manga', crema: 1, boquilla: 2, tamano: 1, capa: 0,
   id: null, n: '', p: '', d: '', m: '', t: '', l: 0,
 };
 let taller = null;       // el visor del taller
@@ -1263,7 +1273,7 @@ let trazo = null;        // lo que el dedo está haciendo al decorar
 let amase = null;        // …y al amasar
 let historia = [];       // las masas de antes, para deshacer al amasar
 const receta = () => Object.assign({ v: 3, f: estado.f, a: estado.a, k: estado.k, o: estado.o, n: estado.n, p: estado.p, d: estado.d, m: estado.m },
-  estado.t === 'm' ? { t: 'm' } : estado.l ? { l: estado.l } : {});
+  estado.t === 'm' ? { t: 'm' } : estado.l ? { l: estado.l } : {}, estado.capa ? { capa: estado.capa } : {});
 
 function guardarBorrador() {
   almacen.poner(BORRADOR, Object.assign(receta(), { id: estado.id, etapa: estado.etapa }));
@@ -1711,6 +1721,23 @@ function montarTaller() {
     });
     cremas.appendChild(b);
   });
+  // las capas de baño: se muestran cuando la herramienta es Capa, y cubren la guagua entera
+  const banos = $('#banos');
+  BANOS.forEach((bn, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'crema' + (bn.c ? '' : ' crema--ninguna');
+    if (bn.c) b.style.setProperty('--crema', bn.c);
+    b.setAttribute('aria-label', bn.n);
+    b.setAttribute('aria-pressed', String(i === estado.capa));
+    b.title = bn.n;
+    b.addEventListener('click', () => {
+      estado.capa = i;
+      $$('.crema', banos).forEach((x, j) => x.setAttribute('aria-pressed', String(j === i)));
+      taller.ponerCapa(i);
+      guardarBorrador(); actualizarEtiqueta();
+    });
+    banos.appendChild(b);
+  });
   $$('[data-molde]').forEach((b) => b.addEventListener('click', () => {
     const f = b.dataset.molde;
     if (estado.a.length && !confirm(f === 'libre' ? '¿Vaciar la lata?' : 'Se reemplaza la masa que tienes. ¿Continuar?')) return;
@@ -1808,7 +1835,7 @@ async function guardarYa(conAviso = true) {
   if (conAviso) window.malDS.abrir('#d-guardada');
 }
 function nueva(molde = 'guagua') {
-  Object.assign(estado, { a: MOLDES[molde](), f: molde, k: 0, o: [], id: null, n: elige(NOMBRES[molde]), p: '', m: '', l: 0 });
+  Object.assign(estado, { a: MOLDES[molde](), f: molde, k: 0, o: [], id: null, n: elige(NOMBRES[molde]), p: '', m: '', l: 0, capa: 0 });
   historia = [];
   ultimaGuardada = null;
   sincronizarControles();
@@ -1825,6 +1852,7 @@ async function guardarMia(regalo) {
 }
 function sincronizarControles() {
   const marcar = (attr, v) => $$(`button[${attr}]`).forEach((b) => b.setAttribute('aria-pressed', String(b.getAttribute(attr) === String(v))));
+  $$('#banos .crema').forEach((x, j) => x.setAttribute('aria-pressed', String(j === estado.capa)));
   marcar('data-mano', estado.mano);
   marcar('data-grosor', estado.grosor);
   marcar('data-herramienta', estado.herramienta);
@@ -2104,7 +2132,7 @@ function montarVitrina() {
   $$('[data-vitrina]').forEach((b) => b.addEventListener('click', () => pintarVitrina(b.dataset.vitrina)));
   $('#p-editar').addEventListener('click', () => {
     const { item, e } = piezaActual;
-    Object.assign(estado, { f: e.f, a: e.a, k: e.k, o: e.o.slice(), n: e.n, p: e.p, d: e.d, m: e.m, t: e.t, l: e.l, id: item.id });
+    Object.assign(estado, { f: e.f, a: e.a, k: e.k, o: e.o.slice(), n: e.n, p: e.p, d: e.d, m: e.m, t: e.t, l: e.l, capa: e.capa || 0, id: item.id });
     historia = [];
     taller.cargar(estado);
     irA('decorar');
