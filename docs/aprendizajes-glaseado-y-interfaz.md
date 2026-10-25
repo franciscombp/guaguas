@@ -239,3 +239,15 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   cercano. El borde se corta en el radio interpolando esa distancia, así sale redondo aunque la malla
   sea gruesa. Mientras se pinta solo se calcula el tramo nuevo (unos 2 ms por trazo). Lo que se pone
   después (hilo, puntos, figuras) queda encima de la capa.
+
+## 10. Guardar y compartir
+
+- **✓ guarda; Compartir es todo lo demás.** En el taller ya no hay «Regalar»: el botón es Compartir.
+  Pide el nombre, muestra la tarjeta que va a salir y pregunta «¿Cómo la compartes?»:
+  · **En tus redes**: tu creación, una imagen para historias o perfil. Un paso: se comparte ahí mismo.
+  · **A alguien**: para quién (para, de, un mensaje) y qué más va en la canasta (vale, colada, pásala).
+    Le llega un enlace para abrirla, comérsela y cobrar el vale. Tres pasos.
+  · **En memoria de alguien**: a quién recuerdas y unas palabras; sale como imagen. Dos pasos.
+- La tarjeta de arriba cambia con cada elección («Amasé una guagua», «Te regalo una guagua»,
+  «En memoria de…»), así se entiende qué se va a compartir antes de compartirlo.
+- La canasta (guardada y cada pieza) tiene un solo botón: Compartirla, que lleva al mismo lugar.

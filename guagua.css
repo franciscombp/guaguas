@@ -268,12 +268,6 @@ dialog.hoja--entera[open]{animation:none}
 .guardada__img .icono{width:18px;height:18px}
 #d-guardada{text-align:center}
 
-/* regalar: una decisión por pantalla */
-.regalar__paso{flex:1;border:0;margin:0;min-width:0;display:flex;flex-direction:column;gap:14px;padding:8px var(--orilla) calc(var(--pie) + 4px);
-  max-width:560px;width:100%;box-sizing:border-box;margin:0 auto}
-.regalar__paso legend{float:left;width:100%}
-.regalar__paso legend + *{clear:both}
-.regalar__foto{align-self:center;width:120px;height:auto;aspect-ratio:4/5;border-radius:24px;background:var(--noche-2)}
 .radios{display:flex;flex-direction:column;gap:8px}
 .radio{display:flex;align-items:center;gap:14px;min-height:62px;padding:0 16px;border-radius:16px;cursor:pointer;text-align:left;
   border:1px solid var(--linea);background:var(--campo);color:var(--crema)}
@@ -284,7 +278,6 @@ dialog.hoja--entera[open]{animation:none}
 .radio[aria-checked="true"]{border:2px solid var(--rosa)}
 .radio[aria-checked="true"] i{border-color:var(--rosa)}
 .radio[aria-checked="true"] i::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--rosa)}
-.regalar__sig,.regalar__fin{margin-top:auto}
 .regalar__entrar{margin:0;font-size:13px;color:var(--texto-2);text-align:center}
 .regalar__entrar .b{height:auto;font-size:13px}
 
@@ -345,8 +338,6 @@ dialog.hoja--entera[open]{animation:none}
 }
 .regalar__nota{margin:0;font-size:13px;line-height:1.4;color:var(--texto-2);text-align:center}
 .campo__opc{font-weight:400;color:var(--texto-2)}
-.compartir__vista{display:block;align-self:center;height:clamp(160px, 34dvh, 300px);width:auto;aspect-ratio:9/16;border-radius:16px;background:var(--noche-2);box-shadow:0 10px 30px rgba(0,0,0,.4)}
-.compartir__fin{margin-top:auto}
 
 /* lo que se está poniendo: una barra flotante, como la del Marcado al elegir un sticker */
 .contexto{position:absolute;z-index:3;left:50%;top:calc(74px + env(safe-area-inset-top));transform:translateX(-50%);
@@ -369,3 +360,12 @@ dialog.hoja--entera[open]{animation:none}
 .figura{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 0;border:0;border-radius:18px;background:none;color:var(--crema);font-size:13px;font-weight:600;line-height:1.2;cursor:pointer}
 .figura svg{width:60px;height:60px;padding:6px;border-radius:18px;background:var(--campo)}
 .figura:active svg{background:rgba(255,79,154,.18)}
+
+/* compartir: la tarjeta arriba; abajo, la elección y lo que pide cada camino */
+.compartir{flex:1;display:flex;flex-direction:column;gap:14px;min-height:0;overflow-y:auto;padding:4px var(--orilla) calc(var(--pie) + 4px);
+  max-width:560px;width:100%;box-sizing:border-box;margin:0 auto}
+.compartir__vista{display:block;align-self:center;flex:none;height:clamp(180px, 38dvh, 360px);width:auto;aspect-ratio:9/16;border-radius:18px;
+  background:var(--noche-2);box-shadow:0 12px 32px rgba(0,0,0,.45);transition:height var(--dur-3) ease}
+.compartir__vista--chica{height:clamp(120px, 22dvh, 200px);border-radius:12px}
+.compartir__paso{flex:1;display:flex;flex-direction:column;gap:14px;min-height:0}
+.compartir__fin{margin-top:auto}

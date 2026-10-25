@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.5';
+import * as nube from './nube.js?v=2026.10.25.6';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.5';
+} from './masa.js?v=2026.10.25.6';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1328,7 +1328,7 @@ async function tarjeta(e, formato = 'historia') {
   const que = queEs(e), memoria = enMemoria(e);
   const titulo = memoria
     ? (e.p ? ['En memoria', 'de ' + e.p] : ['Para recordar', 'a quien ya no está'])
-    : e.p ? ['Te regalo', que] : ['Amasé', que];
+    : e.p || e.aAlguien ? ['Te regalo', que] : ['Amasé', que];   // aAlguien: la vista previa, antes de escribir el nombre
   titulo.forEach((t, i) => ctx.fillText(t, W / 2, F.titulo[i], W - 80));
 
   // la guagua, grande y al centro; la colada (o la velita) abajo a un lado,
@@ -1960,7 +1960,7 @@ function montarTaller() {
   $('#abrir-info').addEventListener('click', () => abrir('#d-info'));
   $('#cerrar-taller').addEventListener('click', cerrarTaller);
   $('#listo').addEventListener('click', () => abrirNombre('guardada'));
-  $('#regalar').addEventListener('click', () => abrirNombre('regalar'));
+  $('#compartir').addEventListener('click', () => abrirNombre('compartir'));
   const raiz = document.documentElement;
   if (raiz.requestFullscreen && document.fullscreenEnabled) {
     const boton = $('#pantalla');
@@ -1999,7 +1999,6 @@ function montarTaller() {
   $('#nombre-guardar').addEventListener('click', guardarConNombre);
   $('#r-nombre').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); guardarConNombre(); } });
   $('#g-otra').addEventListener('click', () => { $('#d-guardada').close(); nueva(); });
-  $('#g-regalar').addEventListener('click', () => { $('#d-guardada').close(); abrirRegalo(); });
   $('#g-compartir').addEventListener('click', () => { $('#d-guardada').close(); abrirCompartir(); });
   return true;
 }
@@ -2060,6 +2059,7 @@ function abrirNombre(despues) {
   if (colocando) terminarColocar();
   trasNombre = despues;
   $('#r-nombre').value = estado.n || 'Guagua';
+  $('#nombre-guardar').textContent = despues === 'compartir' ? 'Siguiente' : 'Guardar';
   fotoDe($('#nombre-foto'), receta());
   abrir('#d-nombre');
 }
@@ -2067,7 +2067,7 @@ async function guardarConNombre() {
   estado.n = $('#r-nombre').value.trim().slice(0, 40) || 'Guagua';
   await guardarYa();
   $('#d-nombre').close();
-  if (trasNombre === 'regalar') abrirRegalo();
+  if (trasNombre === 'compartir') abrirCompartir();
   else if (trasNombre === 'salir') mostrar('canasta');
   else { fotoDe($('#guardada-foto'), receta()); abrir('#d-guardada'); }
 }
@@ -2138,86 +2138,83 @@ async function enlaceDeRegalo(cod) {
     return { url: direccion() + '#r=' + cod, id: null };
   }
 }
-/* Hay dos maneras de sacarla de la canasta, y cada una cuenta su historia:
-   · regalarla: a alguien en concreto. Lleva para quién, de quién y lo que va
-     en la canasta (un vale, la invitación a una colada, pásala); le llega un enlace.
-   · compartirla: en tus redes o tu perfil, para recordar a alguien que ya no
-     está o solo porque sí. Es una imagen; no lleva vales ni destinatario. */
-let modo = 'regalo';
-const BOTONES = { regalo: ['#r-compartir', '#r-copiar'], compartir: ['#s-compartir', '#s-copiar', '#s-descargar'] };
-function pintarVales() {
-  $$('#d-regalar button[data-vale]').forEach((b) => b.setAttribute('aria-checked', String(+b.dataset.vale === estado.l)));
+/* ─── compartir ────────────────────────────────────────────
+   ✓ guarda; Compartir es todo lo demás. Se le pone nombre, se ve la tarjeta
+   que va a salir y se elige cómo compartirla, y cada camino pide solo lo suyo:
+   · en tus redes: tu creación, una imagen para historias o perfil (1 paso).
+   · a alguien: para quién y qué más va en la canasta; le llega un enlace para
+     abrirla, comérsela y cobrar el vale (3 pasos).
+   · en memoria de alguien: a quién recuerdas y unas palabras (2 pasos).
+   La tarjeta de arriba cambia con cada elección. */
+let como = 'redes', pasoC = 'como';
+const PASOS_COMO = { redes: ['como'], alguien: ['como', 'para', 'lleva'], memoria: ['como', 'memoria'] };
+const ACCIONES = ['#c-seguir', '#c-enviar', '#c-recordar', '[data-copiar]', '[data-descargar]'];
+function pintarComo() {
+  $$('#d-compartir [data-como]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.como === como)));
+  $('#c-seguir').textContent = como === 'redes' ? 'Compartir en redes' : 'Siguiente';
+  $('#c-extra-redes').hidden = como !== 'redes';
+  $$('#d-compartir [data-vale]').forEach((b) => b.setAttribute('aria-checked', String(+b.dataset.vale === estado.l)));
   const v = VALES[estado.l];
   $('#r-nota').textContent = 'Le llega un enlace para abrirla y comérsela' + (v ? '. ' + v.pista : '.');
+  const para = $('#r-para').value.trim();
+  $('#c-enviar').textContent = para ? 'Enviar a ' + para : 'Enviar la canasta';
 }
-function abrirRegalo() {
-  modo = 'regalo';
-  if (estado.t === 'm') { estado.t = ''; estado.p = ''; }   // lo dedicado en redes no pasa al regalo
-  $('#r-para').value = estado.p;
-  $('#r-de').value = estado.d || almacen.leer('guagua:firma', '');
-  $('#r-mensaje').value = estado.m;
-  $('#r-mensaje-campo').hidden = !estado.m;
-  $('#r-mensaje-abre').hidden = !!estado.m;
-  fotoDe($('#r-foto'), receta());
-  pintarVales();
-  irPaso(1);
-  abrir('#d-regalar');
-}
-function abrirCompartir() {
-  modo = 'compartir';
-  // en redes no va un destinatario ni un vale: solo, si quieres, a quién recuerdas
-  if (estado.t !== 'm') estado.p = '';
-  estado.l = 0;
-  $('#s-memoria').value = estado.t === 'm' ? estado.p : '';
-  $('#s-vista').removeAttribute('src');
-  abrir('#d-compartir');
+function irPasoC(p) {
+  pasoC = p;
+  const lista = PASOS_COMO[como], i = lista.indexOf(p);
+  $$('#d-compartir .compartir__paso').forEach((x) => { x.hidden = x.dataset.paso !== p; });
+  $('#c-paso').textContent = lista.length > 1 ? `${i + 1} de ${lista.length}` : '';
+  // la tarjeta: grande al elegir; chica después; escondida mientras se escribe para quién
+  const vista = $('#c-vista');
+  vista.hidden = p === 'para';
+  vista.classList.toggle('compartir__vista--chica', p !== 'como');
   refrescarTarjeta();
 }
-/* Regalar va en dos pasos, una decisión en cada uno: para quién es, y qué
-   más va en la canasta. La imagen y el enlace se preparan en el segundo. */
-let paso = 1;
-function irPaso(n) {
-  paso = limita(n, 1, 2);
-  $$('#d-regalar .regalar__paso').forEach((f) => { f.hidden = +f.dataset.paso !== paso; });
-  $('#r-paso').textContent = paso + ' de 2';
-  if (paso === 2) refrescarTarjeta();
+function abrirCompartir() {
+  // cada camino arranca de lo que ya tenía la guagua
+  como = estado.t === 'm' ? 'memoria' : estado.p ? 'alguien' : 'redes';
+  $('#r-para').value = estado.t === 'm' ? '' : estado.p;
+  $('#r-de').value = estado.d || almacen.leer('guagua:firma', '');
+  $('#s-memoria').value = estado.t === 'm' ? estado.p : '';
+  $('#r-mensaje').value = estado.t === 'm' ? '' : estado.m;
+  $('#s-mensaje').value = estado.t === 'm' ? estado.m : '';
+  $$('#d-compartir [data-mensaje]').forEach((c) => { c.hidden = !c.querySelector('textarea').value; });
+  $$('#d-compartir [data-abre-mensaje]').forEach((b) => { b.hidden = !b.nextElementSibling.hidden; });
+  $('#c-vista').removeAttribute('src');
+  pintarComo();
+  abrir('#d-compartir');
+  irPasoC('como');
 }
 function leerFormulario() {
-  if (modo === 'compartir') {
-    estado.p = $('#s-memoria').value.trim().slice(0, 40);
-    estado.t = estado.p ? 'm' : '';
-    estado.m = '';
-    return;
+  if (como === 'memoria') {
+    Object.assign(estado, { t: 'm', p: $('#s-memoria').value.trim().slice(0, 40), m: $('#s-mensaje').value.trim().slice(0, 160), l: 0 });
+  } else if (como === 'alguien') {
+    Object.assign(estado, { t: '', p: $('#r-para').value.trim().slice(0, 40), m: $('#r-mensaje').value.trim().slice(0, 160) });
+  } else {
+    Object.assign(estado, { t: '', p: '', m: '', l: 0 });   // en redes: tu creación, sin destinatario
   }
-  estado.t = '';
-  estado.p = $('#r-para').value.trim().slice(0, 40);
-  estado.d = $('#r-de').value.trim().slice(0, 40);
-  estado.m = $('#r-mensaje').value.trim().slice(0, 160);
-  if (estado.d) almacen.poner('guagua:firma', estado.d);
+  const d = $('#r-de').value.trim().slice(0, 40);
+  if (d) { estado.d = d; almacen.poner('guagua:firma', d); }
 }
 function botonesListos(listo) {
-  BOTONES[modo].forEach((b) => {
-    $(b).disabled = !listo;
-    $(b).setAttribute('aria-busy', String(!listo));
-  });
+  ACCIONES.forEach((sel) => $$(sel).forEach((b) => { b.disabled = !listo; b.setAttribute('aria-busy', String(!listo)); }));
 }
 async function refrescarTarjeta() {
   leerFormulario();
-  const turno = ++turnoTarjeta, cual = modo;
+  const turno = ++turnoTarjeta;
   preparado = null; botonesListos(false);
   const r = receta();
   const cod = await codificar(r);
-  const c = await tarjeta(r, formato);
+  const c = await tarjeta(como === 'alguien' ? Object.assign({ aAlguien: true }, r) : r, formato);
   if (turno !== turnoTarjeta) return;
-  if (cual === 'compartir') $('#s-vista').src = c.toDataURL('image/jpeg', 0.85);
+  $('#c-vista').src = c.toDataURL('image/jpeg', 0.85);
   const blob = await aBlob(c);
   if (turno !== turnoTarjeta) return;
   const nombre = 'guagua-' + (estado.n || 'de-pan').toLowerCase().replace(/[^a-z0-9áéíóúñü]+/gi, '-') + '.png';
-  const pr = { cod, blob, archivo: new File([blob], nombre, { type: 'image/png' }), nombre, url: direccion() + '#r=' + cod, id: null, texto: textoRegalo() };
-  preparado = pr;
+  preparado = { cod, blob, archivo: new File([blob], nombre, { type: 'image/png' }), nombre, url: direccion() + '#r=' + cod, id: null, texto: textoRegalo() };
   guardarBorrador();
   botonesListos(true);
-  enlaceCorto(pr);
+  enlaceCorto(preparado);
 }
 /* Con cuenta, el enlace corto se publica en cuanto la tarjeta se queda
    quieta un momento; si no alcanza, se comparte el largo, que también sirve. */
@@ -2267,28 +2264,48 @@ async function copiar(texto, boton) {
   }
 }
 function montarRegalo() {
-  $$('#d-regalar input, #d-regalar textarea, #d-compartir input').forEach((x) => x.addEventListener('input', () => {
+  // escribir cambia la tarjeta, un momento después
+  $$('#d-compartir input, #d-compartir textarea').forEach((x) => x.addEventListener('input', () => {
     preparado = null; botonesListos(false);
     clearTimeout(reloj);
-    if (modo === 'compartir' || paso === 2) reloj = setTimeout(refrescarTarjeta, 350);
+    reloj = setTimeout(refrescarTarjeta, 350);
+    pintarComo();
   }));
-  $('#r-atras').addEventListener('click', () => { if (paso === 1) $('#d-regalar').close(); else irPaso(1); });
-  $('#r-siguiente').addEventListener('click', () => irPaso(2));
-  $$('#d-regalar, #d-compartir').forEach((d) => d.addEventListener('keydown', (e) => {
+  $('#d-compartir').addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); e.target.blur(); }
+  });
+  $$('#d-compartir [data-como]').forEach((b) => b.addEventListener('click', () => {
+    if (como === b.dataset.como) return;
+    como = b.dataset.como;
+    pintarComo(); refrescarTarjeta();
   }));
-  $$('#d-regalar button[data-vale]').forEach((b) => b.addEventListener('click', () => {
+  $$('#d-compartir [data-vale]').forEach((b) => b.addEventListener('click', () => {
     if (estado.l === +b.dataset.vale) return;
     estado.l = +b.dataset.vale;
-    pintarVales(); refrescarTarjeta();      // el vale va sellado en la imagen
+    pintarComo(); refrescarTarjeta();      // el vale va sellado en la tarjeta
   }));
-  $('#r-mensaje-abre').addEventListener('click', () => {
-    $('#r-mensaje-abre').hidden = true;
-    $('#r-mensaje-campo').hidden = false;
-    $('#r-mensaje').focus();
+  $$('#d-compartir [data-abre-mensaje]').forEach((b) => b.addEventListener('click', () => {
+    b.hidden = true;
+    const c = b.nextElementSibling;
+    c.hidden = false;
+    c.querySelector('textarea').focus();
+  }));
+  $('#c-atras').addEventListener('click', () => {
+    const lista = PASOS_COMO[como], i = lista.indexOf(pasoC);
+    if (i <= 0) $('#d-compartir').close(); else irPasoC(lista[i - 1]);
   });
+  $('#c-a-canasta').addEventListener('click', () => irPasoC('lleva'));
   // lo que pasa después de compartir no hace esperar a la hoja de compartir
   const despues = (pr) => { guardarMia(pr.id).catch(() => {}); };
+  const descargar = (pr) => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(pr.blob);
+    a.download = pr.nombre;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  };
+  /* En redes y en memoria va la imagen; a alguien, un mensaje con su enlace.
+     Sin hoja de compartir (la compu): la imagen se descarga, o se abre WhatsApp. */
   const enviar = (conImagen) => {
     const pr = preparado;
     if (!pr) return;
@@ -2299,7 +2316,6 @@ function montarRegalo() {
     } else if (navigator.share) {
       promesa = navigator.share({ title: titulo, text: pr.texto, url: pr.url });
     }
-    // sin hoja de compartir (la compu): WhatsApp para el regalo, la imagen para las redes
     if (!promesa) {
       if (conImagen) descargar(pr); else window.open('https://wa.me/?text=' + encodeURIComponent(pr.texto + ' ' + pr.url), '_blank', 'noopener');
       despues(pr); return;
@@ -2309,21 +2325,12 @@ function montarRegalo() {
       avisa('Este navegador no dejó compartir. Copia el enlace.', 'error');
     });
   };
-  const descargar = (pr) => {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(pr.blob);
-    a.download = pr.nombre;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  };
-  // el regalo va a una persona: un mensaje con su enlace
-  $('#r-compartir').addEventListener('click', () => enviar(false));
-  $('#r-copiar').addEventListener('click', () => { if (preparado) { copiar(preparado.url, $('#r-copiar')); despues(preparado); } });
+  $('#c-seguir').addEventListener('click', () => { if (como === 'redes') enviar(true); else irPasoC(PASOS_COMO[como][1]); });
+  $('#c-enviar').addEventListener('click', () => enviar(false));
+  $('#c-recordar').addEventListener('click', () => enviar(true));
+  $$('#d-compartir [data-copiar]').forEach((b) => b.addEventListener('click', () => { if (preparado) { copiar(preparado.url, b); despues(preparado); } }));
+  $$('#d-compartir [data-descargar]').forEach((b) => b.addEventListener('click', () => { if (preparado) { descargar(preparado); despues(preparado); } }));
   $('#r-entrar').addEventListener('click', () => abrirCuenta());
-  // en redes va la imagen
-  $('#s-compartir').addEventListener('click', () => enviar(true));
-  $('#s-copiar').addEventListener('click', () => { if (preparado) { copiar(preparado.url, $('#s-copiar')); despues(preparado); } });
-  $('#s-descargar').addEventListener('click', () => { if (preparado) { descargar(preparado); despues(preparado); } });
 }
 
 /* ══════════════════ TU CANASTA ══════════════════════════════ */
@@ -2373,8 +2380,7 @@ function abrirPieza(item, e) {
   $('#p-mensaje').textContent = e.m || '';
   $('#p-mensaje').hidden = !e.m;
   $('#p-editar').hidden = item.t !== 'mia';
-  $('#p-regalar').textContent = item.t === 'mia' ? 'Regalarla a alguien' : 'Reenviarla';
-  $('#p-compartir').hidden = item.t !== 'mia';
+  $('#p-compartir').textContent = item.t === 'mia' ? 'Compartirla' : 'Reenviarla';
   abrir('#d-pieza');
   if (!visorPieza) visorPieza = new Visor($('#p-lienzo'));
   visorPieza.giro = -0.25; Object.assign(visorPieza, posturaDe(e));
@@ -2398,14 +2404,14 @@ function montarVitrina() {
     $('#d-pieza').close();
     mostrar('taller');
   });
-  // las tuyas se regalan o se comparten desde aquí; las que te regalaron se reenvían tal cual
-  const sacarla = (como) => {
+  // las tuyas se comparten como cualquiera recién hecha; las que te regalaron se reenvían tal cual
+  $('#p-compartir').addEventListener('click', () => {
     const { item, e } = piezaActual;
     $('#d-pieza').close();
     if (item.t === 'mia') {
       cargarEnTaller(e, item.id);
       ultimaGuardada = huella();
-      if (como === 'regalo') abrirRegalo(); else abrirCompartir();
+      abrirCompartir();
       return;
     }
     const enlace = direccion() + (item.g ? '#g=' + item.g : '#r=' + item.e);
@@ -2413,9 +2419,7 @@ function montarVitrina() {
       navigator.share({ title: 'Una guagua de pan', text: textoRegalo(e), url: enlace })
         .catch((err) => { if (!err || err.name !== 'AbortError') copiar(enlace); });
     } else copiar(enlace);
-  };
-  $('#p-regalar').addEventListener('click', () => sacarla('regalo'));
-  $('#p-compartir').addEventListener('click', () => sacarla('compartir'));
+  });
   $('#p-borrar').addEventListener('click', () => {
     if (!confirm('¿Sacar esta guagua de tu canasta? No se puede deshacer.')) return;
     sacarDeVitrina(piezaActual.item.id);
