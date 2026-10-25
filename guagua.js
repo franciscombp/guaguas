@@ -728,6 +728,9 @@ class Visor {
       c.classList.remove('girando');
     };
     c.addEventListener('pointerup', suelta);
+    /* Si el navegador quita la captura sin mandar `pointerup` (pasa en Safari),
+       el puntero quedaría registrado y la mesa seguiría girando sola. */
+    c.addEventListener('lostpointercapture', suelta);
     c.addEventListener('pointercancel', (e) => {
       if (espera) { clearTimeout(espera.t); espera = null; }
       if (modo === 'pinta' && this.op.cancela) this.op.cancela();
