@@ -25,18 +25,20 @@ Vive en `finados.una.red/` y el repositorio se basta solo: Three.js va en
 `vendor/` (r170, licencia MIT en `vendor/LICENSE-three.txt`) y el sistema de diseño
 ([mal-ds](https://franciscombp.github.io/mal/ds/) 1.0.18: `mal.css`, `mal.js`, `iconos.svg` y
 las fuentes) va copiado en `vendor/ds/`. Para actualizarlo, se copian de nuevo esos archivos
-desde `ds/` del repositorio [mal](https://github.com/franciscombp/mal) y se sube el `?v=` en
-`index.html`.
+desde `ds/` del repositorio [mal](https://github.com/franciscombp/mal).
 
 Antes vivía en `mal/guagua/`; de ahí viene su historial.
 
 ## Versiones y caché
 
-La versión va en el `<meta name="guagua-version">`, en los `?v=` de `guagua.css`, `guagua.js`,
-`masa.js`, `nube.js` y `nube-config.js`, y en `version.json`. Al publicar, se sube la misma
-cadena en todos (`grep -rn 2026.10.23.2 --exclude-dir=vendor .`). Al abrir, el juego pide `version.json`
-sin caché y, si hay una versión más nueva, se recarga una sola vez: así nadie se queda con el
-juego viejo por el caché del navegador.
+Se publica sola con cada push a `main` (`.github/workflows/pages.yml`, Pages con GitHub
+Actions). Al publicar, `tools/sella.py` pone la misma versión nueva (fecha UTC y commit, p. ej.
+`2026.10.25-0d7a81d`) en el `<meta name="guagua-version">`, en todos los `?v=` de `index.html`
+y de los módulos, y en `version.json`. Así cada publicación pide archivos nuevos y no hay que
+subir la versión a mano; la del repositorio solo sirve para probar en local.
+
+Al abrir, el juego pide `version.json` sin caché y, si hay una versión más nueva, se recarga
+una sola vez: así nadie se queda con el juego viejo por el caché del navegador.
 
 ## Cómo se toca
 
