@@ -182,3 +182,23 @@ el morado casi no aparece en el glaseado (aparece en la colada).
 - Espiral y corazón como trazos asistidos.
 - Zigzag automático a lo largo de una banda.
 - Rama con hojas como plantilla.
+
+## 6. La estructura de la app (rediseño, octubre)
+
+- **El inicio es tu canasta**, no el taller. Desde ahí: «Amasar otra», abrir una guagua o tu cuenta.
+  Si quedó una a medio decorar, sale arriba «Tienes una sin terminar · Seguir».
+- **El taller**: arriba ✕ · el paso (tocarlo abre «Cómo se hace») · ✓ solo al decorar, porque la masa
+  cruda no se guarda. Abajo, solo herramientas; deshacer y rehacer van con ellas.
+- **La ✕ vuelve a la canasta** y avisa si algo se pierde: la decoración se puede guardar antes; la masa
+  cruda no, así que el aviso solo ofrece salir o quedarse.
+- **La instrucción de cada paso** sale la primera vez y se desvanece con el primer toque en el lienzo.
+  Al sacar del horno, ese mismo lugar dice cómo salió.
+- **Decorar**: hilo (con tres grosores), puntos y la brocha de cobertura, que pinta a mano en vez de
+  bañar la guagua entera. El aro elige el color; el + trae carita, pasas, mordisco y sorpréndeme.
+- **Guardar** pide el nombre (por defecto «Guagua», sin sugerencias) y luego ofrece regalarla,
+  amasar otra o seguir decorando.
+- **Regalar va en dos pasos, una decisión por pantalla**: qué más va en la canasta (solo la guagua,
+  vale por una guagua, colada morada, pásala) y para quién es.
+- **Un solo sistema de componentes**: principal rojo en píldora (uno por pantalla), secundario con
+  contorno crema, terciario subrayado, iconos en círculos de vidrio, lo elegido en rosa. Las hojas son
+  oscuras como el resto: nada de superficies crema ni franjas de colores, para no romper lo sobrio.

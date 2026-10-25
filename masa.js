@@ -26,6 +26,9 @@ const CREMAS = [
 ];
 const BOQUILLAS = [0.026, 0.05, 0.085, 0.13, 0.02];   // pincel, fina, media, gruesa, lisa (el glaseado: finísimo y plano)
 const BOQUILLA_LISA = 4;                              // el glaseado liso: un tubo redondo, sin el dibujo de la estrella
+/* El hilo de glaseado en tres grosores y la cobertura, que se pinta a mano con la brocha. */
+const ANCHOS = [0.02, 0.034, 0.052, 0.13];
+const COBERTURA = 3;
 /* Las capas de baño: la guagua entera se cubre con uno de estos colores. El cero es sin capa. */
 const BANOS = [
   { n: 'Sin capa', c: null },
@@ -490,6 +493,7 @@ function sano(d) {
     if (t === 5) return op.length === 7;
     if (t === 6) return op.length === 8 && CREMAS[op[1]] !== undefined;
     if (t === 7) return op.length >= 8 && (op.length - 2) % 6 === 0 && CREMAS[op[1]] !== undefined;
+    if (t === 8) return op.length >= 9 && (op.length - 3) % 6 === 0 && CREMAS[op[1]] !== undefined && ANCHOS[op[2]] !== undefined;
     return false;
   });
   return {
@@ -724,5 +728,5 @@ function amasarReceta(args = {}) {
 }
 
 export {
-  amasarReceta, COCCION, dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa,
+  amasarReceta, COCCION, dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa,
 };

@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.23.2';
+import * as nube from './nube.js?v=2026.10.25.1';
 import {
-  DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.23.2';
+  DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
+} from './masa.js?v=2026.10.25.1';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -518,7 +518,8 @@ class Visor {
      4 carita [4, tamaño, estilo, x, y, z, nx, ny, nz]
      5 pasa [5, x, y, z, nx, ny, nz]
      6 masa de colores [6, color, x, y, z, nx, ny, nz]
-     7 glaseado plano [7, color, x, y, z, nx, ny, nz…]        */
+     7 glaseado plano [7, color, x, y, z, nx, ny, nz…]
+     8 hilo o cobertura [8, color, grosor, x, y, z, nx, ny, nz…]  */
   construir(op) {
     const t = op[0];
     const pn = (i) => [V(op[i], op[i + 1], op[i + 2]).divideScalar(Q), V(op[i + 3], op[i + 4], op[i + 5]).normalize()];
@@ -608,6 +609,23 @@ class Visor {
         return o;
       }
       return this.malla(cinta(pts, nor, BOQUILLAS[BOQUILLA_LISA], 0.006), this.mat.cremas[op[1]]);
+    }
+    if (t === 8) {                                  // el hilo con grosor, o la cobertura pintada a mano
+      const pts = [], nor = [];
+      for (let i = 3; i + 5 < op.length; i += 6) {
+        pts.push(V(op[i], op[i + 1], op[i + 2]).divideScalar(Q));
+        nor.push(V(op[i + 3], op[i + 4], op[i + 5]).normalize());
+      }
+      const ancho = ANCHOS[op[2]], grosor = op[2] === COBERTURA ? 0.012 : 0.006;
+      if (pts.length < 2) {
+        const g = new THREE.SphereGeometry(1, 18, 12);
+        g.scale(ancho * 0.6, ancho * 0.6, grosor * 2);
+        const o = this.malla(g, this.mat.cremas[op[1]]);
+        o.quaternion.setFromRotationMatrix(base(nor[0]).m);
+        o.position.copy(pts[0]).addScaledVector(nor[0], 0.004);
+        return o;
+      }
+      return this.malla(cinta(pts, nor, ancho, grosor), this.mat.cremas[op[1]]);
     }
     if (t === 6) {                                  // una bolita de masa de colores, como las que se hacen al amasar
       const [p, n] = pn(2);
@@ -1260,37 +1278,72 @@ function ding() {
   } catch (e) { /* sin campanita */ }
 }
 
+/* ══════════════════ LAS PANTALLAS ═══════════════════════════
+   La app empieza en tu canasta. El taller (amasar, hornear, decorar)
+   se abre con «Amasar otra» y se cierra con la ✕, que vuelve a la canasta. */
+function mostrar(cual) {
+  $('#canasta').hidden = cual !== 'canasta';
+  $('#taller').hidden = cual !== 'taller';
+  if (cual === 'taller') {
+    requestAnimationFrame(() => { taller.medir(); medirTaller(); });
+  } else {
+    apagarHorno();
+    pintarVitrina();
+    pintarPendiente();
+  }
+}
+/* Las hojas: la ✕ y el fondo las cierran. Lo de adentro no deja pasar el
+   clic, porque un paso que cambia de tamaño movería el borde bajo el dedo. */
+function abrir(id) {
+  const d = $(id);
+  if (d && !d.open) d.showModal();
+  return d;
+}
+function montarHojas() {
+  $$('dialog.hoja').forEach((d) => {
+    d.addEventListener('click', (e) => {
+      if (e.target !== d) return;
+      const r = d.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) d.close();
+    });
+    $$('[data-cierra]', d).forEach((b) => b.addEventListener('click', () => d.close()));
+  });
+}
+
 /* ══════════════════ EL TALLER ═══════════════════════════════ */
 const estado = {
   etapa: 'amasar',
   f: 'guagua', a: [], k: 0, o: [],
   mano: 'bolita', grosor: 1, masa: 0,
-  herramienta: 'manga', crema: 1, boquilla: 2, tamano: 1, capa: 0,
+  herramienta: 'manga', crema: 1, ancho: 0, tamano: 1, capa: 0,
   id: null, n: '', p: '', d: '', m: '', t: '', l: 0,
 };
 let taller = null;       // el visor del taller
 let trazo = null;        // lo que el dedo está haciendo al decorar
 let amase = null;        // …y al amasar
 let historia = [];       // las masas de antes, para deshacer al amasar
+let futuro = [];         // lo deshecho, para rehacer
 const receta = () => Object.assign({ v: 3, f: estado.f, a: estado.a, k: estado.k, o: estado.o, n: estado.n, p: estado.p, d: estado.d, m: estado.m },
   estado.t === 'm' ? { t: 'm' } : estado.l ? { l: estado.l } : {}, estado.capa ? { capa: estado.capa } : {});
 
 function guardarBorrador() {
-  almacen.poner(BORRADOR, Object.assign(receta(), { id: estado.id, etapa: estado.etapa }));
+  almacen.poner(BORRADOR, Object.assign(receta(), { id: estado.id, etapa: estado.etapa, guardada: !sinGuardar() }));
 }
 function actualizarEtiqueta() {
   const n = estado.etapa === 'amasar' ? estado.a.length : estado.o.length;
   const que = estado.etapa === 'amasar' ? `Masa cruda en 3D con ${n} ${n === 1 ? 'pieza' : 'piezas'}. Arrastra para poner bolitas y chorizos.`
-    : `${queEs(estado)} de pan en 3D con ${n} ${n === 1 ? 'decoración' : 'decoraciones'}. Arrastra sobre ella para decorarla y fuera de ella para girarla.`;
+    : `${queEs(estado)} de pan en 3D con ${n} ${n === 1 ? 'decoración' : 'decoraciones'}. Arrastra sobre ella para decorarla y con dos dedos para girarla.`;
   $('#lienzo').setAttribute('aria-label', que.charAt(0).toUpperCase() + que.slice(1));
-  $('#deshacer').disabled = estado.etapa === 'amasar' ? !historia.length : estado.etapa === 'horno' || !estado.o.length;
+  const puede = estado.etapa === 'amasar' ? historia.length > 0 : estado.etapa === 'decorar' && estado.o.length > 0;
+  $$('[data-deshacer]').forEach((b) => { b.disabled = !puede; });
+  $$('[data-rehacer]').forEach((b) => { b.disabled = estado.etapa === 'horno' || !futuro.length; });
 }
-function recargar() { taller.cargar(estado); actualizarEtiqueta(); }
 
 /* ─── 1. amasar ───────────────────────────────────────────── */
 function recordar() {
   historia.push(JSON.stringify(estado.a));
   if (historia.length > 50) historia.shift();
+  futuro = [];
 }
 function cambiarMasa(a, molde) {
   estado.a = a;
@@ -1302,18 +1355,8 @@ function cambiarMasa(a, molde) {
 function tocarMasa(ev) {
   const mano = estado.mano;
   const hit = taller.tocar(ev, true);
-  if (mano === 'mover' || mano === 'quitar' || mano === 'tenir') {
+  if (mano === 'mover' || mano === 'quitar') {
     if (!hit || hit.pieza == null) return true;
-    if (mano === 'tenir') {
-      if (masaDe(estado.a[hit.pieza]) === estado.masa) return true;
-      recordar();
-      const a = estado.a.slice();
-      a[hit.pieza] = conMasa(a[hit.pieza], estado.masa);
-      estado.a = a;
-      taller.cambiarPieza(hit.pieza, a[hit.pieza]);
-      cambiarMasa(a); vibra();
-      return true;
-    }
     if (mano === 'quitar') {
       recordar();
       const a = estado.a.filter((_, i) => i !== hit.pieza);
@@ -1403,7 +1446,6 @@ function prenderHorno() {
   taller.cargar(estado);
   $('#horno-fin').hidden = true;
   $('#sacar').hidden = false;
-  $('#sacar').disabled = false;
   $('#taller').classList.add('en-horno');
   const t0 = performance.now();
   const paso = (t) => {
@@ -1420,9 +1462,9 @@ function prenderHorno() {
 }
 function termometro(k) {
   $('#termo').style.width = (k / KMAX * 100) + '%';
-  $('#horno-estado').textContent = punto(k).t;
   $('#termo').parentElement.setAttribute('aria-valuenow', Math.round(k * 100));
 }
+/* Al sacarla, la instrucción de arriba dice cómo salió. */
 function sacarDelHorno() {
   if (!horneando) return;
   cancelAnimationFrame(horneando);
@@ -1433,9 +1475,10 @@ function sacarDelHorno() {
   $('#taller').classList.remove('en-horno');
   $('#sacar').hidden = true;
   $('#horno-fin').hidden = false;
-  $('#horno-veredicto').textContent = punto(k).f;
-  $('#horno-estado').textContent = punto(k).t;
-  $('[data-ir="decorar"]').disabled = estado.k < 50;
+  $('#a-decorar').hidden = estado.k < 50;
+  $('#intro-t').textContent = punto(k).t;
+  $('#intro-p').textContent = punto(k).f;
+  $('#intro').classList.remove('oculta');
   guardarBorrador();
 }
 function apagarHorno() {
@@ -1448,39 +1491,26 @@ function apagarHorno() {
 const vibra = () => { if (navigator.vibrate) navigator.vibrate(8); };
 function fijar(op) {
   estado.o.push(op);
-  if (op[0] !== 0 && op[0] !== 2) vibra();
+  futuro = [];
+  if (op[0] !== 0 && op[0] !== 8) vibra();
   taller.agregar(op);
   guardarBorrador();
   actualizarEtiqueta();
 }
-/* La carita no se tapa con nada: la cara es el mismo pan, dorado, y se le
-   pintan las facciones con glaseado fino, como en las guaguas de panadería:
-   dos puntitos oscuros de ojos, una naricita, una sonrisa roja y, si se
-   quiere, las chapitas. Se toca el centro de la cara y salen todas juntas,
-   amoldadas a la cabeza; cada una es un trazo de manga y se puede deshacer
-   o retocar con el pincel. */
+/* Todo es glaseado: el hilo, los puntos y la cobertura, que se pinta a mano
+   con la brocha. La carita no se tapa con nada: se toca el centro de la cara
+   y salen ojos, naricita, sonrisa y chapitas, amoldados a la cabeza. */
 function tocarDecorar(ev) {
   const hit = taller.tocar(ev);
   if (!hit) return false;
   const h = estado.herramienta;
-  if (h === 'manga' && estado.boquilla === BOQUILLA_LISA) {
-    trazo = [7, estado.crema, ...pn(hit)];
-    taller.vistaPrevia(trazo);
-  } else if (h === 'manga') {
-    const q = puntoDeCrema(hit, BOQUILLAS[estado.boquilla]);
-    trazo = [0, estado.crema, estado.boquilla, ent(q.x), ent(q.y), ent(q.z)];
+  if (h === 'manga' || h === 'cobertura') {
+    trazo = [8, estado.crema, h === 'cobertura' ? COBERTURA : estado.ancho, ...pn(hit)];
     taller.vistaPrevia(trazo);
   } else if (h === 'puntos') {                  // un punto de glaseado: una gotita plana
     fijar([7, estado.crema, ...pn(hit)]);
-  } else if (h === 'grageas') {
-    trazo = [2, Math.floor(Math.random() * 1e9), ...pn(hit)];
-    taller.vistaPrevia(trazo);
-  } else if (h === 'roseta') {
-    fijar([1, estado.crema, estado.boquilla, ...pn(hit)]);
   } else if (h === 'pasa') {
     fijar([5, ...pn(hit)]);
-  } else if (h === 'masa') {
-    fijar([6, estado.crema, ...pn(hit)]);
   } else if (h === 'carita') {
     chapitas(hit, estado.tamano, caraPintada(hit, estado.tamano, taller), taller).forEach((op) => fijar(op));
   } else if (h === 'mordisco') {
@@ -1495,29 +1525,11 @@ function arrastrarDecorar(ev) {
   const hit = taller.tocar(ev);
   if (!hit) return;
   const op = trazo;
-  if (op[0] === 7) {
-    const u = V(op[op.length - 6], op[op.length - 5], op[op.length - 4]).divideScalar(Q);
-    if (hit.p.distanceTo(u) < 0.03) return;
-    if (hit.p.distanceTo(u) > 0.7 || op.length > 600) { fijar(op); trazo = [7, op[1], ...pn(hit)]; }
-    else op.push(...pn(hit));
-    taller.vistaPrevia(trazo);
-    return;
-  }
-  if (op[0] === 0) {
-    const r = BOQUILLAS[op[2]], q = puntoDeCrema(hit, r);
-    const u = V(op[op.length - 3], op[op.length - 2], op[op.length - 1]).divideScalar(Q);
-    const d = q.distanceTo(u);
-    if (d < Math.max(r * 0.6, 0.025)) return;
-    if (d > 0.7 || op.length > 1200) {            // saltó a otra pieza: otro chorro
-      fijar(op);
-      trazo = [0, op[1], op[2], ent(q.x), ent(q.y), ent(q.z)];
-    } else op.push(ent(q.x), ent(q.y), ent(q.z));
-  } else {
-    const u = V(op[op.length - 6], op[op.length - 5], op[op.length - 4]).divideScalar(Q);
-    if (hit.p.distanceTo(u) < 0.14) return;
-    if (op.length > 600) { fijar(op); trazo = [2, op[1] + 1]; }
-    trazo.push(...pn(hit));
-  }
+  const u = V(op[op.length - 6], op[op.length - 5], op[op.length - 4]).divideScalar(Q);
+  const paso = op[2] === COBERTURA ? 0.05 : 0.03;
+  if (hit.p.distanceTo(u) < paso) return;
+  if (hit.p.distanceTo(u) > 0.7 || op.length > 600) { fijar(op); trazo = [8, op[1], op[2], ...pn(hit)]; }   // saltó a otra pieza: otro trazo
+  else op.push(...pn(hit));
   taller.vistaPrevia(trazo);
 }
 function soltarDecorar() {
@@ -1528,18 +1540,27 @@ function soltarDecorar() {
 }
 
 /* ─── las etapas ──────────────────────────────────────────── */
-const PISTAS = {
-  amasar: 'Arrastra para hacer una bolita: hacia el lado sale ancha, hacia arriba sale alta. Encima de otra pieza, se pega. Con dos dedos te acercas.',
-  horno: 'Mírala dorarse y sácala en la franja blanca. Si la sacas antes queda blanca; si esperas mucho, se quema.',
-  decorar: 'Con un dedo decoras. Con dos dedos la giras y te acercas. La cara también se dibuja: carita, pasas y pincel.',
+/* La instrucción de cada paso, como en Airbnb: sale la primera vez y se
+   desvanece con el primer toque en el lienzo, para dejar más espacio. */
+const INTROS = {
+  amasar: ['Amasa tu guagua', 'Arrastra sobre la lata: al lado sale ancha, hacia arriba sale alta'],
+  horno: ['Sácala en su punto', 'Se dora en seis segundos: sácala en la franja blanca'],
+  decorar: ['Decórala', 'Elige una manga y dibuja con el dedo sobre el pan'],
 };
-let relojPista = null;
-function pista(texto, ms = 6500) {
-  const el = $('#mesa-pista');
-  el.textContent = texto;
-  el.classList.remove('oculta');
-  clearTimeout(relojPista);
-  relojPista = setTimeout(() => el.classList.add('oculta'), ms);
+const PASOS_TALLER = { amasar: ['Amasa', 1], horno: ['Hornea', 2], decorar: ['Decora', 3] };
+function pintarIntro(etapa) {
+  const [t, p] = INTROS[etapa];
+  $('#intro-t').textContent = t;
+  $('#intro-p').textContent = p;
+  const vistas = almacen.leer('guagua:intros', {});
+  $('#intro').classList.toggle('oculta', etapa !== 'horno' && !!vistas[etapa]);
+}
+function esconderIntro() {
+  if (estado.etapa === 'horno' || $('#intro').classList.contains('oculta')) return;
+  const vistas = almacen.leer('guagua:intros', {});
+  vistas[estado.etapa] = 1;
+  almacen.poner('guagua:intros', vistas);
+  $('#intro').classList.add('oculta');
 }
 /* Lo que tapan la barra y el dock, para que la cámara encuadre en el hueco. */
 function margenes(canvas, arriba, abajo) {
@@ -1547,71 +1568,8 @@ function margenes(canvas, arriba, abajo) {
   const m = { arriba: 0, abajo: 0, derecha: 0 };
   if (!c.width) return m;
   if (arriba) m.arriba = Math.max(0, arriba.getBoundingClientRect().bottom - c.top);
-  if (abajo && !abajo.hidden) {
-    const d = abajo.getBoundingClientRect();
-    if (d.width < c.width * 0.6 && d.left > c.left + c.width * 0.4) m.derecha = Math.max(0, c.right - d.left);
-    else m.abajo = Math.max(0, c.bottom - d.top);
-  }
+  if (abajo && !abajo.hidden) m.abajo = Math.max(0, c.bottom - abajo.getBoundingClientRect().top);
   return m;
-}
-/* El dock se pliega para dejar más pantalla a la guagua: queda la cabecera
-   con un resumen de lo elegido, y se despliega con el asa o al cambiar de etapa. */
-function plegarDock(si) {
-  estado.plegado = !!si;
-  $('#taller').dataset.plegado = si ? '1' : '';
-  $$('.dock__asa').forEach((b) => b.setAttribute('aria-expanded', String(!si)));
-  resumenDock();
-  requestAnimationFrame(medirTaller);
-}
-function resumenDock() {
-  const r = $(`.dock[data-etapa="${estado.etapa}"] .dock__resumen`);
-  if (!r) return;
-  if (estado.etapa === 'amasar') {
-    const manos = { bolita: 'Bolita', chorizo: 'Chorizo', mover: 'Mover', quitar: 'Quitar', tenir: 'Teñir' };
-    r.textContent = manos[estado.mano] + (estado.mano === 'chorizo' ? ' · ' + ['fino', 'medio', 'grueso'][estado.grosor] : '');
-  } else if (estado.etapa === 'decorar') {
-    const h = { manga: 'Manga', roseta: 'Roseta', grageas: 'Grageas', carita: 'Carita', pasa: 'Pasas', mordisco: 'Mordisco' }[estado.herramienta];
-    const con = estado.herramienta === 'manga' || estado.herramienta === 'roseta'
-      ? ' · ' + CREMAS[estado.crema].n.toLowerCase() + ' · ' + ['pincel', 'fina', 'media', 'gruesa', 'lisa'][estado.boquilla] : '';
-    r.textContent = h + con;
-  }
-}
-function montarAsas() {
-  const deLado = () => matchMedia('(orientation:landscape) and (max-height:560px)').matches;
-  $$('.dock__asa').forEach((b) => {
-    const dock = b.closest('.dock');
-    let ini = null, movido = 0, fue = false;
-    b.addEventListener('pointerdown', (e) => {
-      ini = { x: e.clientX, y: e.clientY }; movido = 0; fue = false;
-      b.setPointerCapture(e.pointerId);
-      dock.classList.add('arrastrando');
-    });
-    b.addEventListener('pointermove', (e) => {
-      if (!ini) return;
-      // de frente se arrastra en vertical; con el teléfono de lado, en horizontal
-      const d = deLado() ? e.clientX - ini.x : e.clientY - ini.y;
-      movido = d;
-      if (Math.abs(d) > 4) fue = true;
-      if (deLado()) return;                 // de lado solo decide al soltar
-      // abierto: baja hasta dejar solo la cabecera; plegado: sube un poco, como invitación
-      const tope = estado.plegado ? -36 : Math.max(0, dock.offsetHeight - 96);
-      const dy = estado.plegado ? limita(d, tope, 24) : limita(d, -24, tope);
-      dock.style.transform = `translate(-50%, ${dy}px)`;
-    });
-    const suelta = () => {
-      if (!ini) return;
-      ini = null;
-      dock.classList.remove('arrastrando');
-      dock.style.transform = '';
-      if (!fue) { plegarDock(!estado.plegado); return; }   // un toque: cambia
-      if (estado.plegado && movido < -24) plegarDock(false);
-      else if (!estado.plegado && movido > 40) plegarDock(true);
-    };
-    b.addEventListener('pointerup', suelta);
-    b.addEventListener('pointercancel', suelta);
-    b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); plegarDock(!estado.plegado); } });
-  });
-  $$('.dock__cab .dock__t').forEach((t) => t.addEventListener('click', () => { if (estado.plegado) plegarDock(false); }));
 }
 function medirTaller() {
   if (!taller) return;
@@ -1621,19 +1579,22 @@ function medirTaller() {
 function irA(etapa) {
   if (etapa !== 'horno') apagarHorno();
   estado.etapa = etapa;
+  futuro = [];
   const t = $('#taller');
   t.dataset.etapa = etapa;
   t.dataset.herramienta = etapa === 'amasar' ? estado.mano : estado.herramienta;
   $$('.dock[data-etapa]').forEach((s) => { s.hidden = s.dataset.etapa !== etapa; });
-  if (estado.plegado) plegarDock(false);
-  resumenDock();
-  $$('[data-ir]').forEach((b) => {
-    const i = ['amasar', 'horno', 'decorar'].indexOf(b.dataset.ir), j = ['amasar', 'horno', 'decorar'].indexOf(etapa);
-    if (b.dataset.ir === etapa) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
-    b.classList.toggle('hecha', i < j);
+  // la píldora del paso, y el listo solo al decorar: la masa cruda no se guarda
+  const [nombre, n] = PASOS_TALLER[etapa];
+  $('#paso-nombre').textContent = nombre;
+  $('#paso-num').textContent = n + ' de 3';
+  $('#abrir-info').setAttribute('aria-label', `${nombre}, paso ${n} de 3. Ver cómo se hace cada paso`);
+  $('#listo').classList.toggle('invisible', etapa !== 'decorar');
+  $$('.pasos-ayuda li').forEach((li, i) => {
+    li.classList.toggle('actual', li.dataset.paso === etapa);
+    li.classList.toggle('hecha', i < n - 1);
   });
-  $('[data-ir="decorar"]').disabled = estado.k < 50;
-  pista(PISTAS[etapa]);
+  pintarIntro(etapa);
   taller.fijo = etapa === 'amasar';
   taller.ambiente(etapa);
   if (etapa === 'amasar') {
@@ -1667,6 +1628,23 @@ function aDecorar() {
   taller.cargar(estado);
   irA('decorar');
 }
+/* Las herramientas del + no están en la bandeja: cuando una está elegida,
+   el + se marca y su nombre aparece al lado de las mangas. */
+function elegirHerramienta(h) {
+  estado.herramienta = h;
+  $('#taller').dataset.herramienta = h;
+  $$('.bandeja .manga').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.herramienta === h)));
+  const otra = { carita: 'Carita', pasa: 'Pasas', mordisco: 'Mordisco' }[h];
+  $('#otra-herr').hidden = !otra;
+  $('#otra-herr').textContent = otra || '';
+  $('#abrir-mas').setAttribute('aria-pressed', String(!!otra));
+  $('#grosor-fila').hidden = h !== 'manga';
+}
+function pintarAro() {
+  $('#aro-color').style.background = CREMAS[estado.crema].c;
+  $('.bandeja').style.setProperty('--manga', CREMAS[estado.crema].c);   // las mangas llevan el glaseado elegido
+  $('#abrir-color').setAttribute('aria-label', 'Color: ' + CREMAS[estado.crema].n.toLowerCase());
+}
 
 function montarTaller() {
   try {
@@ -1680,87 +1658,67 @@ function montarTaller() {
     $('#sin-3d').hidden = false;
     return false;
   }
+  $('#lienzo').addEventListener('pointerdown', esconderIntro);
   // solo botones: el <main> también lleva data-herramienta, para el CSS
   const grupoDe = (attr, clave, num) => $$(`button[${attr}]`).forEach((b) => b.addEventListener('click', () => {
     const v = b.getAttribute(attr);
     estado[clave] = num ? +v : v;
     $$(`button[${attr}]`).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-    if (clave === 'herramienta' || clave === 'mano') $('#taller').dataset.herramienta = estado[clave];
-    resumenDock();
+    if (clave === 'mano') $('#taller').dataset.herramienta = estado.mano;
     requestAnimationFrame(medirTaller);
   }));
   grupoDe('data-mano', 'mano');
-  const masas = $('#masas');
-  if (masas) MASAS.forEach((ms, i) => {
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'crema masa';
-    b.style.setProperty('--crema', ms.dorado);
-    b.setAttribute('aria-label', 'Masa ' + ms.n.toLowerCase());
-    b.setAttribute('aria-pressed', String(i === estado.masa));
-    b.title = ms.n;
-    b.addEventListener('click', () => {
-      estado.masa = i;
-      $$('.masa', masas).forEach((x, j) => x.setAttribute('aria-pressed', String(j === i)));
-    });
-    masas.appendChild(b);
-  });
   grupoDe('data-grosor', 'grosor', true);
-  grupoDe('data-herramienta', 'herramienta');
-  grupoDe('data-boquilla', 'boquilla', true);
-  grupoDe('data-tamano', 'tamano', true);
+  grupoDe('data-ancho', 'ancho', true);
+  $$('.bandeja .manga').forEach((b) => b.addEventListener('click', () => elegirHerramienta(b.dataset.herramienta)));
+  $$('[data-adorno]').forEach((b) => b.addEventListener('click', () => { elegirHerramienta(b.dataset.adorno); $('#d-mas').close(); }));
   const cremas = $('#cremas');
   CREMAS.forEach((cr, i) => {
     const b = document.createElement('button');
-    b.type = 'button'; b.className = 'crema';
-    b.style.setProperty('--crema', cr.c);
-    b.setAttribute('aria-label', cr.n);
+    b.type = 'button'; b.className = 'color';
+    b.style.setProperty('--gota', cr.c);
     b.setAttribute('aria-pressed', String(i === estado.crema));
-    b.title = cr.n;
+    b.innerHTML = '<i aria-hidden="true"></i>';
+    b.append(cr.n);
     b.addEventListener('click', () => {
       estado.crema = i;
-      $$('.crema', cremas).forEach((x, j) => x.setAttribute('aria-pressed', String(j === i)));
-      if (!['manga', 'roseta', 'masa', 'puntos'].includes(estado.herramienta)) $('button[data-herramienta="manga"]').click();
+      $$('.color', cremas).forEach((x, j) => x.setAttribute('aria-pressed', String(j === i)));
+      if (!['manga', 'puntos', 'cobertura'].includes(estado.herramienta)) elegirHerramienta('manga');
+      pintarAro();
     });
     cremas.appendChild(b);
   });
-  // las capas de baño: se muestran cuando la herramienta es Capa, y cubren la guagua entera
-  const banos = $('#banos');
-  BANOS.forEach((bn, i) => {
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'crema' + (bn.c ? '' : ' crema--ninguna');
-    if (bn.c) b.style.setProperty('--crema', bn.c);
-    b.setAttribute('aria-label', bn.n);
-    b.setAttribute('aria-pressed', String(i === estado.capa));
-    b.title = bn.n;
-    b.addEventListener('click', () => {
-      estado.capa = i;
-      $$('.crema', banos).forEach((x, j) => x.setAttribute('aria-pressed', String(j === i)));
-      taller.ponerCapa(i);
-      guardarBorrador(); actualizarEtiqueta();
-    });
-    banos.appendChild(b);
-  });
+  $('#abrir-color').addEventListener('click', () => abrir('#d-color'));
+  $('#abrir-mas').addEventListener('click', () => abrir('#d-mas'));
+  $('#abrir-moldes').addEventListener('click', () => abrir('#d-moldes'));
   $$('[data-molde]').forEach((b) => b.addEventListener('click', () => {
     const f = b.dataset.molde;
     if (estado.a.length && !confirm(f === 'libre' ? '¿Vaciar la lata?' : 'Se reemplaza la masa que tienes. ¿Continuar?')) return;
     recordar();
     const a = MOLDES[f]();
-    estado.n = elige(NOMBRES[f]);
     taller.ponerMasa(a); cambiarMasa(a, f);
     taller.encuadrar(); taller.dibujar();
+    $('#d-moldes').close();
   }));
-  $$('[data-ir]').forEach((b) => b.addEventListener('click', () => {
-    if (b.dataset.ir === 'amasar') volverAAmasar();
-    else if (b.dataset.ir === 'horno') { if (estado.etapa !== 'horno') prenderHorno(); }
-    else aDecorar();
-  }));
+  $('#sorpresa-molde').addEventListener('click', () => {
+    const f = elige(['guagua', 'tradicional', 'guaguau', 'caballito', 'chanchito', 'gallinita'].filter((x) => x !== estado.f));
+    $(`[data-molde="${f}"]`).click();
+  });
+  $('#sorpresa').addEventListener('click', () => {
+    sorpresa(estado, taller).forEach((op) => { estado.o.push(op); taller.agregar(op, true); });
+    futuro = [];
+    taller.dibujar(); guardarBorrador(); actualizarEtiqueta();
+    $('#d-mas').close();
+  });
   $('#al-horno').addEventListener('click', prenderHorno);
   $('#sacar').addEventListener('click', sacarDelHorno);
   $('#a-decorar').addEventListener('click', aDecorar);
   $('#otra-vez').addEventListener('click', volverAAmasar);
-  // la barra: ayuda y vitrina (la pantalla completa va en el perfil)
-  $('#abrir-info').addEventListener('click', () => window.malDS.abrir('#d-info'));
-  $('#abrir-vitrina').addEventListener('click', () => { pintarVitrina(); window.malDS.abrir('#d-vitrina'); });
+  // arriba: cerrar, el paso (la ayuda) y listo
+  $('#abrir-info').addEventListener('click', () => abrir('#d-info'));
+  $('#cerrar-taller').addEventListener('click', cerrarTaller);
+  $('#listo').addEventListener('click', () => abrirNombre('guardada'));
+  $('#regalar').addEventListener('click', () => abrirNombre('regalar'));
   const raiz = document.documentElement;
   if (raiz.requestFullscreen && document.fullscreenEnabled) {
     const boton = $('#pantalla');
@@ -1778,88 +1736,137 @@ function montarTaller() {
   ro.observe($('#barra'));
   $$('.dock').forEach((d) => ro.observe(d));
   window.addEventListener('resize', medirTaller);
-  $('#girar-izq').addEventListener('click', () => taller.girar(-Math.PI / 4));
-  $('#girar-der').addEventListener('click', () => taller.girar(Math.PI / 4));
-  $('#deshacer').addEventListener('click', deshacer);
+  $$('[data-deshacer]').forEach((b) => b.addEventListener('click', deshacer));
+  $$('[data-rehacer]').forEach((b) => b.addEventListener('click', rehacer));
   document.addEventListener('keydown', (ev) => {
-    if (ev.target.closest('input,textarea')) return;
-    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z') { ev.preventDefault(); deshacer(); }
+    if (ev.target.closest('input,textarea') || $('#taller').hidden) return;
+    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z') { ev.preventDefault(); if (ev.shiftKey) rehacer(); else deshacer(); }
   });
   $('#lienzo').addEventListener('keydown', (ev) => {
     if (taller.fijo) return;
     if (ev.key === 'ArrowLeft') { ev.preventDefault(); taller.girar(-Math.PI / 8); }
     if (ev.key === 'ArrowRight') { ev.preventDefault(); taller.girar(Math.PI / 8); }
   });
-  $('#sorpresa').addEventListener('click', () => {
-    if (estado.etapa === 'amasar') {
-      const f = elige(['guagua', 'tradicional', 'guaguau', 'caballito', 'chanchito', 'gallinita'].filter((x) => x !== estado.f));
-      $(`[data-molde="${f}"]`).click();
-      return;
-    }
-    sorpresa(estado, taller).forEach((op) => { estado.o.push(op); taller.agregar(op, true); });
-    taller.dibujar(); guardarBorrador(); actualizarEtiqueta();
+  // salir del taller
+  $('#salir-sin').addEventListener('click', () => {
+    $('#d-salir').close();
+    almacen.poner(BORRADOR, null);
+    mostrar('canasta');
   });
-  $('#de-nuevo').addEventListener('click', () => { $('#d-info').close(); pedirNueva(); });
-  $('#regalar').addEventListener('click', abrirRegalo);
-  $('#guardar-ya').addEventListener('click', () => guardarYa());
-  $('#guardar').addEventListener('click', () => { $('#d-vitrina').close(); guardarYa(); });
-  $('#v-nueva').addEventListener('click', () => { $('#d-vitrina').close(); pedirNueva(); });
+  $('#salir-guardar').addEventListener('click', () => { $('#d-salir').close(); abrirNombre('salir'); });
+  $('#nombre-guardar').addEventListener('click', guardarConNombre);
+  $('#r-nombre').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); guardarConNombre(); } });
   $('#g-otra').addEventListener('click', () => { $('#d-guardada').close(); nueva(); });
   $('#g-regalar').addEventListener('click', () => { $('#d-guardada').close(); abrirRegalo(); });
-  $('#n-guardar').addEventListener('click', async () => { $('#d-nueva').close(); await guardarYa(false); nueva(); });
-  $('#n-sin-guardar').addEventListener('click', () => { $('#d-nueva').close(); nueva(); });
   return true;
 }
 
 function deshacer() {
   if (estado.etapa === 'amasar') {
     if (!historia.length) return;
+    futuro.push(JSON.stringify(estado.a));
     const a = JSON.parse(historia.pop());
     taller.ponerMasa(a); cambiarMasa(a);
     return;
   }
   if (estado.etapa !== 'decorar' || !estado.o.length) return;
-  estado.o.pop();
+  futuro.push(estado.o.pop());
   taller.quitarUltimo();
   guardarBorrador(); actualizarEtiqueta();
 }
-/* Guardar y empezar otra: la guagua que sale del taller se guarda en la vitrina,
-   y solo se pregunta antes de empezar otra si tiene decoración que aún no se guardó. */
-let ultimaGuardada = null;
-const sinGuardar = () => estado.o.length > 0 && JSON.stringify(receta()) !== ultimaGuardada;
-function pedirNueva() {
-  if (sinGuardar()) window.malDS.abrir('#d-nueva');
-  else nueva();
+function rehacer() {
+  if (!futuro.length) return;
+  if (estado.etapa === 'amasar') {
+    historia.push(JSON.stringify(estado.a));
+    const a = JSON.parse(futuro.pop());
+    taller.ponerMasa(a); cambiarMasa(a);
+    return;
+  }
+  if (estado.etapa !== 'decorar') return;
+  const op = futuro.pop();
+  estado.o.push(op);
+  taller.agregar(op);
+  guardarBorrador(); actualizarEtiqueta();
 }
-async function guardarYa(conAviso = true) {
+/* Guardar: la guagua sale del taller con nombre y entra en tu canasta. */
+/* Lo que se pierde al salir es la guagua (masa, horno y decoración); los
+   datos del regalo se piden otra vez al regalarla. */
+let ultimaGuardada = null;
+const huella = () => JSON.stringify([estado.f, estado.a, estado.k, estado.o]);
+const sinGuardar = () => estado.o.length > 0 && huella() !== ultimaGuardada;
+/* La ✕ vuelve a tu canasta. Si hay algo que se perdería, avisa antes:
+   la decoración se puede guardar; la masa cruda no se guarda. */
+function cerrarTaller() {
+  const cruda = estado.etapa !== 'decorar';
+  const hayAlgo = cruda ? historia.length > 0 || estado.k > 0 : sinGuardar();
+  if (!hayAlgo) { mostrar('canasta'); return; }
+  $('#d-salir-t').textContent = cruda ? '¿Salir y dejar la masa?' : '¿Salir sin guardar?';
+  $('#d-salir-p').textContent = cruda ? 'La masa cruda no se guarda: si sales, se perderá.' : 'Si no la guardas, se perderán tus cambios.';
+  $('#salir-guardar').hidden = cruda;
+  $('#salir-sin').classList.toggle('b--pri', cruda);
+  $('#salir-sin').classList.toggle('b--sec', !cruda);
+  abrir('#d-salir');
+}
+const fotoDe = (img, e) => { img.src = foto(e, 240, 300).toDataURL(); };
+/* Ponle nombre: sale al tocar listo, regalar o guardar antes de salir. */
+let trasNombre = 'guardada';
+function abrirNombre(despues) {
+  trasNombre = despues;
+  $('#r-nombre').value = estado.n || 'Guagua';
+  fotoDe($('#nombre-foto'), receta());
+  abrir('#d-nombre');
+}
+async function guardarConNombre() {
+  estado.n = $('#r-nombre').value.trim().slice(0, 40) || 'Guagua';
+  await guardarYa();
+  $('#d-nombre').close();
+  if (trasNombre === 'regalar') abrirRegalo();
+  else if (trasNombre === 'salir') mostrar('canasta');
+  else { fotoDe($('#guardada-foto'), receta()); abrir('#d-guardada'); }
+}
+async function guardarYa() {
   await guardarMia();
-  ultimaGuardada = JSON.stringify(receta());
-  if (conAviso) window.malDS.abrir('#d-guardada');
+  ultimaGuardada = huella();
+  guardarBorrador();
 }
 function nueva(molde = 'guagua') {
-  Object.assign(estado, { a: MOLDES[molde](), f: molde, k: 0, o: [], id: null, n: elige(NOMBRES[molde]), p: '', m: '', l: 0, capa: 0 });
-  historia = [];
+  Object.assign(estado, { a: MOLDES[molde](), f: molde, k: 0, o: [], id: null, n: '', p: '', m: '', t: '', l: 0, capa: 0 });
+  historia = []; futuro = [];
   ultimaGuardada = null;
   sincronizarControles();
   taller.cargar(estado);
   irA('amasar');
+  mostrar('taller');
+}
+/* Una que quedó a medio decorar: se retoma desde la canasta. */
+function cargarEnTaller(e, id) {
+  Object.assign(estado, { f: e.f, a: e.a, k: e.k, o: e.o.slice(), n: e.n, p: e.p, d: e.d, m: e.m, t: e.t, l: e.l || 0, capa: e.capa || 0, id });
+  historia = []; futuro = [];
+  sincronizarControles();
+  taller.cargar(estado);
+  irA('decorar');
+}
+function pintarPendiente() {
+  const b = almacen.leer(BORRADOR, null);
+  const hay = !!(b && b.etapa === 'decorar' && Array.isArray(b.o) && b.o.length && !b.guardada);
+  $('#seguir-borrador').hidden = !hay;
+  if (hay) $('#seguir-borrador-d').textContent = (b.n || 'Tu guagua') + ', a medio decorar';
 }
 async function guardarMia(regalo) {
   if (!estado.id) estado.id = nuevoId();
   const item = { id: estado.id, t: 'mia', e: await codificar(receta()), f: Date.now() };
   if (regalo) item.g = regalo;
   guardarEnVitrina(item);
-  guardarBorrador();
   pintarVitrina();
 }
 function sincronizarControles() {
   const marcar = (attr, v) => $$(`button[${attr}]`).forEach((b) => b.setAttribute('aria-pressed', String(b.getAttribute(attr) === String(v))));
-  $$('#banos .crema').forEach((x, j) => x.setAttribute('aria-pressed', String(j === estado.capa)));
   marcar('data-mano', estado.mano);
   marcar('data-grosor', estado.grosor);
-  marcar('data-herramienta', estado.herramienta);
-  marcar('data-boquilla', estado.boquilla);
-  marcar('data-tamano', estado.tamano);
+  marcar('data-ancho', estado.ancho);
+  $$('#cremas .color').forEach((x, j) => x.setAttribute('aria-pressed', String(j === estado.crema)));
+  elegirHerramienta(estado.herramienta);
+  pintarAro();
 }
 
 
@@ -1869,7 +1876,7 @@ function sincronizarControles() {
    antes a la red ni a renderizar. Por eso la tarjeta, el archivo y el enlace
    se preparan apenas cambia algo, y el botón solo usa lo que ya está listo. */
 let preparado = null, turnoTarjeta = 0, reloj = null, relojNube = null;
-let formato = almacen.leer('guagua:formato', 'historia');
+const formato = 'historia';
 const publicados = new Map();      // receta → id del regalo, para no publicar dos veces la misma
 /* Con cuenta, el regalo se publica en /guaguas y el enlace es corto (#g=…).
    Sin cuenta, o si la nube falla, la receta va entera en el enlace (#r=…). */
@@ -1884,56 +1891,43 @@ async function enlaceDeRegalo(cod) {
     return { url: direccion() + '#r=' + cod, id: null };
   }
 }
-const mensajeDe = (t) => (t === 'm' ? (estado.f === 'guaguau' ? MENSAJE_GUAGUAU : elige(MENSAJES_MEMORIA)) : elige(MENSAJES));
-const esDeCajon = (m) => MENSAJES.includes(m) || MENSAJES_MEMORIA.includes(m) || m === MENSAJE_GUAGUAU;
-/* Regalar o dedicar cambia las etiquetas, el mensaje sugerido y los vales. */
+/* Regalar o dedicar cambia las etiquetas; lo que va en la canasta es un radio. */
 function pintarTipo() {
   const m = estado.t === 'm';
-  $$('button[data-tipo]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tipo === estado.t)));
-  $$('button[data-vale]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.vale === estado.l)));
+  $$('#d-regalar button[data-tipo]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tipo === estado.t)));
+  $$('#d-regalar button[data-vale]').forEach((b) => b.setAttribute('aria-checked', String(+b.dataset.vale === estado.l)));
   $('#r-para-rotulo').textContent = m ? 'En memoria de' : 'Para';
-  $('#r-para').placeholder = m ? 'Mi abuela Rosa, mi perrita Lobita' : 'Mi hermana, mi abuelo, la familia';
-  $('#r-vale-campo').hidden = m;
-  $('#r-vale-pista').textContent = VALES[estado.l] ? VALES[estado.l].pista : '';
-  $('#r-compartir').lastChild.textContent = m ? ' Compartir en redes' : ' Compartir';
-  $$('button[data-formato]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.formato === formato)));
+  $('#r-para').placeholder = m ? '¿A quién recuerdas?' : '¿Para quién?';
+  $('#r-compartir').textContent = m ? 'Compartir en redes' : 'Enviar la canasta';
 }
-async function abrirRegalo() {
-  const v = veredicto(estado);
-  $('#panadera-frase').textContent = v.frase;
-  $('#panadera-nota').textContent = 'Nota de la panadera: ' + v.descuento;
-  $('#r-nombre').value = estado.n;
+function abrirRegalo() {
   $('#r-para').value = estado.p;
   $('#r-de').value = estado.d || almacen.leer('guagua:firma', '');
-  $('#r-mensaje').value = estado.m || mensajeDe(estado.t);
+  $('#r-mensaje').value = estado.m;
+  $('#r-mensaje-campo').hidden = !estado.m;
+  $('#r-mensaje-abre').hidden = !!estado.m;
+  fotoDe($('#r-foto'), receta());
   pintarTipo();
   irPaso(1);
-  window.malDS.abrir('#d-regalar');
+  abrir('#d-regalar');
 }
-/* Regalar va en tres pasos que caben en la pantalla sin desplazarse:
-   para quién, unas palabras y la imagen para compartir. La imagen solo
-   se dibuja al llegar al tercero. */
+/* Regalar va en dos pasos, una decisión en cada uno: qué más va en la
+   canasta, y para quién es. La imagen se prepara al llegar al segundo. */
 let paso = 1;
 function irPaso(n) {
-  paso = limita(n, 1, 3);
+  paso = limita(n, 1, 2);
   $$('#d-regalar .regalar__paso').forEach((f) => { f.hidden = +f.dataset.paso !== paso; });
-  $$('#d-regalar .pasos__punto').forEach((p, i) => p.setAttribute('aria-current', String(i + 1 === paso)));
-  $('#r-atras').hidden = paso === 1;
-  $('#r-siguiente').hidden = paso === 3;
-  $('#d-regalar').classList.toggle('regalar--final', paso === 3);
-  $('#d-regalar-t').textContent = ['', estado.t === 'm' ? 'Dedícala' : 'Regálala', 'Unas palabras', 'Compártela'][paso];
-  if (paso === 3) refrescarTarjeta();
-  else { const c = $(`#d-regalar .regalar__paso[data-paso="${paso}"] input, #d-regalar .regalar__paso[data-paso="${paso}"] textarea`); if (c && matchMedia('(hover:hover)').matches) c.focus(); }
+  $('#r-paso').textContent = paso + ' de 2';
+  if (paso === 2) refrescarTarjeta();
 }
 function leerFormulario() {
-  estado.n = $('#r-nombre').value.trim().slice(0, 40);
   estado.p = $('#r-para').value.trim().slice(0, 40);
   estado.d = $('#r-de').value.trim().slice(0, 40);
   estado.m = $('#r-mensaje').value.trim().slice(0, 160);
   if (estado.d) almacen.poner('guagua:firma', estado.d);
 }
 function botonesListos(listo) {
-  ['#r-compartir', '#r-whatsapp', '#r-copiar', '#r-descargar'].forEach((b) => {
+  ['#r-compartir', '#r-copiar', '#r-descargar'].forEach((b) => {
     $(b).disabled = !listo;
     $(b).setAttribute('aria-busy', String(!listo));
   });
@@ -1946,11 +1940,9 @@ async function refrescarTarjeta() {
   const cod = await codificar(r);
   const c = await tarjeta(r, formato);
   if (turno !== turnoTarjeta) return;
-  $('#r-vista').src = c.toDataURL('image/jpeg', 0.85);
-  $('#r-vista').width = c.width; $('#r-vista').height = c.height;
   const blob = await aBlob(c);
   if (turno !== turnoTarjeta) return;
-  const nombre = 'guagua-' + (estado.n || 'de-pan').toLowerCase().replace(/[^a-z0-9áéíóúñü]+/gi, '-') + '-' + formato + '.png';
+  const nombre = 'guagua-' + (estado.n || 'de-pan').toLowerCase().replace(/[^a-z0-9áéíóúñü]+/gi, '-') + '.png';
   const pr = { cod, blob, archivo: new File([blob], nombre, { type: 'image/png' }), nombre, url: direccion() + '#r=' + cod, id: null, texto: textoRegalo() };
   preparado = pr;
   guardarBorrador();
@@ -1986,10 +1978,9 @@ async function copiar(texto, boton) {
   const listo = () => {
     avisa('Enlace copiado. Pégalo donde quieras.', 'ok');
     if (!boton) return;
-    const antes = boton.innerHTML;
-    boton.classList.add('btn--ok');
-    boton.innerHTML = '<svg class="icono" aria-hidden="true"><use href="#i-check"/></svg> ¡Copiado!';
-    setTimeout(() => { boton.innerHTML = antes; boton.classList.remove('btn--ok'); }, 1800);
+    const antes = boton.textContent;
+    boton.textContent = '¡Copiado!';
+    setTimeout(() => { boton.textContent = antes; }, 1800);
   };
   try { await navigator.clipboard.writeText(texto); listo(); }
   catch (e) {
@@ -2008,33 +1999,30 @@ function montarRegalo() {
   $$('#d-regalar input, #d-regalar textarea').forEach((x) => x.addEventListener('input', () => {
     preparado = null; botonesListos(false);
     clearTimeout(reloj);
-    if (paso === 3) reloj = setTimeout(refrescarTarjeta, 350);
+    reloj = setTimeout(refrescarTarjeta, 350);
   }));
-  $('#r-atras').addEventListener('click', () => irPaso(paso - 1));
-  $('#r-siguiente').addEventListener('click', () => { leerFormulario(); irPaso(paso + 1); });
+  $('#r-atras').addEventListener('click', () => { if (paso === 1) $('#d-regalar').close(); else irPaso(1); });
+  $('#r-siguiente').addEventListener('click', () => irPaso(2));
   $('#d-regalar').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && e.target.tagName === 'INPUT' && paso < 3) { e.preventDefault(); leerFormulario(); irPaso(paso + 1); }
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); e.target.blur(); }
   });
-  $$('button[data-tipo]').forEach((b) => b.addEventListener('click', () => {
+  $$('#d-regalar button[data-tipo]').forEach((b) => b.addEventListener('click', () => {
     if (estado.t === b.dataset.tipo) return;
     estado.t = b.dataset.tipo;
-    const msg = $('#r-mensaje');
-    if (!msg.value.trim() || esDeCajon(msg.value.trim())) msg.value = mensajeDe(estado.t);
-    pintarTipo(); irPaso(paso);
+    pintarTipo(); refrescarTarjeta();
   }));
-  $$('button[data-vale]').forEach((b) => b.addEventListener('click', () => {
+  $$('#d-regalar button[data-vale]').forEach((b) => b.addEventListener('click', () => {
     estado.l = +b.dataset.vale;
     pintarTipo();
   }));
-  $$('button[data-formato]').forEach((b) => b.addEventListener('click', () => {
-    formato = b.dataset.formato;
-    almacen.poner('guagua:formato', formato);
-    pintarTipo(); refrescarTarjeta();
-  }));
+  $('#r-mensaje-abre').addEventListener('click', () => {
+    $('#r-mensaje-abre').hidden = true;
+    $('#r-mensaje-campo').hidden = false;
+    $('#r-mensaje').focus();
+  });
   // lo que pasa después de compartir no hace esperar a la hoja de compartir
   const despues = (pr) => { guardarMia(pr.id).catch(() => {}); };
   $('#r-entrar').addEventListener('click', () => abrirCuenta());
-  $('#abrir-cuenta').addEventListener('click', () => abrirCuenta());
   $('#r-compartir').addEventListener('click', () => {
     const pr = preparado;
     if (!pr) return;
@@ -2045,17 +2033,12 @@ function montarRegalo() {
     } else if (navigator.share) {
       promesa = navigator.share({ title: titulo, text: pr.texto, url: pr.url });
     }
-    if (!promesa) { copiar(pr.url); despues(pr); return; }
+    // sin hoja de compartir (la compu): WhatsApp
+    if (!promesa) { window.open('https://wa.me/?text=' + encodeURIComponent(pr.texto + ' ' + pr.url), '_blank', 'noopener'); despues(pr); return; }
     promesa.then(() => despues(pr)).catch((e) => {
       if (e && e.name === 'AbortError') return;
-      avisa('Este navegador no dejó compartir. Usa WhatsApp, copia el enlace o descarga la imagen.', 'error');
+      avisa('Este navegador no dejó compartir. Copia el enlace o guarda la imagen.', 'error');
     });
-  });
-  $('#r-whatsapp').addEventListener('click', () => {
-    const pr = preparado;
-    if (!pr) return;
-    window.open('https://wa.me/?text=' + encodeURIComponent(pr.texto + ' ' + pr.url), '_blank', 'noopener');
-    despues(pr);
   });
   $('#r-copiar').addEventListener('click', () => {
     const pr = preparado;
@@ -2074,7 +2057,7 @@ function montarRegalo() {
   });
 }
 
-/* ══════════════════ LA VITRINA ══════════════════════════════ */
+/* ══════════════════ TU CANASTA ══════════════════════════════ */
 let pestana = 'mia', visorPieza = null, piezaActual = null;
 const fecha = (t) => new Date(t).toLocaleDateString('es-EC', { day: 'numeric', month: 'short' });
 let turnoVitrina = 0;
@@ -2086,16 +2069,13 @@ async function pintarVitrina(cual) {
   const todas = await listaVitrina();
   if (turno !== turnoVitrina) return;
   const lista = todas.filter((x) => x.t === pestana);
-  pintarCuentaEnVitrina();
+  pintarCuentaBarra();
   $('#cuenta-mia').textContent = todas.filter((x) => x.t === 'mia').length;
   $('#cuenta-recibida').textContent = todas.filter((x) => x.t === 'recibida').length;
-  const hud = $('#cuenta-hud');
-  hud.textContent = todas.length;
-  hud.hidden = !todas.length;
   rej.textContent = '';
   $('#vitrina-vacia').hidden = !!lista.length;
   $('#vitrina-vacia').textContent = pestana === 'mia'
-    ? 'Aquí se guardan las que haces. Todavía no hay ninguna.'
+    ? 'Aquí se guardan las que amasas. Todavía no hay ninguna.'
     : 'Aquí aparecen las que te regalan. Regala una: quizá te devuelvan el gesto.';
   for (const item of lista) {
     let e;
@@ -2124,7 +2104,7 @@ function abrirPieza(item, e) {
   $('#p-mensaje').textContent = e.m || '';
   $('#p-mensaje').hidden = !e.m;
   $('#p-editar').hidden = item.t !== 'mia';
-  window.malDS.abrir('#d-pieza');
+  abrir('#d-pieza');
   if (!visorPieza) visorPieza = new Visor($('#p-lienzo'));
   visorPieza.giro = -0.25; Object.assign(visorPieza, posturaDe(e));
   visorPieza.cargar(e);
@@ -2132,29 +2112,39 @@ function abrirPieza(item, e) {
 }
 function montarVitrina() {
   $$('[data-vitrina]').forEach((b) => b.addEventListener('click', () => pintarVitrina(b.dataset.vitrina)));
+  $('#amasar-otra').addEventListener('click', () => nueva());
+  $('#seguir-borrador').addEventListener('click', () => {
+    const b = almacen.leer(BORRADOR, null);
+    if (!b) return;
+    cargarEnTaller(sano(b), typeof b.id === 'string' ? b.id : null);
+    mostrar('taller');
+  });
+  $('#abrir-cuenta').addEventListener('click', () => abrirCuenta());
   $('#p-editar').addEventListener('click', () => {
     const { item, e } = piezaActual;
-    Object.assign(estado, { f: e.f, a: e.a, k: e.k, o: e.o.slice(), n: e.n, p: e.p, d: e.d, m: e.m, t: e.t, l: e.l, capa: e.capa || 0, id: item.id });
-    historia = [];
-    taller.cargar(estado);
-    irA('decorar');
+    cargarEnTaller(e, item.id);
+    ultimaGuardada = huella();
     $('#d-pieza').close();
-    if ($('#d-vitrina').open) $('#d-vitrina').close();
+    mostrar('taller');
   });
   $('#p-regalar').addEventListener('click', () => {
     const { item, e } = piezaActual;
-    // sin esperar a la red: el enlace corto si ya existe, si no el largo
+    $('#d-pieza').close();
+    // las tuyas se arman en canasta; las que te regalaron se reenvían tal cual
+    if (item.t === 'mia') {
+      cargarEnTaller(e, item.id);
+      ultimaGuardada = huella();
+      abrirRegalo();
+      return;
+    }
     const enlace = direccion() + (item.g ? '#g=' + item.g : '#r=' + item.e);
     if (navigator.share) {
       navigator.share({ title: 'Una guagua de pan', text: textoRegalo(e), url: enlace })
-        .catch((err) => { if (!err || err.name !== 'AbortError') copiar(enlace, $('#p-regalar')); });
-    } else copiar(enlace, $('#p-regalar'));
-    if (!item.g && item.t === 'mia' && nube.actual()) {
-      enlaceDeRegalo(item.e).then((r) => { if (r.id) { item.g = r.id; guardarEnVitrina(item); } });
-    }
+        .catch((err) => { if (!err || err.name !== 'AbortError') copiar(enlace); });
+    } else copiar(enlace);
   });
   $('#p-borrar').addEventListener('click', () => {
-    if (!confirm('¿Quitar esta guagua de la vitrina? No se puede deshacer.')) return;
+    if (!confirm('¿Sacar esta guagua de tu canasta? No se puede deshacer.')) return;
     sacarDeVitrina(piezaActual.item.id);
     if (estado.id === piezaActual.item.id) estado.id = null;
     $('#d-pieza').close();
@@ -2177,7 +2167,7 @@ async function recibir(cod, regalo) {
   $('#regalo-titulo').textContent = memoria
     ? `${e.d ? e.d + ' amasó ' + que : que.charAt(0).toUpperCase() + que.slice(1)} en memoria de ${e.p || 'quienes ya no están'}`
     : e.d ? `${e.d} te regaló ${que}` : `Te regalaron ${que}`;
-  $('#regalo-nombre').textContent = '«' + nombreDe(e) + '»';
+  $('#regalo-nombre').textContent = nombreDe(e);
   $('#regalo-para').textContent = !memoria && e.p ? 'Para ' + e.p : '';
   $('#regalo-para').hidden = memoria || !e.p;
   $('#regalo-mensaje').textContent = e.m || '';
@@ -2186,9 +2176,13 @@ async function recibir(cod, regalo) {
   if (vale) {
     $('#regalo-vale-t').textContent = vale.titulo;
     $('#regalo-vale-d').textContent = vale.detalle;
-    $('#regalo-cobrar').hidden = !vale.boton;
     $('#regalo-cobrar-t').textContent = vale.boton || '';
   }
+  // un solo botón principal: cobrar el vale si trae uno; si no, devolver el gesto
+  const cobra = !!(vale && vale.boton);
+  $('#regalo-cobrar').hidden = !cobra;
+  $('#regalo-devolver').classList.toggle('b--pri', !cobra);
+  $('#regalo-devolver').classList.toggle('b--sec', cobra);
   $('#regalo-pista').textContent = memoria
     ? 'En Finados se comparte el pan con los que recordamos. Tócala para darle un mordisco.'
     : 'Gírala con dos dedos. Tócala para darle un mordisco.';
@@ -2218,7 +2212,7 @@ async function recibir(cod, regalo) {
   visorRegalo.ambiente('decorar');
   visorRegalo.cargar(e);
   visorRegalo.medir();
-  const medirRegalo = () => { visorRegalo.margen = margenes($('#regalo-lienzo'), null, $('#regalo-tarjeta')); visorRegalo.dibujar(); };
+  const medirRegalo = () => { visorRegalo.margen = margenes($('#regalo-lienzo'), $('.regalo__arriba'), $('#regalo-tarjeta')); visorRegalo.dibujar(); };
   requestAnimationFrame(medirRegalo);
   if (!visorRegalo._observa) { visorRegalo._observa = new ResizeObserver(medirRegalo); visorRegalo._observa.observe($('#regalo-tarjeta')); }
   const item = { id: nuevoId(), t: 'recibida', e: cod, f: Date.now() };
@@ -2244,14 +2238,12 @@ function montarRecibir() {
     if (!vale || !vale.cobrar) return;
     window.open('https://wa.me/?text=' + encodeURIComponent(vale.cobrar(recibida.d)), '_blank', 'noopener');
   });
-  $('#regalo-taller').addEventListener('click', cerrarRegalo);
+  $('#regalo-taller').addEventListener('click', () => { cerrarRegalo(); mostrar('canasta'); });
 }
 function cerrarRegalo() {
   document.body.classList.remove('modo-regalo');
   $('#regalo').hidden = true;
   history.replaceState(null, '', location.pathname + location.search);
-  taller.medir();
-  medirTaller();
 }
 
 /* ─── arranque ─────────────────────────────────────────────── */
@@ -2289,25 +2281,13 @@ function arrancar() {
   vigilarVersion();
   abrirSecretos();
   $('#cuenta').textContent = rotuloFinados();
-  if (!montarTaller()) return;
-  montarRegalo(); montarVitrina(); montarRecibir(); montarAsas();
-  // el DS cierra el diálogo si el clic cae fuera de su caja; como los pasos
-  // cambian su tamaño en el mismo clic, lo de adentro no le llega
-  $$('dialog.modal > *').forEach((x) => x.addEventListener('click', (e) => e.stopPropagation()));
-  const b = almacen.leer(BORRADOR, null);
-  if (b && Array.isArray(b.a)) {
-    Object.assign(estado, sano(b), { id: typeof b.id === 'string' ? b.id : null });
-    sincronizarControles();
-    taller.cargar(estado);
-    irA(b.etapa === 'decorar' && estado.k >= 50 ? 'decorar' : 'amasar');
-  } else {
-    nueva('guagua');
-  }
-  pintarVitrina();
-  if (!location.hash && !/[?&](molde|para|dedicada)=/.test(location.search) && !almacen.leer('guagua:visto', false)) {
-    almacen.poner('guagua:visto', true);
-    window.malDS.abrir('#d-info');
-  }
+  montarHojas();
+  if (!montarTaller()) { mostrar('taller'); return; }
+  montarRegalo(); montarVitrina(); montarRecibir();
+  $$('dialog.hoja > *').forEach((x) => x.addEventListener('click', (e) => e.stopPropagation()));
+  // la app empieza en tu canasta; el taller se arma al tocar «Amasar otra»
+  sincronizarControles();
+  mostrar('canasta');
   const arranqueNube = nube.iniciar().then((hay) => {
     if (hay) nube.alCambiar(alCambiarCuenta);
     return hay;
@@ -2342,11 +2322,11 @@ function arrancar() {
 
 /* ══════════════════ LA CUENTA ═══════════════════════════════
    Entrar es opcional: sin cuenta todo funciona en este navegador. Con
-   cuenta, la vitrina se guarda en la nube y los regalos llevan enlace corto. */
+   cuenta, la canasta se guarda en la nube y los regalos llevan enlace corto. */
 let modoCuenta = 'entrar';
 function abrirCuenta() {
   vistaCuenta('entrar');
-  window.malDS.abrir('#d-cuenta');
+  abrir('#d-cuenta');
 }
 /* Entrar y recuperar contraseña son pantallas distintas: la de recuperar
    solo pide el correo; la de entrar pide correo y contraseña. */
@@ -2360,28 +2340,11 @@ function vistaCuenta(v) {
   $('#c-error').textContent = '';
   $('#c-recuperar-error').textContent = '';
 }
-/* La píldora de la barra: sin sesión, «Entrar»; con sesión, tu nombre. */
+/* El botón de la cuenta, en la canasta: con sesión lleva un punto verde. */
 function pintarCuentaBarra() {
   const u = nube.actual();
-  const pastilla = $('#abrir-cuenta');
-  const rotulo = u ? (u.nombre || u.correo.split('@')[0]) : 'Entrar';
-  pastilla.hidden = !nube.disponible();
-  pastilla.classList.toggle('cuenta-pill--dentro', !!u);
-  $('#cuenta-rotulo').textContent = rotulo;
-  pastilla.setAttribute('aria-label', u ? `Tu cuenta: ${u.nombre || u.correo}` : 'Entrar con tu cuenta');
-  pastilla.title = pastilla.getAttribute('aria-label');
-}
-function pintarCuentaEnVitrina() {
-  const u = nube.actual();
-  pintarCuentaBarra();
-  $('#v-cuenta').hidden = !nube.disponible();
-  $('#v-cuenta-texto').textContent = u
-    ? `Tu vitrina se guarda en tu cuenta (${u.nombre || u.correo}).`
-    : 'Entra con tu cuenta para guardar tu vitrina en la nube y verla en cualquier teléfono.';
-  $('#v-cuenta-boton').textContent = u ? 'Tu cuenta' : 'Entrar';
-  $('#vitrina-nota').textContent = u
-    ? 'Tu vitrina se guarda en tu cuenta: la ves en cualquier teléfono donde entres. Los regalos se abren con su enlace corto.'
-    : 'Sin cuenta, la vitrina vive solo en este navegador y los regalos viajan enteros dentro del enlace.';
+  $('#cuenta-punto').hidden = !u;
+  $('#abrir-cuenta').setAttribute('aria-label', u ? `Tu cuenta: ${u.nombre || u.correo}` : 'Tu cuenta: entrar');
   $('#r-entrar-fila').hidden = !nube.disponible() || !!u;
 }
 async function alCambiarCuenta(u) {
@@ -2389,7 +2352,7 @@ async function alCambiarCuenta(u) {
   $('#cuenta-dentro').hidden = !u;
   if (u) {
     $('#c-nombre').textContent = u.nombre || u.correo;
-    $('#c-correo').textContent = u.nombre ? u.correo : '';
+    $('#c-correo').textContent = u.nombre ? '(' + u.correo + ')' : '';
     // lo que estaba guardado solo en este navegador sube a la cuenta, una sola vez
     const clave = 'guagua:subidas:' + u.uid;
     const subidas = new Set(almacen.leer(clave, []));
@@ -2400,7 +2363,6 @@ async function alCambiarCuenta(u) {
     almacen.poner(clave, [...subidas]);
     if (pendientes.length) avisa('Tus guaguas de este navegador ya están en tu cuenta.', 'ok');
   }
-  pintarCuentaEnVitrina();
   pintarVitrina();
 }
 function montarCuenta() {
@@ -2419,7 +2381,6 @@ function montarCuenta() {
     $('#c-clave').autocomplete = m === 'crear' ? 'new-password' : 'current-password';
     error('');
   };
-  $('#v-cuenta-boton').addEventListener('click', abrirCuenta);
   $('#c-cambiar').addEventListener('click', () => ponerModo(modoCuenta === 'crear' ? 'entrar' : 'crear'));
   $('#c-google').addEventListener('click', () => intentar(async () => {
     await nube.entrarConGoogle();
@@ -2461,9 +2422,10 @@ function montarCuenta() {
   $('#c-salir').addEventListener('click', () => intentar(async () => {
     await nube.salir();
     $('#d-cuenta').close();
-    avisa('Saliste de tu cuenta. La vitrina de este navegador sigue aquí.', 'ok');
+    avisa('Saliste de tu cuenta. Tu canasta de este navegador sigue aquí.', 'ok');
   }));
   ponerModo('entrar');
+  pintarCuentaBarra();
 }
 
 window.guagua = {
