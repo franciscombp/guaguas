@@ -262,7 +262,8 @@ el morado casi no aparece en el glaseado (aparece en la colada).
 - **Las figuras eligen su color**: en la barra de la figura hay una gota que abre los colores
   («Color de la figura»). El op 9 ahora lleva el color: `[9, figura, tamaño, color, x, y, z, n…]`;
   las primeras, sin color, se ven con el suyo de siempre.
-- **El mordisco no es un hueco**: antes atravesaba el pan de lado a lado (un cilindro) y se veía el
-  fondo. Ahora saca un bocado redondo alrededor de donde se mordió. Lo de adentro se pinta como miga
-  maciza: color parejo con poros, de frente a la cámara, más a la sombra en lo hondo; y el borde
-  mordido se tuesta, como la corteza.
+- **El mordisco va de lado a lado y el pan se ve macizo.** El pan es una cáscara: por el mordisco se
+  veía su interior vacío. En cada fragmento de miga que se ve por dentro, el shader busca dónde el rayo
+  de la vista toca el cilindro del bocado y lo ilumina con la normal de esa pared: lo que se ve es la
+  cara del corte, no el hueco. El borde mordido se tuesta, como la corteza. Quien la recibe se la
+  puede comer entera.

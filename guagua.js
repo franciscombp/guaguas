@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.8';
+import * as nube from './nube.js?v=2026.10.25.9';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.8';
+} from './masa.js?v=2026.10.25.9';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -243,17 +243,33 @@ function comestible(mat, U, horno) {
         uniform mat3 uBoca;
         uniform float uCoccion;`)
       .replace('void main() {', `void main() {
-        float bocado = 99.0;                         // cuán cerca está del mordisco más cercano (1: en el borde)
+        // el mordisco atraviesa el pan de lado a lado, con la marca de los dientes
+        float bocado = 99.0;                         // cuán cerca del borde del mordisco más cercano (1: en el borde)
+        // el pan es una cáscara: por el mordisco se vería su interior vacío. Lo que se
+        // ve por dentro se pinta como la pared del corte: donde el rayo de la vista
+        // toca el cilindro del bocado, con su normal, y así la miga se ve maciza
+        float corteT = 1e9;
+        vec3 corteP = vMundo, corteN = vec3(0.0);
+        vec3 rd = normalize(vMundo - cameraPosition);
+        float tf = length(vMundo - cameraPosition);
         for (int i = 0; i < ${MAX_BOCADOS}; i++) {
           if (i >= uNBocados) break;
-          // el mordisco saca un bocado redondo alrededor de donde se mordió, con la
-          // marca de los dientes en el borde; no atraviesa el pan de lado a lado
-          vec3 d3 = vMundo - uBocados[i].xyz;
-          vec2 d = (uBoca * d3).xy;
+          float w = uBocados[i].w;
+          vec2 d = (uBoca * (vMundo - uBocados[i].xyz)).xy;
           float dientes = 1.0 + 0.08 * sin(16.0 * atan(d.y, d.x));
-          float r = length(d3) / (uBocados[i].w * dientes);
+          float r = length(d) / (w * dientes);
           if (r < 1.0) discard;
           bocado = min(bocado, r);
+          vec2 o2 = (uBoca * (cameraPosition - uBocados[i].xyz)).xy, v2 = (uBoca * rd).xy;
+          float qa = dot(v2, v2), qb = dot(o2, v2), qc = dot(o2, o2) - w * w, disc = qb * qb - qa * qc;
+          if (qa > 1e-6 && disc > 0.0) {
+            float t2 = (-qb + sqrt(disc)) / qa;      // la pared del fondo del bocado
+            if (t2 > 0.0 && t2 < tf && t2 < corteT) {
+              corteT = t2;
+              corteP = cameraPosition + rd * t2;
+              corteN = -normalize(transpose(uBoca) * vec3(o2 + v2 * t2, 0.0));
+            }
+          }
         }`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         ${horno ? `
@@ -261,18 +277,16 @@ function comestible(mat, U, horno) {
         diffuseColor.rgb = mix(cruda, diffuseColor.rgb, smoothstep(0.05, 1.0, uCoccion));
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.025, 0.012, 0.006), smoothstep(1.1, 1.55, uCoccion) * 0.92);` : ''}
         if (!gl_FrontFacing) {
-          // por dentro, miga: un color parejo con sus poros, como pan partido
-          float g = fract(sin(dot(floor(vMundo * 70.0), vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+          // la miga: un color parejo con sus poros, como pan partido
+          float g = fract(sin(dot(floor(corteP * 70.0), vec3(12.9898, 78.233, 37.719))) * 43758.5453);
           diffuseColor.rgb = vec3(0.95, 0.83, 0.6) * (0.86 + 0.14 * g);
-          // lo más hondo del bocado, más a la sombra: así se lee el hueco del mordisco
-          diffuseColor.rgb *= mix(1.0, 0.62, smoothstep(1.0, 2.6, bocado));
         } else if (bocado < 1.07) {
           // el borde mordido: la corteza se ve, más tostada
           diffuseColor.rgb *= mix(0.55, 1.0, smoothstep(1.0, 1.07, bocado));
         }`)
-      // y la miga se ve maciza: de frente a la cámara, sin el relieve de la corteza
+      // la miga se ilumina como la pared del corte, sin el relieve de la corteza
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
-        if (!gl_FrontFacing) normal = vec3(0.0, 0.0, 1.0);`);
+        if (!gl_FrontFacing) normal = corteT < 1e8 ? normalize((viewMatrix * vec4(corteN, 0.0)).xyz) : vec3(0.0, 0.0, 1.0);`);
   };
   mat.customProgramCacheKey = () => (horno ? 'comestible-horno' : 'comestible');
   return mat;
