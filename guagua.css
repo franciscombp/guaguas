@@ -21,12 +21,14 @@
   --campo-borde:rgba(255,255,255,.2);
   --crema:#fff6ea;
   --texto-2:#cbb8d6;
-  --texto-3:#a996b8;
-  --rojo:#e8442e;
-  --rojo-sombra:#9c2415;
+  --texto-3:#b3a2c2;       /* sobre el vidrio: 5:1 */
+  --rojo:#d63a22;          /* blanco encima: 4.7:1 */
+  --rojo-sombra:#8a1f0f;
   --rosa:#ff4f9a;
   --lima:#9be33a;
   --orilla:calc(16px + env(safe-area-inset-left));
+  /* abajo: lo justo para no chocar con la barra de inicio del iPhone */
+  --pie:max(12px, calc(env(safe-area-inset-bottom) - 8px));
   --dur-1:var(--mal-dur-1, 120ms);
   --dur-2:var(--mal-dur-2, 220ms);
   --dur-3:var(--mal-dur-3, 360ms);
@@ -35,23 +37,23 @@
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 [hidden]{display:none!important}
 html,body.juego-cuerpo{height:100%;overflow:hidden;overscroll-behavior:none}
-body.juego-cuerpo{margin:0;background:var(--noche);color:var(--crema);font-family:var(--mal-texto, Inter, system-ui, sans-serif);
+body.juego-cuerpo{margin:0;background:var(--noche);color:var(--crema);font-family:var(--mal-texto, Inter, system-ui, sans-serif);line-height:1.4;
   -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .juego-cuerpo input,.juego-cuerpo textarea{-webkit-user-select:text;user-select:text}
-.juego-cuerpo button{font:inherit}
+:where(.juego-cuerpo) :where(button,input,textarea){font:inherit;line-height:1.2}
 .icono{width:22px;height:22px;flex:none}
 .juego-cuerpo :focus-visible{outline:3px solid #fff;outline-offset:2px}
 
 /* ─── los botones ─────────────────────────────────────────── */
 .b{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:56px;padding:0 24px;border-radius:999px;cursor:pointer;
-  font-weight:800;font-size:18px;text-decoration:none;border:0;background:none;color:var(--crema);
+  font-family:var(--mal-texto);font-weight:800;font-size:18px;line-height:1;letter-spacing:-.005em;text-decoration:none;border:0;background:none;color:var(--crema);
   transition:transform var(--dur-1), box-shadow var(--dur-1), opacity var(--dur-2)}
 .b--pri{background:var(--rojo);color:#fff;box-shadow:0 4px 0 var(--rojo-sombra)}
 .b--pri:active{transform:translateY(3px);box-shadow:0 1px 0 var(--rojo-sombra)}
 .b--sec{border:2px solid var(--crema)}
 .b--sec:active{transform:scale(.98)}
-.b--ter{height:44px;padding:0 6px;font-weight:700;font-size:15px;text-decoration:underline;text-underline-offset:3px;color:var(--crema)}
-.b--chico{height:44px;padding:0 20px;font-size:15px}
+.b--ter{height:44px;padding:0 6px;font-weight:600;font-size:15px;text-decoration:underline;text-underline-offset:3px;color:var(--crema)}
+.b--chico{height:44px;padding:0 20px;font-size:16px}
 .b--izq{align-self:flex-start}
 .b:disabled,.b[aria-busy="true"]{opacity:.5;cursor:progress}
 .b .icono{width:20px;height:20px}
@@ -86,7 +88,7 @@ body.juego-cuerpo{margin:0;background:var(--noche);color:var(--crema);font-famil
 .campo input::placeholder,.campo textarea::placeholder{color:var(--texto-3)}
 .campo--grande{height:60px!important;font-family:var(--mal-display);font-weight:800;font-size:24px!important}
 .error{min-height:1.2em;margin:0;color:#ff8a7a;font-size:14px}
-.separa{display:flex;align-items:center;gap:12px;margin:4px 0;color:var(--texto-3);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.separa{display:flex;align-items:center;gap:12px;margin:4px 0;color:var(--texto-2);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
 .separa::before,.separa::after{content:"";flex:1;border-top:1px solid var(--linea)}
 
 /* ═══ tu canasta: el inicio ═══════════════════════════════════ */
@@ -111,7 +113,7 @@ body.juego-cuerpo{margin:0;background:var(--noche);color:var(--crema);font-famil
 .pendiente > span:first-child{flex:1;display:flex;flex-direction:column;gap:2px}
 .pendiente__d{font-size:13px;color:var(--texto-2)}
 .pendiente__ir{font-weight:800;color:var(--rosa)}
-.canasta__pie{position:absolute;left:0;right:0;bottom:0;padding:24px var(--orilla) calc(20px + env(safe-area-inset-bottom));
+.canasta__pie{position:absolute;left:0;right:0;bottom:0;padding:24px var(--orilla) var(--pie);
   background:linear-gradient(180deg, rgba(27,16,51,0), var(--noche) 45%)}
 .canasta__pie .b{width:100%;max-width:520px;margin:0 auto;display:flex}
 
@@ -137,9 +139,9 @@ body.juego-cuerpo{margin:0;background:var(--noche);color:var(--crema);font-famil
 .paso{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 14px 0 9px;border-radius:999px;cursor:pointer;min-width:0;
   border:1px solid var(--vidrio-borde);background:var(--vidrio);color:var(--crema);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
 .paso__img{width:30px;height:30px;flex:none}
-.paso b{font-size:16px}
-.paso span{font-size:15px;color:var(--texto-3);white-space:nowrap}
-.paso__i{width:18px;height:18px;color:var(--texto-3);margin-left:-2px}
+.paso b{font-size:16px;line-height:1}
+.paso span{font-size:15px;line-height:1;color:var(--texto-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.paso__i{width:18px;height:18px;color:var(--texto-2);margin-left:-2px}
 .paso--fijo{cursor:default;padding:0 18px}
 
 /* la instrucción: la primera vez, y se desvanece con el primer toque */
@@ -151,7 +153,7 @@ body.juego-cuerpo{margin:0;background:var(--noche);color:var(--crema);font-famil
 
 /* abajo: solo herramientas */
 .dock{position:absolute;z-index:2;left:50%;bottom:0;transform:translateX(-50%);width:min(100%, 560px);box-sizing:border-box;
-  display:flex;flex-direction:column;gap:14px;padding:0 var(--orilla) calc(16px + env(safe-area-inset-bottom))}
+  display:flex;flex-direction:column;gap:14px;padding:0 var(--orilla) var(--pie)}
 /* una sombra de noche detrás de las herramientas y de la barra: se leen sobre el mantel */
 .juego::after{content:"";position:absolute;left:0;right:0;bottom:0;height:220px;z-index:1;pointer-events:none;
   background:linear-gradient(180deg, rgba(27,16,51,0), rgba(27,16,51,.88) 60%)}
@@ -161,13 +163,13 @@ body.juego-cuerpo{margin:0;background:var(--noche);color:var(--crema);font-famil
 .acciones{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .deshacer{display:flex;height:44px;border-radius:999px;border:1px solid var(--vidrio-borde);background:var(--vidrio);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
 .deshacer button{width:50px;height:44px;display:grid;place-items:center;padding:0;border:0;background:none;color:var(--crema);cursor:pointer}
-.deshacer button:disabled{color:#7d6c8f;cursor:default}
+.deshacer button:disabled{color:#8f7fa3;cursor:default}
 .deshacer .icono{width:20px;height:20px}
 
 /* amasar: herramientas redondas con su nombre */
 .herramientas{display:flex;justify-content:center;gap:8px}
 .tool{width:64px;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0;border:0;background:none;cursor:pointer;
-  color:var(--texto-3);font-size:13px;font-weight:600}
+  color:var(--texto-2);font-size:13px;font-weight:600;line-height:1}
 .tool i{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--vidrio);color:var(--crema);transition:background var(--dur-2), transform var(--dur-1)}
 .tool:active i{transform:scale(.94)}
 .tool .icono{width:26px;height:26px}
@@ -209,7 +211,7 @@ body.juego-cuerpo{margin:0;background:var(--noche);color:var(--crema);font-famil
 .aro i{width:30px;height:30px;border-radius:50%;border:3px solid var(--noche-2)}
 
 /* ═══ las hojas ═══════════════════════════════════════════════ */
-dialog.hoja{box-sizing:border-box;width:100%;max-width:560px;max-height:calc(100dvh - 40px);margin:auto auto 0;padding:20px var(--orilla) calc(24px + env(safe-area-inset-bottom));
+dialog.hoja{box-sizing:border-box;width:100%;max-width:560px;max-height:calc(100dvh - 40px);margin:auto auto 0;padding:20px var(--orilla) calc(var(--pie) + 4px);
   border:1px solid var(--linea);border-bottom:0;border-radius:28px 28px 0 0;background:var(--superficie);color:var(--crema);
   overflow-y:auto;display:none;flex-direction:column;gap:16px}
 dialog.hoja[open]{display:flex;animation:hoja-sube var(--dur-3) cubic-bezier(.2,.8,.2,1)}
@@ -226,7 +228,7 @@ dialog.hoja::backdrop{background:rgba(10,5,20,.55)}
 .hoja > .b{width:100%}
 .hoja--chica{gap:14px}
 /* las que flotan sobre la bandeja: color y el + */
-dialog.hoja--flota{margin:auto auto calc(140px + env(safe-area-inset-bottom));width:calc(100% - 32px);max-width:420px;border-radius:26px;border:1px solid var(--linea);
+dialog.hoja--flota{margin:auto auto calc(128px + var(--pie));width:calc(100% - 32px);max-width:420px;border-radius:26px;border:1px solid var(--linea);
   padding:18px 16px 20px;box-shadow:0 18px 50px rgba(0,0,0,.45)}
 dialog.hoja--flota::backdrop{background:rgba(10,5,20,.3)}
 .hoja--flota h2{font-family:inherit;font-size:17px;font-weight:700;text-align:center}
@@ -238,7 +240,7 @@ dialog.hoja--flota::backdrop{background:rgba(10,5,20,.3)}
 dialog.hoja--entera{max-width:none;max-height:none;height:100dvh;margin:0;border-radius:0;border:0;padding:0;background:var(--mantel);gap:0}
 dialog.hoja--entera[open]{animation:none}
 .barra--hoja{position:relative;flex:none}
-.hoja__cuerpo{flex:1;display:flex;flex-direction:column;gap:16px;padding:8px var(--orilla) calc(24px + env(safe-area-inset-bottom));max-width:560px;width:100%;box-sizing:border-box;margin:0 auto}
+.hoja__cuerpo{flex:1;display:flex;flex-direction:column;gap:16px;padding:8px var(--orilla) calc(var(--pie) + 4px);max-width:560px;width:100%;box-sizing:border-box;margin:0 auto}
 
 /* colores del glaseado: el elegido lleva el anillo rosa */
 .colores{display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:14px 6px}
@@ -262,7 +264,7 @@ dialog.hoja--entera[open]{animation:none}
 #d-guardada{text-align:center}
 
 /* regalar: una decisión por pantalla */
-.regalar__paso{flex:1;border:0;margin:0;min-width:0;display:flex;flex-direction:column;gap:14px;padding:8px var(--orilla) calc(24px + env(safe-area-inset-bottom));
+.regalar__paso{flex:1;border:0;margin:0;min-width:0;display:flex;flex-direction:column;gap:14px;padding:8px var(--orilla) calc(var(--pie) + 4px);
   max-width:560px;width:100%;box-sizing:border-box;margin:0 auto}
 .regalar__paso legend{float:left;width:100%}
 .regalar__paso legend + *{clear:both}
@@ -271,8 +273,8 @@ dialog.hoja--entera[open]{animation:none}
 .radio{display:flex;align-items:center;gap:14px;min-height:62px;padding:0 16px;border-radius:16px;cursor:pointer;text-align:left;
   border:1px solid var(--linea);background:var(--campo);color:var(--crema)}
 .radio > span{flex:1;display:flex;flex-direction:column;gap:2px}
-.radio b{font-size:16px}
-.radio > span span{font-size:13px;color:var(--texto-3)}
+.radio b{font-size:16px;line-height:1.2}
+.radio > span span{font-size:13px;line-height:1.3;color:var(--texto-2)}
 .radio i{width:22px;height:22px;flex:none;border-radius:50%;border:2px solid rgba(255,255,255,.35);display:grid;place-items:center}
 .radio[aria-checked="true"]{border:2px solid var(--rosa)}
 .radio[aria-checked="true"] i{border-color:var(--rosa)}
@@ -309,11 +311,11 @@ dialog.hoja--entera[open]{animation:none}
 .regalo__arriba h1{margin:4px 0 0;font-family:var(--mal-display);font-weight:800;font-size:28px;line-height:1.05;letter-spacing:-.02em}
 .regalo__para{margin:6px 0 0;color:var(--texto-2)}
 .regalo__tarjeta{position:absolute;z-index:2;left:50%;bottom:0;transform:translateX(-50%);width:min(100%, 560px);box-sizing:border-box;
-  display:flex;flex-direction:column;gap:12px;padding:20px var(--orilla) calc(20px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;gap:12px;padding:20px var(--orilla) var(--pie);
   border-radius:28px 28px 0 0;background:var(--superficie);border:1px solid var(--linea);border-bottom:0}
 .regalo__nombre{margin:0;font-family:var(--mal-display);font-weight:800;font-size:24px;text-align:center}
 .regalo__msg{margin:0;padding:12px 16px;border-radius:16px;background:var(--campo);border:1px solid var(--linea);font-style:italic;color:var(--texto-2);text-align:center}
-.regalo__pista{margin:0;font-size:13px;color:var(--texto-3);text-align:center}
+.regalo__pista{margin:0;font-size:13px;color:var(--texto-2);text-align:center}
 .vale{display:flex;align-items:center;gap:12px;padding:12px;border-radius:18px;border:1px solid var(--linea);background:var(--campo)}
 .vale__sello{width:52px;height:52px;flex:none;border-radius:12px;border:2px dashed var(--rojo);display:grid;place-items:center;font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--rojo)}
 .vale p{margin:0;display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--texto-2)}
@@ -336,3 +338,7 @@ dialog.hoja--entera[open]{animation:none}
   .canasta__cab,.canasta__cuerpo{width:100%;max-width:960px;margin-inline:auto;box-sizing:border-box}
   .canasta > .segmento{margin-left:max(var(--orilla), calc((100% - 960px) / 2 + var(--orilla)))}
 }
+.regalar__nota{margin:0;font-size:13px;line-height:1.4;color:var(--texto-2);text-align:center}
+.campo__opc{font-weight:400;color:var(--texto-2)}
+.compartir__vista{display:block;align-self:center;height:clamp(160px, 34dvh, 300px);width:auto;aspect-ratio:9/16;border-radius:16px;background:var(--noche-2);box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.compartir__fin{margin-top:auto}

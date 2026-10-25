@@ -197,8 +197,19 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   bañar la guagua entera. El aro elige el color; el + trae carita, pasas, mordisco y sorpréndeme.
 - **Guardar** pide el nombre (por defecto «Guagua», sin sugerencias) y luego ofrece regalarla,
   amasar otra o seguir decorando.
-- **Regalar va en dos pasos, una decisión por pantalla**: qué más va en la canasta (solo la guagua,
-  vale por una guagua, colada morada, pásala) y para quién es.
+- **Regalar y compartir son dos historias distintas.** Regalarla es para alguien en concreto: primero
+  para quién es (para, de y un mensaje si quieres) y después qué más va en la canasta (solo la guagua,
+  vale por una guagua, colada morada, pásala); le llega un enlace. Compartirla es para tus redes o tu
+  perfil: una imagen, y si la amasaste pensando en alguien que ya no está, «En memoria de». No lleva
+  vales ni destinatario, y quien abre el enlace ve «Paco amasó una guagua», no «te regalaron».
 - **Un solo sistema de componentes**: principal rojo en píldora (uno por pantalla), secundario con
   contorno crema, terciario subrayado, iconos en círculos de vidrio, lo elegido en rosa. Las hojas son
   oscuras como el resto: nada de superficies crema ni franjas de colores, para no romper lo sobrio.
+
+## 7. Tipografía, área segura y contraste
+
+- `button{font:inherit}` con un selector de clase le gana a `.b`, `.tool`… y todos los botones salen
+  en 400 y con el interlineado del cuerpo. La herencia va dentro de `:where()`, sin especificidad.
+- Los botones y las píldoras llevan `line-height:1`: con el 1.6 del cuerpo, el texto no se centra.
+- Abajo basta `max(12px, área segura − 8px)`: la barra de inicio del iPhone ya deja aire.
+- El rojo de los botones es `#d63a22` (blanco encima 4.7:1); el texto terciario sobre vidrio, `#b3a2c2`.

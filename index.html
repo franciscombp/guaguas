@@ -57,8 +57,8 @@
 }
 </script>
 <link rel="stylesheet" href="vendor/ds/mal/mal.css?v=1.0.18">
-<meta name="guagua-version" content="2026.10.25.1">
-<link rel="stylesheet" href="guagua.css?v=2026.10.25.1">
+<meta name="guagua-version" content="2026.10.25.2">
+<link rel="stylesheet" href="guagua.css?v=2026.10.25.2">
 </head>
 <body class="juego-cuerpo">
 <svg width="0" height="0" class="sr-only" aria-hidden="true" focusable="false">
@@ -278,50 +278,65 @@
   <div class="hoja__cab"><span></span><button class="redondo redondo--plano" type="button" data-cierra aria-label="Cerrar: seguir decorando"><svg class="icono" aria-hidden="true"><use href="#x-cerrar"/></svg></button></div>
   <div class="guardada__img"><img class="hoja__foto" id="guardada-foto" alt="" width="240" height="300"><i aria-hidden="true"><svg class="icono"><use href="#x-check"/></svg></i></div>
   <h2 class="hoja__titulo" id="d-guardada-t">Tu guagua ya está en tu canasta</h2>
-  <p class="hoja__texto">¿Qué sigue?</p>
+  <p class="hoja__texto">¿Qué quieres hacer con ella?</p>
   <div class="pila">
-    <button class="b b--pri" id="g-regalar" type="button">Regalarla</button>
-    <button class="b b--sec" id="g-otra" type="button">Amasar otra</button>
-    <button class="b b--ter" id="g-seguir" type="button" data-cierra>Seguir decorando</button>
+    <button class="b b--pri" id="g-regalar" type="button">Regalarla a alguien</button>
+    <button class="b b--sec" id="g-compartir" type="button">Compartirla en tus redes</button>
+    <button class="b b--ter" id="g-otra" type="button">Amasar otra</button>
   </div>
 </dialog>
 
-<!-- regalar: dos pasos, una decisión por pantalla -->
+<!-- regalar: a alguien en concreto, en dos pasos y una decisión por pantalla -->
 <dialog class="hoja hoja--entera" id="d-regalar" aria-labelledby="d-regalar-t">
   <div class="barra barra--hoja">
     <button class="redondo" id="r-atras" type="button" aria-label="Volver"><svg class="icono" aria-hidden="true"><use href="#x-atras"/></svg></button>
     <span class="paso paso--fijo"><b>Regálala</b><span id="r-paso">1 de 2</span></span>
     <span class="barra__hueco" aria-hidden="true"></span>
   </div>
-  <!-- 1 · qué lleva -->
+  <!-- 1 · para quién -->
   <fieldset class="regalar__paso" data-paso="1">
     <img class="regalar__foto" id="r-foto" alt="" width="240" height="300">
-    <legend class="hoja__titulo" id="d-regalar-t">¿Qué más va en la canasta?</legend>
-    <div class="radios" role="radiogroup" aria-labelledby="d-regalar-t">
-      <button class="radio" type="button" role="radio" data-vale="0" aria-checked="true"><span><b>Solo la guagua</b><span>sin nada más</span></span><i aria-hidden="true"></i></button>
-      <button class="radio" type="button" role="radio" data-vale="1" aria-checked="false"><span><b>Vale por una guagua</b><span>de verdad: la cobran con un mensaje</span></span><i aria-hidden="true"></i></button>
-      <button class="radio" type="button" role="radio" data-vale="2" aria-checked="false"><span><b>Colada morada</b><span>invitación a tomarla juntos</span></span><i aria-hidden="true"></i></button>
-      <button class="radio" type="button" role="radio" data-vale="3" aria-checked="false"><span><b>Pásala</b><span>que amase una para alguien más</span></span><i aria-hidden="true"></i></button>
-    </div>
-    <button class="b b--pri regalar__sig" id="r-siguiente" type="button">Siguiente</button>
-  </fieldset>
-  <!-- 2 · para quién -->
-  <fieldset class="regalar__paso" data-paso="2" hidden>
-    <legend class="hoja__titulo">¿Para quién es?</legend>
-    <div class="segmento" role="group" aria-label="Qué vas a hacer con ella">
-      <button type="button" data-tipo="" aria-pressed="true">Regalarla</button>
-      <button type="button" data-tipo="m" aria-pressed="false">A quien ya no está</button>
-    </div>
-    <div class="campo"><label for="r-para" id="r-para-rotulo">Para</label><input id="r-para" maxlength="40" autocomplete="off" placeholder="¿Para quién?" enterkeyhint="next"></div>
+    <legend class="hoja__titulo" id="d-regalar-t">¿Para quién es?</legend>
+    <div class="campo"><label for="r-para">Para</label><input id="r-para" maxlength="40" autocomplete="off" placeholder="Su nombre" enterkeyhint="next"></div>
     <div class="campo"><label for="r-de">De</label><input id="r-de" maxlength="40" autocomplete="nickname" placeholder="Tu nombre" enterkeyhint="done"></div>
     <button class="b b--ter b--izq" id="r-mensaje-abre" type="button">+ Añadir un mensaje</button>
     <div class="campo" id="r-mensaje-campo" hidden><label for="r-mensaje">Mensaje</label><textarea id="r-mensaje" maxlength="160" rows="3" placeholder="Unas palabras para quien la recibe"></textarea></div>
+    <button class="b b--pri regalar__sig" id="r-siguiente" type="button">Siguiente</button>
+  </fieldset>
+  <!-- 2 · qué más va en la canasta, y enviarla -->
+  <fieldset class="regalar__paso" data-paso="2" hidden>
+    <legend class="hoja__titulo" id="r-lleva-t">¿Qué más va en la canasta?</legend>
+    <div class="radios" role="radiogroup" aria-labelledby="r-lleva-t">
+      <button class="radio" type="button" role="radio" data-vale="0" aria-checked="true"><span><b>Solo la guagua</b><span>sin nada más</span></span><i aria-hidden="true"></i></button>
+      <button class="radio" type="button" role="radio" data-vale="1" aria-checked="false"><span><b>Vale por una guagua</b><span>de verdad: la cobra con un mensaje</span></span><i aria-hidden="true"></i></button>
+      <button class="radio" type="button" role="radio" data-vale="2" aria-checked="false"><span><b>Colada morada</b><span>una invitación a tomarla juntos</span></span><i aria-hidden="true"></i></button>
+      <button class="radio" type="button" role="radio" data-vale="3" aria-checked="false"><span><b>Pásala</b><span>que amase una para alguien más</span></span><i aria-hidden="true"></i></button>
+    </div>
     <div class="pila regalar__fin">
       <button class="b b--pri" id="r-compartir" type="button">Enviar la canasta</button>
-      <div class="fila-ter"><button class="b b--ter" id="r-copiar" type="button">Copiar el enlace</button><button class="b b--ter" id="r-descargar" type="button">Guardar la imagen</button></div>
-      <p class="regalar__entrar" id="r-entrar-fila" hidden>Con tu cuenta, el enlace sale corto. <button class="b b--ter" id="r-entrar" type="button">Entrar</button></p>
+      <p class="regalar__nota" id="r-nota">Le llega un enlace para abrirla, comérsela y cobrar lo que va en la canasta.</p>
+      <div class="fila-ter"><button class="b b--ter" id="r-copiar" type="button">Copiar el enlace</button><button class="b b--ter" id="r-entrar" type="button" hidden>Entrar para un enlace corto</button></div>
     </div>
   </fieldset>
+</dialog>
+
+<!-- compartir en tus redes: para recordar a alguien, o solo por compartir -->
+<dialog class="hoja hoja--entera" id="d-compartir" aria-labelledby="d-compartir-t">
+  <div class="barra barra--hoja">
+    <button class="redondo" type="button" data-cierra aria-label="Volver"><svg class="icono" aria-hidden="true"><use href="#x-atras"/></svg></button>
+    <span class="paso paso--fijo"><b>Compártela</b></span>
+    <span class="barra__hueco" aria-hidden="true"></span>
+  </div>
+  <div class="hoja__cuerpo">
+    <img class="compartir__vista" id="s-vista" alt="La imagen que vas a compartir" width="1080" height="1920">
+    <h2 class="hoja__titulo" id="d-compartir-t">Compártela en tus redes</h2>
+    <p class="hoja__texto">Súbela a tus historias o a tu perfil. Si la amasaste pensando en alguien que ya no está, ponle su nombre.</p>
+    <div class="campo"><label for="s-memoria">En memoria de <span class="campo__opc">(opcional)</span></label><input id="s-memoria" maxlength="40" autocomplete="off" placeholder="Nombre de quien recuerdas" enterkeyhint="done"></div>
+    <div class="pila compartir__fin">
+      <button class="b b--pri" id="s-compartir" type="button">Compartir</button>
+      <div class="fila-ter"><button class="b b--ter" id="s-descargar" type="button">Guardar la imagen</button><button class="b b--ter" id="s-copiar" type="button">Copiar el enlace</button></div>
+    </div>
+  </div>
 </dialog>
 
 <!-- una pieza de la canasta -->
@@ -331,8 +346,9 @@
   <p class="hoja__texto" id="p-quien"></p>
   <p class="hoja__texto hoja__cita" id="p-mensaje"></p>
   <div class="pila">
-    <button class="b b--pri" id="p-regalar" type="button">Regalarla</button>
-    <button class="b b--sec" id="p-editar" type="button">Seguir decorando</button>
+    <button class="b b--pri" id="p-regalar" type="button">Regalarla a alguien</button>
+    <button class="b b--sec" id="p-compartir" type="button">Compartirla en tus redes</button>
+    <button class="b b--ter" id="p-editar" type="button">Seguir decorando</button>
     <button class="b b--ter" id="p-borrar" type="button">Sacar de la canasta</button>
   </div>
 </dialog>
@@ -389,7 +405,7 @@
   <ol class="pasos-ayuda">
     <li data-paso="amasar"><i>1</i><div><b>Amasa</b><span>Arrastra sobre la lata: al lado sale ancha, hacia arriba sale alta. Bolita, chorizo, mover o quitar; o empieza con un molde.</span><em>Cuando esté lista, toca Hornear</em></div></li>
     <li data-paso="horno"><i>2</i><div><b>Hornea</b><span>Se dora en seis segundos. Sácala en la franja blanca: si esperas mucho, se quema.</span><em>Toca Sacar del horno</em></div></li>
-    <li data-paso="decorar"><i>3</i><div><b>Decora</b><span>Elige una manga y dibuja con el dedo sobre el pan. La brocha pinta la cobertura donde quieras. El aro cambia el color; el + trae carita, pasas y mordisco.</span><em>Toca el ✓ para guardarla</em></div></li>
+    <li data-paso="decorar"><i>3</i><div><b>Decora</b><span>Elige una manga y dibuja con el dedo sobre el pan. La brocha pinta la cobertura donde quieras. El aro cambia el color; el + trae carita, pasas y mordisco.</span><em>Toca el ✓ para guardarla; después la regalas o la compartes</em></div></li>
   </ol>
   <p class="hoja__texto">Dos dedos giran y acercan la guagua.</p>
   <button class="b b--pri" type="button" data-cierra>Entendido</button>
@@ -403,6 +419,6 @@
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js": "./vendor/firebase/firebase-auth.js",
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js": "./vendor/firebase/firebase-firestore-lite.js"
 } }</script>
-<script type="module" src="guagua.js?v=2026.10.25.1"></script>
+<script type="module" src="guagua.js?v=2026.10.25.2"></script>
 </body>
 </html>

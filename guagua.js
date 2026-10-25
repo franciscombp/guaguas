@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.1';
+import * as nube from './nube.js?v=2026.10.25.2';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.1';
+} from './masa.js?v=2026.10.25.2';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1142,7 +1142,7 @@ async function tarjeta(e, formato = 'historia') {
   const que = queEs(e), memoria = enMemoria(e);
   const titulo = memoria
     ? (e.p ? ['En memoria', 'de ' + e.p] : ['Para recordar', 'a quien ya no está'])
-    : (e.d ? ['Te regalo', que] : [que.charAt(0).toUpperCase() + que.slice(1), 'para ti']);
+    : e.p ? ['Te regalo', que] : ['Amasé', que];
   titulo.forEach((t, i) => ctx.fillText(t, W / 2, F.titulo[i], W - 80));
 
   // la guagua, grande y al centro; la colada (o la velita) abajo a un lado,
@@ -1758,6 +1758,7 @@ function montarTaller() {
   $('#r-nombre').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); guardarConNombre(); } });
   $('#g-otra').addEventListener('click', () => { $('#d-guardada').close(); nueva(); });
   $('#g-regalar').addEventListener('click', () => { $('#d-guardada').close(); abrirRegalo(); });
+  $('#g-compartir').addEventListener('click', () => { $('#d-guardada').close(); abrirCompartir(); });
   return true;
 }
 
@@ -1891,28 +1892,43 @@ async function enlaceDeRegalo(cod) {
     return { url: direccion() + '#r=' + cod, id: null };
   }
 }
-/* Regalar o dedicar cambia las etiquetas; lo que va en la canasta es un radio. */
-function pintarTipo() {
-  const m = estado.t === 'm';
-  $$('#d-regalar button[data-tipo]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tipo === estado.t)));
+/* Hay dos maneras de sacarla de la canasta, y cada una cuenta su historia:
+   · regalarla: a alguien en concreto. Lleva para quién, de quién y lo que va
+     en la canasta (un vale, la invitación a una colada, pásala); le llega un enlace.
+   · compartirla: en tus redes o tu perfil, para recordar a alguien que ya no
+     está o solo porque sí. Es una imagen; no lleva vales ni destinatario. */
+let modo = 'regalo';
+const BOTONES = { regalo: ['#r-compartir', '#r-copiar'], compartir: ['#s-compartir', '#s-copiar', '#s-descargar'] };
+function pintarVales() {
   $$('#d-regalar button[data-vale]').forEach((b) => b.setAttribute('aria-checked', String(+b.dataset.vale === estado.l)));
-  $('#r-para-rotulo').textContent = m ? 'En memoria de' : 'Para';
-  $('#r-para').placeholder = m ? '¿A quién recuerdas?' : '¿Para quién?';
-  $('#r-compartir').textContent = m ? 'Compartir en redes' : 'Enviar la canasta';
+  const v = VALES[estado.l];
+  $('#r-nota').textContent = 'Le llega un enlace para abrirla y comérsela' + (v ? '. ' + v.pista : '.');
 }
 function abrirRegalo() {
+  modo = 'regalo';
+  if (estado.t === 'm') { estado.t = ''; estado.p = ''; }   // lo dedicado en redes no pasa al regalo
   $('#r-para').value = estado.p;
   $('#r-de').value = estado.d || almacen.leer('guagua:firma', '');
   $('#r-mensaje').value = estado.m;
   $('#r-mensaje-campo').hidden = !estado.m;
   $('#r-mensaje-abre').hidden = !!estado.m;
   fotoDe($('#r-foto'), receta());
-  pintarTipo();
+  pintarVales();
   irPaso(1);
   abrir('#d-regalar');
 }
-/* Regalar va en dos pasos, una decisión en cada uno: qué más va en la
-   canasta, y para quién es. La imagen se prepara al llegar al segundo. */
+function abrirCompartir() {
+  modo = 'compartir';
+  // en redes no va un destinatario ni un vale: solo, si quieres, a quién recuerdas
+  if (estado.t !== 'm') estado.p = '';
+  estado.l = 0;
+  $('#s-memoria').value = estado.t === 'm' ? estado.p : '';
+  $('#s-vista').removeAttribute('src');
+  abrir('#d-compartir');
+  refrescarTarjeta();
+}
+/* Regalar va en dos pasos, una decisión en cada uno: para quién es, y qué
+   más va en la canasta. La imagen y el enlace se preparan en el segundo. */
 let paso = 1;
 function irPaso(n) {
   paso = limita(n, 1, 2);
@@ -1921,25 +1937,33 @@ function irPaso(n) {
   if (paso === 2) refrescarTarjeta();
 }
 function leerFormulario() {
+  if (modo === 'compartir') {
+    estado.p = $('#s-memoria').value.trim().slice(0, 40);
+    estado.t = estado.p ? 'm' : '';
+    estado.m = '';
+    return;
+  }
+  estado.t = '';
   estado.p = $('#r-para').value.trim().slice(0, 40);
   estado.d = $('#r-de').value.trim().slice(0, 40);
   estado.m = $('#r-mensaje').value.trim().slice(0, 160);
   if (estado.d) almacen.poner('guagua:firma', estado.d);
 }
 function botonesListos(listo) {
-  ['#r-compartir', '#r-copiar', '#r-descargar'].forEach((b) => {
+  BOTONES[modo].forEach((b) => {
     $(b).disabled = !listo;
     $(b).setAttribute('aria-busy', String(!listo));
   });
 }
 async function refrescarTarjeta() {
   leerFormulario();
-  const turno = ++turnoTarjeta;
+  const turno = ++turnoTarjeta, cual = modo;
   preparado = null; botonesListos(false);
   const r = receta();
   const cod = await codificar(r);
   const c = await tarjeta(r, formato);
   if (turno !== turnoTarjeta) return;
+  if (cual === 'compartir') $('#s-vista').src = c.toDataURL('image/jpeg', 0.85);
   const blob = await aBlob(c);
   if (turno !== turnoTarjeta) return;
   const nombre = 'guagua-' + (estado.n || 'de-pan').toLowerCase().replace(/[^a-z0-9áéíóúñü]+/gi, '-') + '.png';
@@ -1967,8 +1991,9 @@ function enlaceCorto(pr) {
 const textoRegalo = (e = estado) => {
   const que = queEs(e) + ' de pan';
   if (enMemoria(e)) {
-    return `Amasé ${que} en memoria de ${e.p || 'quienes ya no están'}. En Finados también se recuerda. ¿A quién recuerdas tú? Dedica la tuya:`;
+    return `Amasé ${que} en memoria de ${e.p}. En Finados también se recuerda. ¿A quién recuerdas tú? Dedica la tuya:`;
   }
+  if (!e.p) return `Amasé ${que}${e.n ? ', ' + e.n + ',' : ''} por el Día de Difuntos. Amasa la tuya:`;
   const quien = e.d ? e.d + ' te regaló' : 'Te regalaron';
   const vale = VALES[e.l] ? ' ' + VALES[e.l].texto : '';
   return `${quien} ${que}${e.n ? ' que se llama ' + e.n : ''} por el Día de Difuntos.${vale} Ábrela aquí:`;
@@ -1996,24 +2021,20 @@ async function copiar(texto, boton) {
   }
 }
 function montarRegalo() {
-  $$('#d-regalar input, #d-regalar textarea').forEach((x) => x.addEventListener('input', () => {
+  $$('#d-regalar input, #d-regalar textarea, #d-compartir input').forEach((x) => x.addEventListener('input', () => {
     preparado = null; botonesListos(false);
     clearTimeout(reloj);
-    reloj = setTimeout(refrescarTarjeta, 350);
+    if (modo === 'compartir' || paso === 2) reloj = setTimeout(refrescarTarjeta, 350);
   }));
   $('#r-atras').addEventListener('click', () => { if (paso === 1) $('#d-regalar').close(); else irPaso(1); });
   $('#r-siguiente').addEventListener('click', () => irPaso(2));
-  $('#d-regalar').addEventListener('keydown', (e) => {
+  $$('#d-regalar, #d-compartir').forEach((d) => d.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); e.target.blur(); }
-  });
-  $$('#d-regalar button[data-tipo]').forEach((b) => b.addEventListener('click', () => {
-    if (estado.t === b.dataset.tipo) return;
-    estado.t = b.dataset.tipo;
-    pintarTipo(); refrescarTarjeta();
   }));
   $$('#d-regalar button[data-vale]').forEach((b) => b.addEventListener('click', () => {
+    if (estado.l === +b.dataset.vale) return;
     estado.l = +b.dataset.vale;
-    pintarTipo();
+    pintarVales(); refrescarTarjeta();      // el vale va sellado en la imagen
   }));
   $('#r-mensaje-abre').addEventListener('click', () => {
     $('#r-mensaje-abre').hidden = true;
@@ -2022,39 +2043,41 @@ function montarRegalo() {
   });
   // lo que pasa después de compartir no hace esperar a la hoja de compartir
   const despues = (pr) => { guardarMia(pr.id).catch(() => {}); };
-  $('#r-entrar').addEventListener('click', () => abrirCuenta());
-  $('#r-compartir').addEventListener('click', () => {
+  const enviar = (conImagen) => {
     const pr = preparado;
     if (!pr) return;
     const titulo = 'Una guagua de pan';
     let promesa = null;
-    if (navigator.canShare && navigator.canShare({ files: [pr.archivo] })) {
+    if (conImagen && navigator.canShare && navigator.canShare({ files: [pr.archivo] })) {
       promesa = navigator.share({ files: [pr.archivo], title: titulo, text: pr.texto + ' ' + pr.url });
     } else if (navigator.share) {
       promesa = navigator.share({ title: titulo, text: pr.texto, url: pr.url });
     }
-    // sin hoja de compartir (la compu): WhatsApp
-    if (!promesa) { window.open('https://wa.me/?text=' + encodeURIComponent(pr.texto + ' ' + pr.url), '_blank', 'noopener'); despues(pr); return; }
+    // sin hoja de compartir (la compu): WhatsApp para el regalo, la imagen para las redes
+    if (!promesa) {
+      if (conImagen) descargar(pr); else window.open('https://wa.me/?text=' + encodeURIComponent(pr.texto + ' ' + pr.url), '_blank', 'noopener');
+      despues(pr); return;
+    }
     promesa.then(() => despues(pr)).catch((e) => {
       if (e && e.name === 'AbortError') return;
-      avisa('Este navegador no dejó compartir. Copia el enlace o guarda la imagen.', 'error');
+      avisa('Este navegador no dejó compartir. Copia el enlace.', 'error');
     });
-  });
-  $('#r-copiar').addEventListener('click', () => {
-    const pr = preparado;
-    if (!pr) return;
-    copiar(pr.url, $('#r-copiar')); despues(pr);
-  });
-  $('#r-descargar').addEventListener('click', () => {
-    const pr = preparado;
-    if (!pr) return;
+  };
+  const descargar = (pr) => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(pr.blob);
     a.download = pr.nombre;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-    despues(pr);
-  });
+  };
+  // el regalo va a una persona: un mensaje con su enlace
+  $('#r-compartir').addEventListener('click', () => enviar(false));
+  $('#r-copiar').addEventListener('click', () => { if (preparado) { copiar(preparado.url, $('#r-copiar')); despues(preparado); } });
+  $('#r-entrar').addEventListener('click', () => abrirCuenta());
+  // en redes va la imagen
+  $('#s-compartir').addEventListener('click', () => enviar(true));
+  $('#s-copiar').addEventListener('click', () => { if (preparado) { copiar(preparado.url, $('#s-copiar')); despues(preparado); } });
+  $('#s-descargar').addEventListener('click', () => { if (preparado) { descargar(preparado); despues(preparado); } });
 }
 
 /* ══════════════════ TU CANASTA ══════════════════════════════ */
@@ -2104,6 +2127,8 @@ function abrirPieza(item, e) {
   $('#p-mensaje').textContent = e.m || '';
   $('#p-mensaje').hidden = !e.m;
   $('#p-editar').hidden = item.t !== 'mia';
+  $('#p-regalar').textContent = item.t === 'mia' ? 'Regalarla a alguien' : 'Reenviarla';
+  $('#p-compartir').hidden = item.t !== 'mia';
   abrir('#d-pieza');
   if (!visorPieza) visorPieza = new Visor($('#p-lienzo'));
   visorPieza.giro = -0.25; Object.assign(visorPieza, posturaDe(e));
@@ -2127,14 +2152,14 @@ function montarVitrina() {
     $('#d-pieza').close();
     mostrar('taller');
   });
-  $('#p-regalar').addEventListener('click', () => {
+  // las tuyas se regalan o se comparten desde aquí; las que te regalaron se reenvían tal cual
+  const sacarla = (como) => {
     const { item, e } = piezaActual;
     $('#d-pieza').close();
-    // las tuyas se arman en canasta; las que te regalaron se reenvían tal cual
     if (item.t === 'mia') {
       cargarEnTaller(e, item.id);
       ultimaGuardada = huella();
-      abrirRegalo();
+      if (como === 'regalo') abrirRegalo(); else abrirCompartir();
       return;
     }
     const enlace = direccion() + (item.g ? '#g=' + item.g : '#r=' + item.e);
@@ -2142,7 +2167,9 @@ function montarVitrina() {
       navigator.share({ title: 'Una guagua de pan', text: textoRegalo(e), url: enlace })
         .catch((err) => { if (!err || err.name !== 'AbortError') copiar(enlace); });
     } else copiar(enlace);
-  });
+  };
+  $('#p-regalar').addEventListener('click', () => sacarla('regalo'));
+  $('#p-compartir').addEventListener('click', () => sacarla('compartir'));
   $('#p-borrar').addEventListener('click', () => {
     if (!confirm('¿Sacar esta guagua de tu canasta? No se puede deshacer.')) return;
     sacarDeVitrina(piezaActual.item.id);
@@ -2159,14 +2186,16 @@ async function recibir(cod, regalo) {
   try { e = await decodificar(cod); }
   catch (err) { avisa('No se pudo abrir esta guagua. Pide que te la envíen otra vez.', 'error'); return; }
   recibida = e; mordidas = 0;
+  $$('dialog[open]').forEach((d) => d.close());   // lo que llega va encima de todo
   document.body.classList.add('modo-regalo');
   $('#regalo').hidden = false;
   const memoria = enMemoria(e), vale = memoria ? null : VALES[e.l];
   const que = queEs(e);
-  $('#regalo-kicker').textContent = memoria ? 'Una guagua para recordar' : 'Te llegó una guagua';
+  const regalada = !memoria && !!e.p;           // sin destinatario: alguien la compartió en sus redes
+  $('#regalo-kicker').textContent = memoria ? 'Una guagua para recordar' : regalada ? 'Te llegó una guagua' : 'Una guagua de Finados';
   $('#regalo-titulo').textContent = memoria
     ? `${e.d ? e.d + ' amasó ' + que : que.charAt(0).toUpperCase() + que.slice(1)} en memoria de ${e.p || 'quienes ya no están'}`
-    : e.d ? `${e.d} te regaló ${que}` : `Te regalaron ${que}`;
+    : regalada ? (e.d ? `${e.d} te regaló ${que}` : `Te regalaron ${que}`) : `${e.d ? e.d + ' amasó' : 'Mira'} ${que}`;
   $('#regalo-nombre').textContent = nombreDe(e);
   $('#regalo-para').textContent = !memoria && e.p ? 'Para ' + e.p : '';
   $('#regalo-para').hidden = memoria || !e.p;
@@ -2186,7 +2215,7 @@ async function recibir(cod, regalo) {
   $('#regalo-pista').textContent = memoria
     ? 'En Finados se comparte el pan con los que recordamos. Tócala para darle un mordisco.'
     : 'Gírala con dos dedos. Tócala para darle un mordisco.';
-  $('#regalo-devolver-t').textContent = memoria ? 'Dedica una tú también' : e.l === 3 ? 'Pasarla a alguien más' : 'Amasar una de vuelta';
+  $('#regalo-devolver-t').textContent = memoria ? 'Dedica una tú también' : e.l === 3 ? 'Pasarla a alguien más' : regalada ? 'Amasar una de vuelta' : 'Amasa la tuya';
   $('#regalo-devolver').classList.toggle('latido', e.l === 3);
   if (!visorRegalo) {
     visorRegalo = new Visor($('#regalo-lienzo'), {
@@ -2345,7 +2374,7 @@ function pintarCuentaBarra() {
   const u = nube.actual();
   $('#cuenta-punto').hidden = !u;
   $('#abrir-cuenta').setAttribute('aria-label', u ? `Tu cuenta: ${u.nombre || u.correo}` : 'Tu cuenta: entrar');
-  $('#r-entrar-fila').hidden = !nube.disponible() || !!u;
+  $('#r-entrar').hidden = !nube.disponible() || !!u;
 }
 async function alCambiarCuenta(u) {
   $('#cuenta-fuera').hidden = !!u;
