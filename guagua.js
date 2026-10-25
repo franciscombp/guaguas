@@ -664,7 +664,7 @@ class Visor {
       if (espera) { clearTimeout(espera.t); espera = null; }
       if (this.op.toca && this.op.toca(e)) { modo = this.op.arrastra ? 'pinta' : 'nada'; return; }
       modo = this.fijo ? 'nada' : 'gira';
-      if (modo === 'gira') c.classList.add('girando');
+      if (modo === 'gira') c.classList.add('lienzo--girando');
     };
     c.addEventListener('contextmenu', (e) => e.preventDefault());
     c.addEventListener('pointerdown', (e) => {
@@ -725,7 +725,7 @@ class Visor {
       } else if (modo === 'pinta' && this.op.suelta) this.op.suelta(e);
       if (!ptrs.size) modo = null;
       else if (modo === 'dos') modo = 'nada';
-      c.classList.remove('girando');
+      c.classList.remove('lienzo--girando');
     };
     c.addEventListener('pointerup', suelta);
     /* Si el navegador quita la captura sin mandar `pointerup` (pasa en Safari),
