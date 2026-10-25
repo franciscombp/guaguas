@@ -61,7 +61,7 @@ const GRAGEAS = ['#e01b6a', '#ffcf3d', '#8fd0f2', '#93c84a', '#ffffff', '#7d3c98
 const MAX_BOCADOS = 16;              // lo que cabe en el shader
 const BOCADOS_TALLER = 7;            // el resto se lo come quien la recibe
 const MAX_PIEZAS = 60;
-const MORDIDA = 0.36;
+const MORDIDA = 0.55;   // del tamaño de una boca: la guagua mide unos 2.4 de alto
 const NOMBRES = {
   guagua: ['Rosita', 'Carmita', 'Panchito', 'Lucho', 'Toñito', 'Charito', 'Juanita', 'Maruja', 'Chabelita',
     'Pepita', 'Martita', 'Manuelito', 'Lolita', 'Teresita', 'Anita', 'Pachita', 'Tomasito', 'Clarita', 'Inesita'],

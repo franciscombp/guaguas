@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.9';
+import * as nube from './nube.js?v=2026.10.25.10';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.9';
+} from './masa.js?v=2026.10.25.10';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -256,7 +256,12 @@ function comestible(mat, U, horno) {
           if (i >= uNBocados) break;
           float w = uBocados[i].w;
           vec2 d = (uBoca * (vMundo - uBocados[i].xyz)).xy;
-          float dientes = 1.0 + 0.08 * sin(16.0 * atan(d.y, d.x));
+          // el borde no es un círculo: cada bocado tiene su forma (la semilla sale de dónde se mordió),
+          // un óvalo torcido con las marcas de los dientes, unas más hondas que otras
+          float s = fract(sin(dot(uBocados[i].xyz, vec3(41.3, 289.1, 113.7))) * 4375.85) * 6.2832;
+          float th = atan(d.y, d.x);
+          float dientes = 1.0 + 0.09 * sin(2.0 * th + s) + 0.06 * sin(3.0 * th + 1.7 * s)
+            + 0.05 * sin(11.0 * th + s) * (0.6 + 0.4 * sin(5.0 * th + 2.3 * s)) + 0.025 * sin(23.0 * th + 3.1 * s);
           float r = length(d) / (w * dientes);
           if (r < 1.0) discard;
           bocado = min(bocado, r);
