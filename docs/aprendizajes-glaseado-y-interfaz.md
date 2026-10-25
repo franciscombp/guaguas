@@ -338,3 +338,8 @@ el morado casi no aparece en el glaseado (aparece en la colada).
 - **Presúmela**: «¡Ya tengo mi guagua de pan!», y los adornos como insignia chiquita debajo de la escena
   («14 adornos»; si no hay, no va). «guagua de pan» va siempre junto con espacios de no separación
   (U+00A0); por eso las líneas se parten solo en espacios normales, no con `\s`, que también corta ahí.
+- **Sin @usuario**: el de la app puede no coincidir con el de sus redes. Presúmela se comparte desde el
+  primer paso, sin pedir firma.
+- **Lo de abajo tiene que leerse en un teléfono**: la tarjeta se ve a un tercio de su tamaño. Cierre en
+  30–38 px (en memoria 26–32, más discreto pero legible), firma 34–42, «Para · De» 42–52, mensaje 36–44,
+  insignia 28–34. Nada de texto de pie por debajo de ~26 px.

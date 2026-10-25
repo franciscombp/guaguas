@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.18';
+import * as nube from './nube.js?v=2026.10.25.19';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.18';
+} from './masa.js?v=2026.10.25.19';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1543,10 +1543,11 @@ async function tarjeta(e, formato = 'historia', x = {}) {
   const yEtiqueta = arriba + (cuadrada ? 22 : 28);
   ctx.fillText(ETIQUETA, W / 2, yEtiqueta);
   if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
-  const firma = como === 'presume' ? (x.usuario || '') : como === 'memoria' ? (x.de ? 'Con cariño, ' + x.de : 'Con cariño') : '';
-  const fCierre = memoria ? `500 ${cuadrada ? 20 : 24}px ${INTER}` : `700 ${cuadrada ? 24 : 30}px ${INTER}`;
-  const cCierre = memoria ? 'rgba(239,230,220,.5)' : dorado;
-  const fFirma = `700 ${cuadrada ? 30 : 36}px ${INTER}`;
+  // abajo se lee: el cierre en 30–38 px y la firma en 34–42; en memoria, el cierre un paso más discreto
+  const firma = como === 'memoria' ? (x.de ? 'Con cariño, ' + x.de : 'Con cariño') : '';
+  const fCierre = memoria ? `600 ${cuadrada ? 26 : 32}px ${INTER}` : `700 ${cuadrada ? 30 : 38}px ${INTER}`;
+  const cCierre = memoria ? 'rgba(239,230,220,.72)' : dorado;
+  const fFirma = `700 ${cuadrada ? 34 : 42}px ${INTER}`;
   let pisoZona;
   if (cuadrada) {
     // la franja de abajo: la firma a la izquierda y el cierre a la derecha, o el cierre debajo si no caben
@@ -1556,16 +1557,16 @@ async function tarjeta(e, formato = 'historia', x = {}) {
       if (firma) { ctx.textAlign = 'left'; ctx.fillStyle = crema; ctx.fillText(firma, M, abajo); }
       ctx.font = fCierre; ctx.fillStyle = cCierre; ctx.textAlign = firma ? 'right' : 'center';
       ctx.fillText(CIERRE, firma ? W - M : W / 2, abajo);
-      pisoZona = abajo - 30 - 26;
+      pisoZona = abajo - 36 - 26;
     } else {
       ctx.font = fCierre; ctx.fillStyle = cCierre; ctx.textAlign = 'left'; ctx.fillText(CIERRE, M, abajo);
-      ctx.font = fFirma; ctx.fillStyle = crema; ctx.fillText(firma, M, abajo - 42, ancho);
-      pisoZona = abajo - 42 - 30 - 26;
+      ctx.font = fFirma; ctx.fillStyle = crema; ctx.fillText(firma, M, abajo - 48, ancho);
+      pisoZona = abajo - 48 - 36 - 26;
     }
     ctx.textAlign = 'center';
   } else {
     ctx.font = fCierre; ctx.fillStyle = cCierre; ctx.fillText(CIERRE, W / 2, abajo, ancho);
-    pisoZona = abajo - (memoria ? 24 : 30) - 40;
+    pisoZona = abajo - (memoria ? 32 : 38) - 44;
   }
   const techoZona = yEtiqueta + (cuadrada ? 26 : 40);
 
@@ -1603,7 +1604,7 @@ async function tarjeta(e, formato = 'historia', x = {}) {
   // presúmela: los adornos, chiquito y como insignia, debajo de la escena
   const adornos = x.adornos != null ? x.adornos : contarAdornos(e);
   if (como === 'presume' && adornos > 0) {
-    const ti = cuadrada ? 22 : 28, rotulo = adornos === 1 ? '1 adorno' : `${adornos} adornos`;
+    const ti = cuadrada ? 28 : 34, rotulo = adornos === 1 ? '1 adorno' : `${adornos} adornos`;
     ctx.font = `700 ${ti}px ${INTER}`;
     const aw = ctx.measureText(rotulo).width + ti * 1.6, ah = ti * 1.9;
     pila.push({ alto: ah, dibujar(y0) {
@@ -1614,13 +1615,13 @@ async function tarjeta(e, formato = 'historia', x = {}) {
   }
   if (como === 'alguien') {
     const pd = [`Para: ${e.p || '…'}`, e.d && `De: ${e.d}`].filter(Boolean).join(' · ');
-    pila.push(texto(ajustar(ctx, pd, { peso: 700, familia: INTER, max: cuadrada ? 36 : 44, min: 26, ancho, lineas: 2 }), crema, 1.25));
+    pila.push(texto(ajustar(ctx, pd, { peso: 700, familia: INTER, max: cuadrada ? 42 : 52, min: 30, ancho, lineas: 2 }), crema, 1.22));
   }
   if (e.m) {
-    pila.push(texto(ajustar(ctx, '“' + e.m + '”', { peso: 400, estilo: 'italic ', familia: INTER, max: cuadrada ? 32 : 38, min: 24, ancho: ancho - 40, lineas: 2 }),
-      memoria ? 'rgba(239,230,220,.86)' : 'rgba(255,255,255,.86)', 1.3));
+    pila.push(texto(ajustar(ctx, '“' + e.m + '”', { peso: 500, estilo: 'italic ', familia: INTER, max: cuadrada ? 36 : 44, min: 28, ancho: ancho - 20, lineas: 2 }),
+      memoria ? 'rgba(239,230,220,.92)' : 'rgba(255,255,255,.92)', 1.28));
   }
-  if (!cuadrada && firma) pila.push(texto({ t: 36, ls: [firma], font: fFirma }, crema, 1.2));
+  if (!cuadrada && firma) pila.push(texto({ t: 42, ls: [firma], font: fFirma }, crema, 1.2));
   const hueco = (i) => (i === iEscena || i === iEscena + 1 ? (cuadrada ? 14 : 28) : 12);   // más aire alrededor de la escena
   const fijo = pila.reduce((s2, p2, i) => s2 + (p2 ? p2.alto : 0) + (i ? hueco(i) : 0), 0);
   const { img: esc, boca } = escenaDe(e, memoria);
@@ -2448,13 +2449,14 @@ async function enlaceDeRegalo(cod) {
 /* ─── compartir ────────────────────────────────────────────
    ✓ guarda; Compartir es todo lo demás. Se le pone nombre y se elige cómo y en
    qué formato; cada camino pide solo lo suyo y la tarjeta cambia en vivo:
-   · presúmela: tu creación, en historia por defecto; solo la firma (@usuario).
+   · presúmela: tu creación, en historia por defecto; se comparte desde el primer paso
+     (sin @usuario: el de la app podría no ser el de sus redes).
    · envíasela a alguien: para (obligatorio), de y un mensaje; en cuadrado, porque va por chat.
    · en memoria de alguien: a quién recuerdas (obligatorio) y un mensaje; en cuadrado. */
 let como = 'presume', pasoC = 'como', formatoC = 'historia';
 const FORMATO_DE = { presume: 'historia', alguien: 'cuadrada', memoria: 'cuadrada' };
 const OBLIGATORIO = { alguien: '#r-para', memoria: '#s-memoria' };
-const ACCIONES = ['#c-presumir', '#c-mandar', '#c-recordar', '[data-copiar]', '[data-descargar]'];
+const ACCIONES = ['#c-mandar', '#c-recordar', '[data-copiar]', '[data-descargar]'];
 /* Lo que se escribe se limpia antes de dibujarlo o mandarlo: sin caracteres de
    control ni de dirección, espacios simples, el largo justo, apóstrofes y comillas
    tipográficos, y sin « » propias (la tarjeta pone las suyas al nombre). */
@@ -2467,11 +2469,6 @@ function limpiar(v, max) {
     .replace(/"([^"]*)"/g, '“$1”').replace(/"/g, '”')
     .slice(0, max).trim();
 }
-/* La firma de «presúmela»: @usuario, sin espacios ni tildes. */
-function comoUsuario(v) {
-  const u = limpiar(v, 30).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/^@+/, '').replace(/[^a-z0-9._]/gi, '').toLowerCase();
-  return u ? '@' + u : '';
-}
 function quienSoy() {
   const u = nube.actual && nube.actual();
   return estado.d || almacen.leer('guagua:firma', '') || (u && (u.nombre || '')) || '';
@@ -2479,6 +2476,9 @@ function quienSoy() {
 function pintarComo() {
   $$('#d-compartir [data-como]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.como === como)));
   $$('#d-compartir [data-formato]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.formato === formatoC)));
+  $('#c-seguir').textContent = como === 'presume' ? 'Compartir' : 'Siguiente';
+  $('#c-extra-presume').hidden = como !== 'presume';
+  if (pasoC === 'como') $('#c-paso').textContent = como === 'presume' ? '' : '1 de 2';
   const vista = $('#c-vista');
   vista.classList.toggle('compartir__vista--cuadrada', formatoC === 'cuadrada');
   vista.width = 1080; vista.height = formatoC === 'cuadrada' ? 1080 : 1920;
@@ -2490,7 +2490,7 @@ function pintarComo() {
 function irPasoC(p) {
   pasoC = p;
   $$('#d-compartir .compartir__paso').forEach((x) => { x.hidden = x.dataset.paso !== p; });
-  $('#c-paso').textContent = p === 'como' ? '1 de 2' : '2 de 2';
+  $('#c-paso').textContent = p === 'como' ? (como === 'presume' ? '' : '1 de 2') : '2 de 2';
   $('#c-vista').classList.toggle('compartir__vista--chica', p !== 'como');
   pintarComo();
   refrescarTarjeta();
@@ -2509,14 +2509,12 @@ function abrirCompartir() {
   $('#s-memoria').value = estado.t === 'm' ? estado.p : '';
   $('#r-mensaje').value = estado.t === 'm' ? '' : estado.m;
   $('#s-mensaje').value = estado.t === 'm' ? estado.m : '';
-  $('#c-usuario').value = almacen.leer('guagua:usuario', '') || comoUsuario(quienSoy());
   $('#c-vista').removeAttribute('src');
   abrir('#d-compartir');
   irPasoC('como');
 }
 /* Lee los campos del camino elegido y devuelve lo que la tarjeta necesita aparte de la receta. */
 function leerFormulario() {
-  let usuario = '';
   if (como === 'memoria') {
     Object.assign(estado, { t: 'm', p: limpiar($('#s-memoria').value, 24), m: limpiar($('#s-mensaje').value, 120), l: 0 });
   } else if (como === 'alguien') {
@@ -2526,10 +2524,8 @@ function leerFormulario() {
     if (d) almacen.poner('guagua:firma', d);
   } else {
     Object.assign(estado, { t: '', p: '', m: '', l: 0 });   // presúmela: tu creación, sin destinatario
-    usuario = comoUsuario($('#c-usuario').value);
-    almacen.poner('guagua:usuario', usuario);
   }
-  return { como, usuario, de: quienSoy() };
+  return { como, de: quienSoy() };
 }
 function botonesListos(listo) {
   const falta = OBLIGATORIO[como] && !limpiar($(OBLIGATORIO[como]).value, 24);
@@ -2617,7 +2613,7 @@ function montarRegalo() {
     pintarComo(); refrescarTarjeta();
   }));
   $('#c-atras').addEventListener('click', () => { if (pasoC === 'como') $('#d-compartir').close(); else irPasoC('como'); });
-  $('#c-seguir').addEventListener('click', () => irPasoC(como));
+  $('#c-seguir').addEventListener('click', () => { if (como === 'presume') enviar(); else irPasoC(como); });
   // lo que pasa después de compartir no hace esperar a la hoja de compartir
   const despues = (pr) => { guardarMia(pr.id).catch(() => {}); };
   const descargar = (pr) => {
@@ -2645,7 +2641,7 @@ function montarRegalo() {
       descargar(pr); despues(pr);
     });
   };
-  ['#c-presumir', '#c-mandar', '#c-recordar'].forEach((sel) => $(sel).addEventListener('click', enviar));
+  ['#c-mandar', '#c-recordar'].forEach((sel) => $(sel).addEventListener('click', enviar));
   $$('#d-compartir [data-copiar]').forEach((b) => b.addEventListener('click', () => { if (preparado) { copiar(preparado.url, b); despues(preparado); } }));
   $$('#d-compartir [data-descargar]').forEach((b) => b.addEventListener('click', () => { if (preparado) { descargar(preparado); despues(preparado); } }));
   $('#r-entrar').addEventListener('click', () => abrirCuenta());
