@@ -26,7 +26,7 @@ import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
 import * as nube from './nube.js?v=2026.10.23.2';
 import {
-  DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
+  DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
 } from './masa.js?v=2026.10.23.2';
 
 const $ = (s, r) => (r || document).querySelector(s);
@@ -507,7 +507,8 @@ class Visor {
      3 mordisco [3, x, y, z]
      4 carita [4, tamaño, estilo, x, y, z, nx, ny, nz]
      5 pasa [5, x, y, z, nx, ny, nz]
-     6 masa de colores [6, color, x, y, z, nx, ny, nz]        */
+     6 masa de colores [6, color, x, y, z, nx, ny, nz]
+     7 glaseado plano [7, color, x, y, z, nx, ny, nz…]        */
   construir(op) {
     const t = op[0];
     const pn = (i) => [V(op[i], op[i + 1], op[i + 2]).divideScalar(Q), V(op[i + 3], op[i + 4], op[i + 5]).normalize()];
@@ -520,7 +521,7 @@ class Visor {
         g.translate(pts[0].x, pts[0].y, pts[0].z);
         return this.malla(g, this.mat.cremas[op[1]]);
       }
-      return this.malla(tubo(pts, r, op[2] === BOQUILLA_LISA ? 0 : 6), this.mat.cremas[op[1]]);
+      return this.malla(tubo(pts, r), this.mat.cremas[op[1]]);
     }
     if (t === 1) {
       const R = BOQUILLAS[op[2]] * 2.3;
@@ -581,6 +582,22 @@ class Visor {
       o.quaternion.setFromRotationMatrix(base(n).m);
       o.position.copy(p).addScaledVector(n, 0.012);
       return o;
+    }
+    if (t === 7) {                                  // el glaseado plano: una cinta sobre la superficie
+      const pts = [], nor = [];
+      for (let i = 2; i + 5 < op.length; i += 6) {
+        pts.push(V(op[i], op[i + 1], op[i + 2]).divideScalar(Q));
+        nor.push(V(op[i + 3], op[i + 4], op[i + 5]).normalize());
+      }
+      if (pts.length < 2) {                         // un toque: una gotita plana
+        const g = new THREE.SphereGeometry(1, 18, 12);
+        g.scale(BOQUILLAS[BOQUILLA_LISA], 0.018, BOQUILLAS[BOQUILLA_LISA]);
+        const o = this.malla(g, this.mat.cremas[op[1]]);
+        o.quaternion.setFromRotationMatrix(base(nor[0]).m);
+        o.position.copy(pts[0]).addScaledVector(nor[0], 0.012);
+        return o;
+      }
+      return this.malla(cinta(pts, nor, BOQUILLAS[BOQUILLA_LISA], 0.018), this.mat.cremas[op[1]]);
     }
     if (t === 6) {                                  // una bolita de masa de colores, como las que se hacen al amasar
       const [p, n] = pn(2);
@@ -1436,7 +1453,10 @@ function tocarDecorar(ev) {
   const hit = taller.tocar(ev);
   if (!hit) return false;
   const h = estado.herramienta;
-  if (h === 'manga') {
+  if (h === 'manga' && estado.boquilla === BOQUILLA_LISA) {
+    trazo = [7, estado.crema, ...pn(hit)];
+    taller.vistaPrevia(trazo);
+  } else if (h === 'manga') {
     const q = puntoDeCrema(hit, BOQUILLAS[estado.boquilla]);
     trazo = [0, estado.crema, estado.boquilla, ent(q.x), ent(q.y), ent(q.z)];
     taller.vistaPrevia(trazo);
@@ -1463,6 +1483,14 @@ function arrastrarDecorar(ev) {
   const hit = taller.tocar(ev);
   if (!hit) return;
   const op = trazo;
+  if (op[0] === 7) {
+    const u = V(op[op.length - 6], op[op.length - 5], op[op.length - 4]).divideScalar(Q);
+    if (hit.p.distanceTo(u) < 0.03) return;
+    if (hit.p.distanceTo(u) > 0.7 || op.length > 600) { fijar(op); trazo = [7, op[1], ...pn(hit)]; }
+    else op.push(...pn(hit));
+    taller.vistaPrevia(trazo);
+    return;
+  }
   if (op[0] === 0) {
     const r = BOQUILLAS[op[2]], q = puntoDeCrema(hit, r);
     const u = V(op[op.length - 3], op[op.length - 2], op[op.length - 1]).divideScalar(Q);

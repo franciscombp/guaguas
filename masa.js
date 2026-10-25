@@ -253,7 +253,7 @@ function elipsoide(c, s, rotZ, punta = 0) {
   g.translate(c.x, c.y, c.z);
   return g;
 }
-function tubo(puntos, r, estrias = 6) {
+function tubo(puntos, r, estrias = 6, aplana = 1) {
   if (puntos.length === 2) puntos = [puntos[0], puntos[0].clone().lerp(puntos[1], 0.5), puntos[1]];
   // si el último punto repite al primero, es un anillo: la curva se cierra y no lleva tapas
   const cerrado = puntos.length > 3 && puntos[0].distanceTo(puntos[puntos.length - 1]) < 1e-6;
@@ -275,7 +275,7 @@ function tubo(puntos, r, estrias = 6) {
     for (let j = 0; j <= rad; j++) {
       const a = (j / rad) * Math.PI * 2;
       const rr = r * tapa * (estrias ? 1 + 0.13 * Math.cos(estrias * a + s * (2.2 / r)) : 1);
-      const ca = Math.cos(a) * rr, sa = Math.sin(a) * rr;
+      const ca = Math.cos(a) * rr * aplana, sa = Math.sin(a) * rr;   // aplana < 1: una cinta plana sobre la superficie
       pos[k++] = P.x + ca * N.x + sa * B.x;
       pos[k++] = P.y + ca * N.y + sa * B.y;
       pos[k++] = P.z + ca * N.z + sa * B.z;
@@ -294,6 +294,48 @@ function tubo(puntos, r, estrias = 6) {
   const uv = new Float32Array((n + 1) * (rad + 1) * 2);
   for (let i = 0, q = 0; i <= n; i++) for (let j = 0; j <= rad; j++) { uv[q++] = (i / n) * L * 0.6; uv[q++] = j / rad; }
   g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+/* El glaseado plano: una cinta pegada a la superficie. Cada punto trae su normal:
+   el ancho va de lado sobre la superficie y el grosor, hacia afuera. */
+function cinta(puntos, normales, ancho, grosor) {
+  if (puntos.length === 2) {
+    puntos = [puntos[0], puntos[0].clone().lerp(puntos[1], 0.5), puntos[1]];
+    normales = [normales[0], normales[0].clone().lerp(normales[1], 0.5).normalize(), normales[1]];
+  }
+  const curva = new THREE.CatmullRomCurve3(puntos, false, 'centripetal');
+  const L = Math.max(curva.getLength(), 1e-3);
+  const n = limita(Math.ceil(L / (ancho * 0.4)), 8, 700), rad = 16;
+  const pos = new Float32Array((n + 1) * (rad + 1) * 3);
+  const P = new THREE.Vector3(), T = new THREE.Vector3(), N = new THREE.Vector3(), S = new THREE.Vector3();
+  let k = 0;
+  for (let i = 0; i <= n; i++) {
+    const u = i / n, s = u * L;
+    curva.getPointAt(u, P); curva.getTangentAt(u, T);
+    const f = u * (normales.length - 1), i0 = Math.min(Math.floor(f), normales.length - 2);
+    N.copy(normales[i0]).lerp(normales[i0 + 1], f - i0).normalize();
+    S.crossVectors(T, N).normalize();
+    const borde = Math.min(1, Math.min(s, L - s) / (ancho * 1.05));
+    const tapa = Math.sqrt(1 - (1 - borde) ** 2);   // las puntas se cierran
+    for (let j = 0; j <= rad; j++) {
+      const a = (j / rad) * Math.PI * 2;
+      const c = Math.cos(a) * ancho * tapa, d = Math.sin(a) * grosor * tapa + grosor * 0.2;
+      pos[k++] = P.x + c * S.x + d * N.x;
+      pos[k++] = P.y + c * S.y + d * N.y;
+      pos[k++] = P.z + c * S.z + d * N.z;
+    }
+  }
+  const idx = [];
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < rad; j++) {
+      const a = i * (rad + 1) + j, b = a + rad + 1;
+      idx.push(a, a + 1, b, b, a + 1, b + 1);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   g.setIndex(idx);
   g.computeVertexNormals();
   return g;
@@ -436,6 +478,7 @@ function sano(d) {
     if (t === 4) return op.length === 9 && TAMANOS[op[1]] && op[2] >= 0 && op[2] <= 3 && Number.isInteger(op[2]);
     if (t === 5) return op.length === 7;
     if (t === 6) return op.length === 8 && CREMAS[op[1]] !== undefined;
+    if (t === 7) return op.length >= 8 && (op.length - 2) % 6 === 0 && CREMAS[op[1]] !== undefined;
     return false;
   });
   return {
@@ -669,5 +712,5 @@ function amasarReceta(args = {}) {
 }
 
 export {
-  amasarReceta, COCCION, dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa,
+  amasarReceta, COCCION, dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa,
 };
