@@ -506,7 +506,8 @@ class Visor {
      2 grageas [2, semilla, x, y, z, nx, ny, nz…]
      3 mordisco [3, x, y, z]
      4 carita [4, tamaño, estilo, x, y, z, nx, ny, nz]
-     5 pasa [5, x, y, z, nx, ny, nz]                          */
+     5 pasa [5, x, y, z, nx, ny, nz]
+     6 masa de colores [6, color, x, y, z, nx, ny, nz]        */
   construir(op) {
     const t = op[0];
     const pn = (i) => [V(op[i], op[i + 1], op[i + 2]).divideScalar(Q), V(op[i + 3], op[i + 4], op[i + 5]).normalize()];
@@ -579,6 +580,15 @@ class Visor {
       const o = this.malla(g, this.mat.pasa);
       o.quaternion.setFromRotationMatrix(base(n).m);
       o.position.copy(p).addScaledVector(n, 0.012);
+      return o;
+    }
+    if (t === 6) {                                  // una bolita de masa de colores, como las que se hacen al amasar
+      const [p, n] = pn(2);
+      const g = new THREE.SphereGeometry(1, 18, 14);
+      g.scale(0.11, 0.09, 0.09);
+      const o = this.malla(g, this.mat.cremas[op[1]]);
+      o.quaternion.setFromRotationMatrix(base(n).m);
+      o.position.copy(p).addScaledVector(n, 0.05);
       return o;
     }
     return null;                                    // el mordisco no es un objeto
@@ -977,7 +987,7 @@ function veredicto(e) {
   const cara = tieneCara(e);
   let frase;
   if (k > 1.25) frase = punto(k).f;
-  else if (!total) frase = 'Le falta la decoración: con un poco de crema queda lista.';
+  else if (!total) frase = 'Le falta la decoración: con un poco de glaseado queda lista.';
   else if (bocados >= 3) frase = 'Ya tiene varios mordiscos. Se nota que estaba rica.';
   else if (bocados) frase = 'Tiene un mordisco: alguien no pudo esperar.';
   else if (k < 0.92) frase = punto(k).f;
@@ -1437,6 +1447,8 @@ function tocarDecorar(ev) {
     fijar([1, estado.crema, estado.boquilla, ...pn(hit)]);
   } else if (h === 'pasa') {
     fijar([5, ...pn(hit)]);
+  } else if (h === 'masa') {
+    fijar([6, estado.crema, ...pn(hit)]);
   } else if (h === 'carita') {
     chapitas(hit, estado.tamano, caraPintada(hit, estado.tamano, taller), taller).forEach((op) => fijar(op));
   } else if (h === 'mordisco') {
@@ -1667,7 +1679,7 @@ function montarTaller() {
     b.addEventListener('click', () => {
       estado.crema = i;
       $$('.crema', cremas).forEach((x, j) => x.setAttribute('aria-pressed', String(j === i)));
-      if (estado.herramienta !== 'manga' && estado.herramienta !== 'roseta') $('button[data-herramienta="manga"]').click();
+      if (!['manga', 'roseta', 'masa'].includes(estado.herramienta)) $('button[data-herramienta="manga"]').click();
     });
     cremas.appendChild(b);
   });

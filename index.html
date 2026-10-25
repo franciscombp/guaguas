@@ -16,7 +16,7 @@
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Guagua de pan · amásala, hornéala y regálala por Finados · UNA</title>
-<meta name="description" content="Amasa en 3D una guagua de pan (o el animalito que quieras), hornéala sin que se queme y decórala con crema. Ponle nombre y regálala por WhatsApp para el Día de Difuntos. Quien la recibe se la puede comer.">
+<meta name="description" content="Amasa en 3D una guagua de pan (o el animalito que quieras), hornéala sin que se queme y decórala con glaseado. Ponle nombre y regálala por WhatsApp para el Día de Difuntos. Quien la recibe se la puede comer.">
 <link rel="canonical" href="https://finados.una.red/">
 <meta name="theme-color" content="#2a0f30">
 <meta name="mobile-web-app-capable" content="yes">
@@ -33,7 +33,7 @@
 <meta property="og:image" content="https://finados.una.red/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Una guagua de pan decorada con crema rosada y grageas, junto a una taza de colada morada">
+<meta property="og:image:alt" content="Una guagua de pan decorada con glaseado rosa y grageas, junto a una taza de colada morada">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="img/icono-guagua.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icono-180.png">
@@ -46,7 +46,7 @@
  "name": "Guagua de pan",
  "url": "https://finados.una.red/",
  "inLanguage": "es",
- "description": "Decora una guagua de pan con crema y regálala por el Día de Difuntos.",
+ "description": "Decora una guagua de pan con glaseado y regálala por el Día de Difuntos.",
  "genre": "Casual",
  "playMode": "SinglePlayer",
  "gamePlatform": "Navegador web",
@@ -172,8 +172,8 @@
       </div>
     </div>
     <div class="dock__herr" aria-label="Herramienta">
-      <div class="herr-grupo" role="group" aria-label="Crema">
-        <span class="herr-grupo__t" aria-hidden="true">Crema</span>
+      <div class="herr-grupo" role="group" aria-label="Glaseado">
+        <span class="herr-grupo__t" aria-hidden="true">Glaseado</span>
         <div class="herr-grupo__b">
           <button class="tool" type="button" data-herramienta="manga" aria-pressed="true"><svg class="icono" aria-hidden="true"><use href="#g-manga"/></svg><span>Manga</span></button>
           <button class="tool" type="button" data-herramienta="roseta" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-roseta"/></svg><span>Roseta</span></button>
@@ -185,6 +185,7 @@
           <button class="tool" type="button" data-herramienta="grageas" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-grageas"/></svg><span>Grageas</span></button>
           <button class="tool" type="button" data-herramienta="carita" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-carita"/></svg><span>Carita</span></button>
           <button class="tool" type="button" data-herramienta="pasa" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-pasa"/></svg><span>Pasas</span></button>
+          <button class="tool" type="button" data-herramienta="masa" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-bolita"/></svg><span>Masa</span></button>
         </div>
       </div>
       <div class="herr-grupo" role="group" aria-label="Probar">
@@ -194,9 +195,10 @@
         </div>
       </div>
     </div>
-    <div class="dock__fila dock__fila--desliza" data-con="manga roseta" role="group" aria-label="Color de la crema">
+    <div class="dock__fila dock__fila--desliza" data-con="manga roseta masa" role="group" aria-label="Color del glaseado o de la masa">
       <div class="cremas" id="cremas"></div>
     </div>
+    <p class="dock__fila dock__nota" data-con="masa">Toca para poner una bolita de masa del color elegido.</p>
     <div class="dock__fila" data-con="manga roseta" role="group" aria-label="Boquilla">
       <span class="dock__rotulo">Boquilla</span>
       <button class="tam" type="button" data-boquilla="0" aria-pressed="false" aria-label="Pincel"><i style="--t:5px"></i></button>
@@ -439,14 +441,14 @@
     <ol class="info__pasos">
       <li><b>Amasa.</b> Bolita: arrastra hacia el lado para hacerla ancha y hacia arriba para hacerla alta; un toque deja una bolita mediana. Chorizo: arrastra como si lo estiraras. Lo que pones encima de otra pieza se pega.</li>
       <li><b>Hornea.</b> Se dora en seis segundos. Sácala en la franja blanca: si la sacas antes queda blanca; si esperas mucho, se quema.</li>
-      <li><b>Decora.</b> Crema, rosetas, grageas, pasas y la carita: la cara es el mismo pan, y se le pintan ojos, nariz y sonrisa con glaseado.</li>
+      <li><b>Decora.</b> Glaseado, rosetas, grageas, pasas, la carita y la masa de colores: la cara es el mismo pan, y se le pintan ojos, nariz y sonrisa con glaseado.</li>
       <li><b>Regálala o dedícala.</b> Mándala con un vale por una guagua de verdad o con una invitación a tomar colada morada. También puedes dedicarla a alguien que ya no está y compartirla en tus redes.</li>
     </ol>
     <p class="info__gesto"><svg class="icono" aria-hidden="true"><use href="#g-dos-dedos"/></svg>
     <span>Con un dedo se amasa y se decora. Con dos dedos se gira y se acerca. En la compu: clic derecho para girar, la rueda para acercar y Shift + rueda para girar. Desliza el asa del panel hacia abajo para esconder las herramientas.</span></p>
     <h3 class="info__h">Guagua quiere decir bebé</h3>
     <p class="caption">En kichwa, <i>wawa</i> es la criatura. Cada 2 de noviembre, en los Andes del Ecuador, se hornean guaguas
-    y caballitos de pan, se pintan con crema y se acompañan con colada morada. Se comparten con la familia y con
+    y caballitos de pan, se pintan con glaseado y se acompañan con colada morada. Se comparten con la familia y con
     los que ya no están. Esta se regala por el teléfono; la de verdad se sigue comprando en la panadería del barrio.</p>
     <h3 class="info__h">Tus datos</h3>
     <p class="caption">Sin cuenta, todo se queda en este navegador y el regalo viaja entero dentro del enlace.

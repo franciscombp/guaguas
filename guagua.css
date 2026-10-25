@@ -169,6 +169,7 @@ body.juego-cuerpo{margin:0;background:var(--mantel-1);color:var(--mal-on-surface
 .herr-grupo__b{display:flex;gap:6px}
 .herr-grupo__b .tool{flex:0 0 64px;width:64px;max-width:none}
 @media (max-width:420px){
+  .dock__herr{flex-wrap:wrap;row-gap:8px}
   .herr-grupo__b{gap:4px}
   .herr-grupo__b .tool{flex-basis:52px;width:52px;padding-inline:2px;font-size:10.5px}
   .herr-grupo + .herr-grupo{padding-left:8px}

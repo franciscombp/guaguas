@@ -434,6 +434,7 @@ function sano(d) {
     if (t === 3) return op.length === 4;
     if (t === 4) return op.length === 9 && TAMANOS[op[1]] && op[2] >= 0 && op[2] <= 3 && Number.isInteger(op[2]);
     if (t === 5) return op.length === 7;
+    if (t === 6) return op.length === 8 && CREMAS[op[1]] !== undefined;
     return false;
   });
   return {
