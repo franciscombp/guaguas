@@ -1730,17 +1730,15 @@ function montarTaller() {
     sorpresa(estado, taller).forEach((op) => { estado.o.push(op); taller.agregar(op, true); });
     taller.dibujar(); guardarBorrador(); actualizarEtiqueta();
   });
-  $('#de-nuevo').addEventListener('click', () => {
-    if ((estado.o.length || estado.a.length) && !confirm('¿Empezar una nueva desde la masa? Se borra la que estás haciendo.')) return;
-    $('#d-info').close();
-    nueva();
-  });
+  $('#de-nuevo').addEventListener('click', () => { $('#d-info').close(); pedirNueva(); });
   $('#regalar').addEventListener('click', abrirRegalo);
-  $('#guardar').addEventListener('click', async () => {
-    await guardarMia();
-    avisa('Guardada en tu vitrina.', 'ok');
-    pintarVitrina('mia');
-  });
+  $('#guardar-ya').addEventListener('click', () => guardarYa());
+  $('#guardar').addEventListener('click', () => { $('#d-vitrina').close(); guardarYa(); });
+  $('#v-nueva').addEventListener('click', () => { $('#d-vitrina').close(); pedirNueva(); });
+  $('#g-otra').addEventListener('click', () => { $('#d-guardada').close(); nueva(); });
+  $('#g-regalar').addEventListener('click', () => { $('#d-guardada').close(); abrirRegalo(); });
+  $('#n-guardar').addEventListener('click', async () => { $('#d-nueva').close(); await guardarYa(false); nueva(); });
+  $('#n-sin-guardar').addEventListener('click', () => { $('#d-nueva').close(); nueva(); });
   return true;
 }
 
@@ -1756,9 +1754,23 @@ function deshacer() {
   taller.quitarUltimo();
   guardarBorrador(); actualizarEtiqueta();
 }
+/* Guardar y empezar otra: la guagua que sale del taller se guarda en la vitrina,
+   y solo se pregunta antes de empezar otra si tiene decoración que aún no se guardó. */
+let ultimaGuardada = null;
+const sinGuardar = () => estado.o.length > 0 && JSON.stringify(receta()) !== ultimaGuardada;
+function pedirNueva() {
+  if (sinGuardar()) window.malDS.abrir('#d-nueva');
+  else nueva();
+}
+async function guardarYa(conAviso = true) {
+  await guardarMia();
+  ultimaGuardada = JSON.stringify(receta());
+  if (conAviso) window.malDS.abrir('#d-guardada');
+}
 function nueva(molde = 'guagua') {
   Object.assign(estado, { a: MOLDES[molde](), f: molde, k: 0, o: [], id: null, n: elige(NOMBRES[molde]), p: '', m: '', l: 0 });
   historia = [];
+  ultimaGuardada = null;
   sincronizarControles();
   taller.cargar(estado);
   irA('amasar');

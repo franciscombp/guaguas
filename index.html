@@ -166,7 +166,10 @@
     <button class="dock__asa" type="button" aria-expanded="true" aria-label="Ocultar o mostrar las herramientas"><i></i></button>
     <div class="dock__cab">
       <p class="dock__t" id="decorar-t">Decórala <span class="dock__resumen"></span></p>
-      <button class="btn btn--rojo dock__accion" id="regalar" type="button"><svg class="icono" aria-hidden="true"><use href="#i-regalo"/></svg> Regalar</button>
+      <div class="dock__acciones">
+        <button class="btn btn-ghost dock__accion" id="guardar-ya" type="button" aria-label="Guardar en la vitrina"><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg><span> Guardar</span></button>
+        <button class="btn btn--rojo dock__accion" id="regalar" type="button"><svg class="icono" aria-hidden="true"><use href="#i-regalo"/></svg> Regalar</button>
+      </div>
     </div>
     <div class="dock__herr" aria-label="Herramienta">
       <div class="herr-grupo" role="group" aria-label="Crema">
@@ -325,7 +328,39 @@
     dentro del enlace: no pasan por ningún servidor.</p>
   </div>
   <div class="modal__pie">
-    <button class="btn" id="guardar" type="button"><svg class="icono" aria-hidden="true"><use href="#i-mas"/></svg> Guardar la que estoy haciendo</button>
+    <button class="btn btn-ghost" id="v-nueva" type="button">Empezar otra</button>
+    <button class="btn" id="guardar" type="button"><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg> Guardar la que estoy haciendo</button>
+  </div>
+</dialog>
+
+<!-- ══ Guardada: qué sigue ══════════════════════════════════ -->
+<dialog class="modal" id="d-guardada" aria-labelledby="d-guardada-t">
+  <div class="modal__cab">
+    <h2 id="d-guardada-t">Guardada en tu vitrina</h2>
+    <button class="btn btn--sm btn--icono btn-ghost" type="button" data-cierra aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-cerrar"/></svg></button>
+  </div>
+  <div class="modal__cuerpo">
+    <p class="caption">Ya está a salvo. Puedes empezar otra, regalar esta o seguir retocándola.</p>
+  </div>
+  <div class="modal__pie">
+    <button class="btn btn-ghost" id="g-seguir" type="button" data-cierra>Seguir decorando</button>
+    <button class="btn" id="g-regalar" type="button"><svg class="icono" aria-hidden="true"><use href="#i-regalo"/></svg> Regalar esta</button>
+    <button class="btn btn--rojo" id="g-otra" type="button"><svg class="icono" aria-hidden="true"><use href="#i-mas"/></svg> Empezar otra</button>
+  </div>
+</dialog>
+
+<!-- ══ Empezar otra con una sin guardar ══════════════════════ -->
+<dialog class="modal" id="d-nueva" aria-labelledby="d-nueva-t">
+  <div class="modal__cab">
+    <h2 id="d-nueva-t">Esta guagua no está guardada</h2>
+    <button class="btn btn--sm btn--icono btn-ghost" type="button" data-cierra aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-cerrar"/></svg></button>
+  </div>
+  <div class="modal__cuerpo">
+    <p class="caption">Si empiezas otra, esta se pierde. ¿La guardas antes?</p>
+  </div>
+  <div class="modal__pie">
+    <button class="btn btn-ghost" id="n-sin-guardar" type="button">Empezar sin guardar</button>
+    <button class="btn btn--rojo" id="n-guardar" type="button">Guardar y empezar otra</button>
   </div>
 </dialog>
 
