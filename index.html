@@ -96,7 +96,6 @@
     <div class="barra__acc">
       <button class="cuenta-pill" id="abrir-cuenta" type="button" hidden><i class="cuenta-pill__punto" aria-hidden="true"></i><span class="cuenta-pill__texto" id="cuenta-rotulo">Entrar</span></button>
       <button class="redondo" id="abrir-vitrina" type="button" aria-label="La vitrina"><svg class="icono" aria-hidden="true"><use href="#i-cuadricula"/></svg><i class="redondo__cuenta" id="cuenta-hud" hidden></i></button>
-      <button class="redondo" id="pantalla" type="button" aria-label="Pantalla completa" hidden><svg class="icono" aria-hidden="true"><use href="#g-pantalla"/></svg></button>
     </div>
   </header>
 
@@ -169,13 +168,28 @@
       <p class="dock__t" id="decorar-t">Decórala <span class="dock__resumen"></span></p>
       <button class="btn btn--rojo dock__accion" id="regalar" type="button"><svg class="icono" aria-hidden="true"><use href="#i-regalo"/></svg> Regalar</button>
     </div>
-    <div class="dock__herr" role="group" aria-label="Herramienta">
-      <button class="tool" type="button" data-herramienta="manga" aria-pressed="true"><svg class="icono" aria-hidden="true"><use href="#g-manga"/></svg><span>Manga</span></button>
-      <button class="tool" type="button" data-herramienta="roseta" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-roseta"/></svg><span>Roseta</span></button>
-      <button class="tool" type="button" data-herramienta="grageas" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-grageas"/></svg><span>Grageas</span></button>
-      <button class="tool" type="button" data-herramienta="carita" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-carita"/></svg><span>Carita</span></button>
-      <button class="tool" type="button" data-herramienta="pasa" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-pasa"/></svg><span>Pasas</span></button>
-      <button class="tool" type="button" data-herramienta="mordisco" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-mordisco"/></svg><span>Mordisco</span></button>
+    <div class="dock__herr" aria-label="Herramienta">
+      <div class="herr-grupo" role="group" aria-label="Crema">
+        <span class="herr-grupo__t" aria-hidden="true">Crema</span>
+        <div class="herr-grupo__b">
+          <button class="tool" type="button" data-herramienta="manga" aria-pressed="true"><svg class="icono" aria-hidden="true"><use href="#g-manga"/></svg><span>Manga</span></button>
+          <button class="tool" type="button" data-herramienta="roseta" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-roseta"/></svg><span>Roseta</span></button>
+        </div>
+      </div>
+      <div class="herr-grupo" role="group" aria-label="Adornos">
+        <span class="herr-grupo__t" aria-hidden="true">Adornos</span>
+        <div class="herr-grupo__b">
+          <button class="tool" type="button" data-herramienta="grageas" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-grageas"/></svg><span>Grageas</span></button>
+          <button class="tool" type="button" data-herramienta="carita" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-carita"/></svg><span>Carita</span></button>
+          <button class="tool" type="button" data-herramienta="pasa" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-pasa"/></svg><span>Pasas</span></button>
+        </div>
+      </div>
+      <div class="herr-grupo" role="group" aria-label="Probar">
+        <span class="herr-grupo__t" aria-hidden="true">Probar</span>
+        <div class="herr-grupo__b">
+          <button class="tool" type="button" data-herramienta="mordisco" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#g-mordisco"/></svg><span>Mordisco</span></button>
+        </div>
+      </div>
     </div>
     <div class="dock__fila dock__fila--desliza" data-con="manga roseta" role="group" aria-label="Color de la crema">
       <div class="cremas" id="cremas"></div>
@@ -361,6 +375,20 @@
       <p>Entraste como <b id="c-nombre"></b> <span class="caption" id="c-correo"></span></p>
       <p class="caption">Tu vitrina se guarda en tu cuenta. Si sales, la vitrina de este navegador sigue aquí.</p>
       <button class="btn" id="c-salir" type="button">Salir de la cuenta</button>
+    </div>
+    <div id="cuenta-recuperar" hidden>
+      <p class="caption">Escribe el correo de tu cuenta. Te enviamos un enlace para crear una contraseña nueva; revisa también la carpeta de spam.</p>
+      <form class="pila" id="c-recuperar-form" novalidate>
+        <div class="campo"><label for="c-recuperar-correo">Correo</label><input id="c-recuperar-correo" type="email" autocomplete="email" inputmode="email" required></div>
+        <p class="campo__error cuenta__error" id="c-recuperar-error" role="alert"></p>
+        <button class="btn btn--rojo btn-block" id="c-recuperar-enviar" type="submit">Enviar el enlace</button>
+        <div class="cuenta__acc">
+          <button class="btn btn--sm btn-ghost" id="c-volver" type="button">Volver a entrar</button>
+        </div>
+      </form>
+    </div>
+    <div class="cuenta__app">
+      <button class="btn btn-block btn-ghost" id="pantalla" type="button" hidden>Pantalla completa</button>
     </div>
   </div>
 </dialog>

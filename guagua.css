@@ -159,7 +159,13 @@ body.juego-cuerpo{margin:0;background:var(--mantel-1);color:var(--mal-on-surface
 .dock__cab{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px}
 .dock__t{margin:0;font-family:var(--mal-display);font-weight:800;font-size:var(--mal-t-h4);letter-spacing:-.02em}
 .dock__accion{padding-inline:20px;font-size:1rem;white-space:nowrap}
-.dock__herr{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-inline:-4px;padding:2px 4px}
+.dock__herr{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin-inline:-4px;padding:2px 4px}
+/* las herramientas por lo que hacen: crema, adornos y probar; cada grupo lleva su rótulo */
+.herr-grupo{display:flex;flex-direction:column;gap:5px;flex:none}
+.herr-grupo + .herr-grupo{padding-left:10px;border-left:1px solid var(--vidrio-borde)}
+.herr-grupo__t{padding-left:4px;font:700 10px/1 var(--mal-texto);letter-spacing:.12em;text-transform:uppercase;color:var(--texto-3)}
+.herr-grupo__b{display:flex;gap:6px}
+.herr-grupo__b .tool{flex:1 0 60px}
 .dock__herr::-webkit-scrollbar{display:none}
 .tool{
   flex:1 0 64px;max-width:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
@@ -317,7 +323,8 @@ body.juego-cuerpo{margin:0;background:var(--mantel-1);color:var(--mal-on-surface
 .cuenta__o::before,.cuenta__o::after{content:"";flex:1;border-top:var(--mal-separador)}
 .cuenta__error{display:block;min-height:1.2em;margin:0}
 .cuenta__acc{display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--mal-e2)}
-#cuenta-fuera[hidden],#cuenta-dentro[hidden],#c-campo-nombre[hidden]{display:none}
+#cuenta-fuera[hidden],#cuenta-dentro[hidden],#cuenta-recuperar[hidden],#c-campo-nombre[hidden]{display:none}
+.cuenta__app{margin-top:var(--mal-e4);padding-top:var(--mal-e3);border-top:var(--mal-separador)}
 
 /* regalar o dedicar, y los vales */
 .regalar__tipo{display:grid;grid-template-columns:1fr 1fr;gap:var(--mal-e2)}

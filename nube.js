@@ -30,6 +30,18 @@ export const disponible = () => !!fb;
 export const actual = () => usuario;
 export function alCambiar(fn) { oyentes.add(fn); if (fb) fn(usuario); return () => oyentes.delete(fn); }
 
+/* Modo de diseño: sin Firebase. Las cuentas se simulan en este navegador y
+   la nube no guarda nada (los regalos van con su receta entera en el enlace).
+   Para volver a la nube real, poner MOCK en false. */
+const MOCK = true;
+const MOCK_CLAVE = 'guagua:mock:usuario';
+const mockLeer = () => { try { return JSON.parse(localStorage.getItem(MOCK_CLAVE)) || null; } catch (e) { return null; } };
+function mockPoner(u) {
+  try { if (u) localStorage.setItem(MOCK_CLAVE, JSON.stringify(u)); else localStorage.removeItem(MOCK_CLAVE); } catch (e) { /* sin almacenamiento, la sesión dura lo que la pestaña */ }
+  usuario = u;
+  oyentes.forEach((fn) => fn(usuario));
+}
+
 function configuracion() {
   const q = new URLSearchParams(location.search);
   if (q.has('emuladores') && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
@@ -40,6 +52,7 @@ function configuracion() {
 
 export async function iniciar() {
   if (fb) return true;
+  if (MOCK) { fb = { mock: true }; usuario = mockLeer(); return true; }
   const c = configuracion();
   if (!c) return false;
   try {
@@ -71,14 +84,25 @@ export async function iniciar() {
 
 /* ─── cuentas ──────────────────────────────────────────────── */
 export async function entrarConGoogle() {
+  if (MOCK) return mockPoner({ uid: 'demo-google', nombre: 'Persona de prueba', correo: 'prueba@guagua.test', foto: '' });
   const proveedor = new fb.a.GoogleAuthProvider();
   proveedor.setCustomParameters({ prompt: 'select_account' });
   await fb.a.signInWithPopup(auth, proveedor);
 }
 export async function entrarConCorreo(correo, clave) {
+  if (MOCK) {
+    if (!/^\S+@\S+\.\S+$/.test(correo)) throw Object.assign(new Error('correo'), { code: 'auth/invalid-email' });
+    if (!clave) throw Object.assign(new Error('clave'), { code: 'auth/missing-password' });
+    return mockPoner({ uid: 'demo-' + correo, nombre: '', correo, foto: '' });
+  }
   await fb.a.signInWithEmailAndPassword(auth, correo, clave);
 }
 export async function crearCuenta(correo, clave, nombre) {
+  if (MOCK) {
+    if (!/^\S+@\S+\.\S+$/.test(correo)) throw Object.assign(new Error('correo'), { code: 'auth/invalid-email' });
+    if (clave.length < 6) throw Object.assign(new Error('clave'), { code: 'auth/weak-password' });
+    return mockPoner({ uid: 'demo-' + correo, nombre: nombre || '', correo, foto: '' });
+  }
   const r = await fb.a.createUserWithEmailAndPassword(auth, correo, clave);
   if (nombre) {
     await fb.a.updateProfile(r.user, { displayName: nombre });
@@ -87,9 +111,14 @@ export async function crearCuenta(correo, clave, nombre) {
   }
 }
 export async function recuperarClave(correo) {
+  if (MOCK) {
+    if (!/^\S+@\S+\.\S+$/.test(correo)) throw Object.assign(new Error('correo'), { code: 'auth/invalid-email' });
+    return;
+  }
   await fb.a.sendPasswordResetEmail(auth, correo);
 }
 export async function salir() {
+  if (MOCK) return mockPoner(null);
   await fb.a.signOut(auth);
 }
 
@@ -119,6 +148,7 @@ export function explicar(e) {
 /* ─── regalos: /guaguas/{id} ───────────────────────────────── */
 export async function publicarRegalo(receta) {
   if (!usuario) throw Object.assign(new Error('sin cuenta'), { code: 'permission-denied' });
+  if (MOCK) throw Object.assign(new Error('sin nube'), { code: 'unavailable' });
   if (receta.length > RECETA_MAX) throw new Error('receta demasiado grande');
   const { doc, collection, setDoc, serverTimestamp } = fb.f;
   const ref = doc(collection(db, 'guaguas'));
@@ -126,6 +156,7 @@ export async function publicarRegalo(receta) {
   return ref.id;
 }
 export async function leerRegalo(id) {
+  if (MOCK) return null;
   const { doc, getDoc } = fb.f;
   const s = await getDoc(doc(db, 'guaguas', id));
   return s.exists() ? s.data().receta : null;
@@ -133,7 +164,7 @@ export async function leerRegalo(id) {
 
 /* ─── la vitrina: /usuarios/{uid}/vitrina/{id} ─────────────── */
 export async function vitrina() {
-  if (!usuario) return [];
+  if (!usuario || MOCK) return [];
   const { collection, query, orderBy, limit, getDocs } = fb.f;
   const q = query(collection(db, 'usuarios', usuario.uid, 'vitrina'), orderBy('fecha', 'desc'), limit(VITRINA_MAX));
   const r = await getDocs(q);
@@ -143,7 +174,7 @@ export async function vitrina() {
   });
 }
 export async function guardar(item) {
-  if (!usuario || item.e.length > RECETA_MAX) return false;
+  if (!usuario || MOCK || item.e.length > RECETA_MAX) return false;
   const { doc, setDoc, serverTimestamp } = fb.f;
   const datos = { tipo: item.t, receta: item.e, fecha: serverTimestamp() };
   if (item.g) datos.guagua = item.g;
@@ -151,7 +182,7 @@ export async function guardar(item) {
   return true;
 }
 export async function borrar(id) {
-  if (!usuario) return;
+  if (!usuario || MOCK) return;
   const { doc, deleteDoc } = fb.f;
   await deleteDoc(doc(db, 'usuarios', usuario.uid, 'vitrina', id));
 }

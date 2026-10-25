@@ -1689,7 +1689,7 @@ function montarTaller() {
   $('#sacar').addEventListener('click', sacarDelHorno);
   $('#a-decorar').addEventListener('click', aDecorar);
   $('#otra-vez').addEventListener('click', volverAAmasar);
-  // la barra: ayuda, vitrina y pantalla completa
+  // la barra: ayuda y vitrina (la pantalla completa va en el perfil)
   $('#abrir-info').addEventListener('click', () => window.malDS.abrir('#d-info'));
   $('#abrir-vitrina').addEventListener('click', () => { pintarVitrina(); window.malDS.abrir('#d-vitrina'); });
   const raiz = document.documentElement;
@@ -1701,7 +1701,7 @@ function montarTaller() {
       else raiz.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
     });
     document.addEventListener('fullscreenchange', () => {
-      boton.setAttribute('aria-label', document.fullscreenElement ? 'Salir de pantalla completa' : 'Pantalla completa');
+      boton.textContent = document.fullscreenElement ? 'Salir de pantalla completa' : 'Pantalla completa';
     });
   }
   // la cámara se vuelve a encuadrar cuando cambia lo que tapa la pantalla
@@ -2263,8 +2263,20 @@ function arrancar() {
    cuenta, la vitrina se guarda en la nube y los regalos llevan enlace corto. */
 let modoCuenta = 'entrar';
 function abrirCuenta() {
-  $('#c-error').textContent = '';
+  vistaCuenta('entrar');
   window.malDS.abrir('#d-cuenta');
+}
+/* Entrar y recuperar contraseña son pantallas distintas: la de recuperar
+   solo pide el correo; la de entrar pide correo y contraseña. */
+function vistaCuenta(v) {
+  const recuperar = v === 'recuperar';
+  $('#d-cuenta-t').textContent = recuperar ? 'Recuperar contraseña' : 'Tu cuenta';
+  $('#cuenta-recuperar').hidden = !recuperar;
+  $('#cuenta-fuera').hidden = recuperar || !!nube.actual();
+  $('#cuenta-dentro').hidden = recuperar || !nube.actual();
+  $('.cuenta__app').hidden = recuperar;
+  $('#c-error').textContent = '';
+  $('#c-recuperar-error').textContent = '';
 }
 /* La píldora de la barra: sin sesión, «Entrar»; con sesión, tu nombre. */
 function pintarCuentaBarra() {
@@ -2344,12 +2356,25 @@ function montarCuenta() {
     });
   });
   $('#c-olvido').addEventListener('click', () => {
-    const correo = $('#c-correo-in').value.trim();
-    if (!correo) { error('Escribe tu correo y te enviamos un enlace para cambiar la contraseña.'); return; }
-    intentar(async () => {
+    $('#c-recuperar-correo').value = $('#c-correo-in').value.trim();
+    vistaCuenta('recuperar');
+    $('#c-recuperar-correo').focus();
+  });
+  $('#c-volver').addEventListener('click', () => vistaCuenta('entrar'));
+  $('#c-recuperar-form').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const correo = $('#c-recuperar-correo').value.trim();
+    const err = $('#c-recuperar-error');
+    err.textContent = '';
+    if (!correo) { err.textContent = 'Escribe el correo de tu cuenta.'; return; }
+    ocupado(true);
+    try {
       await nube.recuperarClave(correo);
-      error('Te enviamos un correo para cambiar la contraseña.');
-    });
+      vistaCuenta('entrar');
+      avisa('Te enviamos un enlace a ' + correo + '.', 'ok');
+    } catch (e) {
+      err.textContent = nube.explicar(e);
+    } finally { ocupado(false); }
   });
   $('#c-salir').addEventListener('click', () => intentar(async () => {
     await nube.salir();
