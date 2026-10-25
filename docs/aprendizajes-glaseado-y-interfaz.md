@@ -304,3 +304,8 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   («¿Te animas? Amasa la tuya gratis…», «Ábrela, cómetela y regala otra…», «¿A quién recuerdas tú?…»)
   y los hashtags #GuaguaDePan · #Finados. El mensaje que acompaña al enlace lleva el nombre de quien la
   recibe, un emoji y una razón para abrirla ya («antes de que se enfríe la colada»).
+- **La taza no se sobrepone a la guagua**: la canasta se mide por lo que va adentro, lado a lado
+  (ancho de la guagua + un respiro + el diámetro de la taza o la vela); la guagua va a la izquierda,
+  la taza a la derecha y un poco atrás, con el asa hacia atrás y afuera.
+- `node --check` trata los `.js` como CommonJS y no ve un `const` repetido en un módulo: se revisa
+  como `.mjs` (copiándolo) o abriendo la página.

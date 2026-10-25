@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.13';
+import * as nube from './nube.js?v=2026.10.25.14';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.13';
+} from './masa.js?v=2026.10.25.14';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1297,25 +1297,29 @@ function enCanasta(e, memoria, lado = 1600) {
   b.figura.updateMatrixWorld(true);
   const caja = new THREE.Box3().setFromObject(b.pan);
   const H = caja.max.y - caja.min.y, A = Math.max(caja.max.x - caja.min.x, caja.max.z - caja.min.z);
-  const R = Math.max(A * 0.62, H * 0.5), alto = H * (echada(e) ? 0.55 : 0.36);
+  const alto = H * (echada(e) ? 0.55 : 0.36);
+  const cosa = memoria ? b.vela : b.taza;
+  const k = alto * (memoria ? 1.5 : 1.15) / (memoria ? 1.65 : 1.2);
+  /* Lado a lado y sin tocarse: la guagua a la izquierda, la taza (o la vela) a la
+     derecha, con un respiro entre las dos; la canasta mide lo que ocupan juntas. */
+  const rc = (memoria ? 0.42 : 0.64) * k, aire = A * 0.08, fila = A + aire + 2 * rc;
+  const R = Math.max(fila / 2 * 1.12, H * 0.5, A * 0.62);
   if (b.canasta) { b.scene.remove(b.canasta); b.vaciar(b.canasta); }
   b.canasta = canasta3d(R, alto, H - alto + R * 0.25);
-  // la guagua adentro, un poco a la izquierda; la canasta con el fondo bajo sus pies
   const cx = (caja.min.x + caja.max.x) / 2, cz = (caja.min.z + caja.max.z) / 2;
-  b.canasta.position.set(cx + R * 0.22, caja.min.y - R * 0.05, cz);
+  const medio = cx + fila / 2 - A / 2;                  // el centro de la canasta
+  b.canasta.position.set(medio, caja.min.y - R * 0.05, cz);
   b.scene.add(b.canasta);
-  const cosa = memoria ? b.vela : b.taza;
   cosa.visible = true;
-  const k = alto * (memoria ? 1.5 : 1.15) / (memoria ? 1.65 : 1.2);
   cosa.scale.setScalar(k);
-  cosa.rotation.y = memoria ? 0 : Math.PI * 0.62;          // el asa de la taza, hacia atrás
-  cosa.position.set(cx + R * 0.66, caja.min.y + R * 0.04, cz + R * 0.1);
-  // flores de mazapán asomando atrás, a la izquierda
+  cosa.rotation.y = memoria ? 0 : Math.PI * 0.38;          // el asa de la taza, hacia atrás y a la derecha
+  cosa.position.set(medio + fila / 2 - rc, caja.min.y + R * 0.04, cz - R * 0.06);
+  // flores de mazapán asomando atrás, entre la guagua y la taza
   const flores = new THREE.Group();
-  [[0.42, -0.42, 1.55, 6], [0.66, -0.3, 1.32, 1], [0.2, -0.5, 1.4, memoria ? 6 : 0]].forEach(([fx, fz, fy, c]) => {
+  [[0.15, -0.42, 1.55, 6], [0.38, -0.32, 1.32, 1], [-0.05, -0.5, 1.4, memoria ? 6 : 0]].forEach(([fx, fz, fy, c]) => {
     const fl = b.mazapan('flor', memoria ? 6 : c);
     fl.scale.setScalar(R * 1.5);
-    fl.position.set(cx + R * 0.22 + fx * R, caja.min.y + alto * fy, cz - R * 0.3 + fz * R);
+    fl.position.set(medio + fx * R, caja.min.y + alto * fy, cz - R * 0.3 + fz * R);
     fl.lookAt(fl.position.clone().add(V(-0.3, 0.4, 1)));
     flores.add(fl);
   });
