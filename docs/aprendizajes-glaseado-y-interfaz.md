@@ -429,3 +429,6 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   mora y frutilla.
 - **SEO**: `lang="es-EC"`, robots, autor, Twitter completo, JSON-LD con `@graph` (VideoGame + Person, imagen,
   palabras clave, tema), `<noscript>` con la descripción, `robots.txt` y `sitemap.xml` (inicio y privacidad).
+- **Visitas con Cloudflare Web Analytics**: `finados.una.red` es un CNAME a GitHub Pages sin proxy (nube gris),
+  así que la inyección automática de la zona `una.red` no le llega. Se creó un sitio aparte para ese host y el
+  beacon va a mano al final de `index.html` y `privacidad.html`. No usa cookies; la política lo dice.
