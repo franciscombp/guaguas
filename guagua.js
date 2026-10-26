@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.26.16';
+import * as nube from './nube.js?v=2026.10.26.17';
 import {
   dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.26.16';
+} from './masa.js?v=2026.10.26.17';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1537,6 +1537,8 @@ function fondoVivo(ctx, W, H, memoria, rnd) {
   v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, memoria ? 'rgba(0,0,0,.32)' : 'rgba(10,0,20,.3)');
   ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
 }
+/* Apagada por ahora: no convenció. Con true vuelve la etiqueta y se va la línea «Para · De». */
+const ETIQUETA_DE_REGALO = false;
 /* La etiqueta de regalo, como en las canastas de verdad: cartulina crema con
    punta y ojalillo, «Para …» grande y «de …» chiquito. Va sobre el tejido de
    abajo a la izquierda, para no taparle la cara a la guagua. */
@@ -1673,6 +1675,10 @@ async function tarjeta(e, formato = 'historia', x = {}) {
       ctx.font = `700 ${ti}px ${INTER}`; ctx.fillStyle = dorado; ctx.fillText(rotulo, W / 2, y0 + ah / 2 + ti * 0.36);
     } });
   }
+  if (como === 'alguien' && !ETIQUETA_DE_REGALO) {
+    const pd = [`Para: ${e.p || '…'}`, e.d && `De: ${e.d}`].filter(Boolean).join(' · ');
+    pila.push(texto(ajustar(ctx, pd, { peso: 700, familia: INTER, max: cuadrada ? 42 : 52, min: 30, ancho, lineas: 2 }), crema, 1.22));
+  }
   if (e.m) {
     pila.push(texto(ajustar(ctx, '“' + e.m + '”', { peso: 500, estilo: 'italic ', familia: INTER, max: cuadrada ? 36 : 44, min: 28, ancho: ancho - 20, lineas: 2 }),
       memoria ? 'rgba(239,230,220,.92)' : 'rgba(255,255,255,.92)', 1.28));
@@ -1712,8 +1718,8 @@ async function tarjeta(e, formato = 'historia', x = {}) {
   }
   pila.forEach((p2, i) => { if (i !== iEscena) p2.dibujar(posiciones[i]); });
   ctx.drawImage(esc, ex, ey, ew, eh);
-  // envíasela: la etiqueta de regalo, colgada del borde de la canasta con un hilo rojo
-  if (como === 'alguien') etiquetaDeRegalo(ctx, e, ex, ey, ew, eh, cuadrada, x.canasta !== false);
+  // envíasela: la etiqueta de regalo, colgada del borde de la canasta (guardada para después; ver ETIQUETA_DE_REGALO)
+  if (como === 'alguien' && ETIQUETA_DE_REGALO) etiquetaDeRegalo(ctx, e, ex, ey, ew, eh, cuadrada, x.canasta !== false);
   const px = boca ? ex + boca.x * ke : 0, py = boca ? ey + boca.y * ke : 0;
   if (!boca) { /* sin colada ni vela: ni vapor ni brillo */ } else if (memoria) {
     const brillo = ctx.createRadialGradient(px, py, 4, px, py, 120 * ke * 1.6);

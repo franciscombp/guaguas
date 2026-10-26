@@ -436,3 +436,4 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   de texto; es una etiqueta de cartulina crema con punta y ojalillo, colgada del borde de la canasta con un
   hilo rojo, sobre el tejido de abajo a la izquierda para no tapar la cara. «Para …» en Syne y «de …» chiquito
   (o «con cariño» si no hay remitente). Si la escena es chica (cuadrada), la etiqueta asoma hacia el margen.
+  **Apagada por ahora** (`ETIQUETA_DE_REGALO = false` en guagua.js): no convenció; vuelve la línea «Para · De».
