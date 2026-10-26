@@ -9,7 +9,7 @@
        para eso reciben una `sonda` (el visor en el juego, `Sonda` aquí).
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from './vendor/three.module.min.js';
-import DORMILON from './modelos/dormilon.js?v=2026.10.26.10';
+import DORMILON from './modelos/dormilon.js?v=2026.10.26.11';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const Q = 100;                       // las coordenadas viajan en centésimas
@@ -265,19 +265,17 @@ const MOLDES = {
       bolita(V(-0.08, 1.24, 0.5), V(0.55, 0.34, 0.2), -0.25),
     ];
   },
-  // una palomita parada, de perfil: pechito redondo, cabecita alta con su
+  // una palomita sentada (sin patas, así se sostiene), de perfil: pechito redondo, cabecita alta con su
   // piquito, el ala pegada al costado y la cola en abanico hacia atrás
   palomita() {
     return [
-      chorizo(0.06, [V(0.22, 0.72, 0.16), V(0.16, 0.1, 0.16)]),        // las patitas
-      chorizo(0.06, [V(0.22, 0.72, -0.16), V(0.16, 0.1, -0.16)]),
-      bolita(V(-0.1, 1.24, 0), V(0.95, 0.6, 0.58), 0.12),             // el cuerpo, un poquito inclinado
-      bolita(V(0.48, 1.4, 0), V(0.5, 0.54, 0.52)),                    // el pechito
-      bolita(V(0.82, 2.04, 0), V(0.33, 0.33, 0.3)),                   // la cabecita
-      bolita(V(1.16, 1.98, 0), V(0.13, 0.06, 0.07), -0.15),           // el piquito
-      bolita(V(-1.08, 1.04, 0), V(0.56, 0.22, 0.14), 0.32),           // la cola en abanico
-      bolita(V(-0.18, 1.44, 0.4), V(0.64, 0.3, 0.16), 0.24),          // el ala, en dos capas de plumas
-      bolita(V(-0.42, 1.3, 0.46), V(0.5, 0.2, 0.12), 0.3),
+      bolita(V(-0.1, 0.68, 0), V(0.95, 0.6, 0.58), 0.12),             // el cuerpo, un poquito inclinado
+      bolita(V(0.48, 0.84, 0), V(0.5, 0.54, 0.52)),                    // el pechito
+      bolita(V(0.82, 1.48, 0), V(0.33, 0.33, 0.3)),                   // la cabecita
+      bolita(V(1.16, 1.42, 0), V(0.13, 0.06, 0.07), -0.15),           // el piquito
+      bolita(V(-1.08, 0.48, 0), V(0.56, 0.22, 0.14), 0.32),           // la cola en abanico
+      bolita(V(-0.18, 0.88, 0.4), V(0.64, 0.3, 0.16), 0.24),          // el ala, en dos capas de plumas
+      bolita(V(-0.42, 0.74, 0.46), V(0.5, 0.2, 0.12), 0.3),
     ];
   },
   libre() { return []; },
