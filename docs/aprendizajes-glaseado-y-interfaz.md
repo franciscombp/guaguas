@@ -405,3 +405,21 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   canasta le tapaba la carita al Dormilón. Ahora los echados se fotografían más desde arriba (0.62 rad) y su
   canasta es más bajita (42 % de su alto). Las flores son un ramito de ocho, agrupadas entre la guagua y la
   taza; en abanico parecían una guirnalda flotando.
+
+## 18. Datos personales y enlaces cortos para todos
+
+- **Tratamiento de datos (LOPDP, Ecuador)** en `privacidad.html`: responsable y contacto, qué datos, para
+  qué (solo el funcionamiento de la app), base legal (consentimiento), encargado (Firebase, de Google, con
+  transferencia internacional), conservación, derechos (acceso, rectificación, eliminación, oposición,
+  suspensión, portabilidad), respuesta en 15 días y reclamo ante la Superintendencia de Protección de Datos
+  Personales. Se enlaza desde la cuenta (con aviso de consentimiento al entrar), desde «Sobre la guagua de pan
+  y tus datos» y desde Compártela.
+- **Enlace corto también sin cuenta**: toda guagua que se comparte se publica en `/guaguas` (será la base de la
+  galería). Sin cuenta, la app entra con una **sesión anónima** de Firebase solo para publicar; para el juego,
+  la persona sigue sin cuenta. Requiere activar el proveedor «Anónimo» en Firebase Authentication; mientras no
+  esté activo, el enlace sigue siendo el largo (`auth/admin-restricted-operation`).
+- **No se llena la colección de borradores**: la tarjeta se publica de antemano (el toque de compartir no
+  puede esperar a la red), así que cada versión nueva borra la anterior que nadie compartió, y al cerrar
+  Compártela sin compartir se borra la última.
+- La taza de colada del echado se mide con la altura de antes, no con su canasta más bajita (y un poco más
+  grande, porque desde arriba se ve más chica).

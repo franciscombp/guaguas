@@ -58,8 +58,8 @@
 }
 </script>
 <link rel="stylesheet" href="vendor/ds/mal/mal.css?v=1.0.18">
-<meta name="guagua-version" content="2026.10.26.12">
-<link rel="stylesheet" href="guagua.css?v=2026.10.26.12">
+<meta name="guagua-version" content="2026.10.26.13">
+<link rel="stylesheet" href="guagua.css?v=2026.10.26.13">
 </head>
 <body class="juego-cuerpo">
 <svg width="0" height="0" class="sr-only" aria-hidden="true" focusable="false">
@@ -342,6 +342,7 @@
       <div class="pila compartir__fin">
         <button class="b b--pri" id="c-seguir" type="button">Siguiente</button>
         <div class="fila-ter" id="c-extra-presume"><button class="b b--ter" data-descargar type="button">Guardar la imagen</button><button class="b b--ter" data-copiar type="button">Copiar el enlace</button></div>
+        <p class="regalar__nota">Al compartirla, tu guagua se guarda en la nube para que su enlace sea corto. <a href="privacidad.html" target="_blank" rel="noopener">Tratamiento de datos</a></p>
       </div>
     </section>
 
@@ -354,7 +355,7 @@
       <div class="pila compartir__fin">
         <button class="b b--pri" id="c-mandar" type="button">Enviar</button>
         <p class="regalar__nota" id="c-falta-para">Escribe para quién es.</p>
-        <div class="fila-ter"><button class="b b--ter" data-copiar type="button">Copiar el enlace</button><button class="b b--ter" id="r-entrar" type="button" hidden>Entrar para un enlace corto</button></div>
+        <div class="fila-ter"><button class="b b--ter" data-copiar type="button">Copiar el enlace</button></div>
       </div>
     </section>
 
@@ -404,6 +405,7 @@
         <button class="b b--pri" id="c-enviar" type="submit">Entrar</button>
         <div class="fila-ter"><button class="b b--ter" id="c-cambiar" type="button">Crear una cuenta</button><button class="b b--ter" id="c-olvido" type="button">Olvidé mi contraseña</button></div>
       </form>
+      <p class="regalar__nota">Al entrar o crear tu cuenta aceptas el <a href="privacidad.html" target="_blank" rel="noopener">tratamiento de tus datos</a>: solo los usamos para que la app funcione.</p>
     </div>
     <div id="cuenta-dentro" class="pila" hidden>
       <p class="hoja__texto">Entraste como <b id="c-nombre"></b> <span id="c-correo"></span>. Tu canasta se guarda en tu cuenta y la ves en cualquier teléfono.</p>
@@ -420,11 +422,13 @@
     </div>
     <div class="cuenta__app">
       <button class="b b--ter" id="pantalla" type="button" hidden>Pantalla completa</button>
+      <a class="b b--ter" href="privacidad.html" target="_blank" rel="noopener">Tratamiento de datos</a>
     </div>
     <details class="sobre">
       <summary>Sobre la guagua de pan y tus datos</summary>
       <p>En kichwa, <i>wawa</i> es la criatura. Cada 2 de noviembre, en los Andes del Ecuador, se hornean guaguas y caballitos de pan, se pintan con glaseado y se acompañan con colada morada. Se comparten con la familia y con los que ya no están.</p>
-      <p>Sin cuenta, todo se queda en este navegador y el regalo viaja entero dentro del enlace. Si entras con tu cuenta, tus guaguas y los regalos que envías se guardan en Firebase, de Google; solo tú ves tu canasta, y un regalo solo lo abre quien tenga su enlace.</p>
+      <p>Sin cuenta, tu canasta se queda en este navegador. Las guaguas que compartes se guardan en Firebase, de Google, para que su enlace sea corto; un regalo solo lo abre quien tenga su enlace. Si entras con tu cuenta, tu canasta también se guarda ahí y solo tú la ves.</p>
+      <p>Usamos tus datos solo para que la app funcione: no los vendemos, no los usamos para publicidad ni para nada distinto. <a href="privacidad.html" target="_blank" rel="noopener">Tratamiento de datos personales</a>.</p>
       <p><a href="https://una.red/#juegos">Más juegos</a> · <a href="https://github.com/franciscombp/finados">Código</a> · Hecho en Quito</p>
     </details>
   </div>
@@ -451,6 +455,6 @@
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js": "./vendor/firebase/firebase-auth.js",
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js": "./vendor/firebase/firebase-firestore-lite.js"
 } }</script>
-<script type="module" src="guagua.js?v=2026.10.26.12"></script>
+<script type="module" src="guagua.js?v=2026.10.26.13"></script>
 </body>
 </html>

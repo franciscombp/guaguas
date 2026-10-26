@@ -9,10 +9,11 @@ rules_version = '2';
 // Colección: guaguas
 // ID: automático de Firestore (20 caracteres al azar: es el enlace corto)
 // Campos:
-//   - dueno: string (obligatorio, inmutable) uid de quien la regala
+//   - dueno: string (obligatorio, inmutable) uid de quien la comparte (su cuenta, o una sesión anónima si no entró)
 //   - receta: string (obligatorio, 1–12000) la guagua codificada, igual que en el enlace largo
 //   - creada: timestamp (obligatorio) hora del servidor
 //   - v: int (obligatorio, 3) versión de la receta
+// Toda guagua compartida se guarda aquí (con o sin cuenta): de aquí saldrá la galería.
 // Acceso: cualquiera la abre por su ID, porque quien recibe un regalo puede no tener
 // cuenta. Nadie puede listar la colección. Un regalo no se edita; su dueño lo puede borrar.
 //

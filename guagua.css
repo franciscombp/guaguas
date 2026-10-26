@@ -310,7 +310,8 @@ dialog.hoja--entera[open]{animation:none}
 .pasos-ayuda em{font-style:normal;font-size:13px;font-weight:700;margin-top:2px}
 
 /* la cuenta */
-.cuenta__app{display:flex;justify-content:center}
+.cuenta__app{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px}
+.regalar__nota a{color:var(--crema)}
 .sobre{font-size:13px;line-height:1.5;color:var(--texto-2)}
 .sobre summary{cursor:pointer;font-weight:700;color:var(--crema)}
 .sobre a{color:var(--crema)}

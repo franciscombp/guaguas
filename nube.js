@@ -15,7 +15,7 @@
    Para probar contra los emuladores: abrir en localhost con ?emuladores
    (auth en el 9099 y Firestore en el 8080, ver firebase/firebase.json).
    ══════════════════════════════════════════════════════════════ */
-import { firebaseConfig } from './nube-config.js?v=2026.10.26.12';
+import { firebaseConfig } from './nube-config.js?v=2026.10.26.13';
 
 const SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
 const RECETA_MAX = 12000;
@@ -71,6 +71,9 @@ export async function iniciar() {
     }
     fb = { a, f };
     a.onAuthStateChanged(auth, (u) => {
+      // la sesión anónima solo sirve para publicar lo que se comparte: para el
+      // juego, quien no entró con su cuenta sigue sin cuenta
+      if (u && u.isAnonymous) u = null;
       usuario = u ? { uid: u.uid, nombre: u.displayName || '', correo: u.email || '', foto: u.photoURL || '' } : null;
       oyentes.forEach((fn) => fn(usuario));
     });
@@ -146,14 +149,29 @@ export function explicar(e) {
 }
 
 /* ─── regalos: /guaguas/{id} ───────────────────────────────── */
+/* Toda guagua que se comparte se guarda aquí, con o sin cuenta: así el enlace
+   es corto (#g=…) y, más adelante, la galería sale de esta colección. Sin
+   cuenta se entra de forma anónima (hay que activar «Anónimo» en Firebase
+   Authentication); si no se puede, el que llama se queda con el enlace largo. */
+let anonima = null;
+function sesion() {
+  if (auth.currentUser) return Promise.resolve(auth.currentUser);
+  if (!anonima) anonima = fb.a.signInAnonymously(auth).then((r) => r.user).finally(() => { anonima = null; });
+  return anonima;
+}
 export async function publicarRegalo(receta) {
-  if (!usuario) throw Object.assign(new Error('sin cuenta'), { code: 'permission-denied' });
-  if (MOCK) throw Object.assign(new Error('sin nube'), { code: 'unavailable' });
+  if (MOCK || !fb) throw Object.assign(new Error('sin nube'), { code: 'unavailable' });
   if (receta.length > RECETA_MAX) throw new Error('receta demasiado grande');
+  const u = await sesion();
   const { doc, collection, setDoc, serverTimestamp } = fb.f;
   const ref = doc(collection(db, 'guaguas'));
-  await setDoc(ref, { dueno: usuario.uid, receta, creada: serverTimestamp(), v: 3 });
+  await setDoc(ref, { dueno: u.uid, receta, creada: serverTimestamp(), v: 3 });
   return ref.id;
+}
+export async function borrarRegalo(id) {
+  if (MOCK || !fb || !auth.currentUser) return;
+  const { doc, deleteDoc } = fb.f;
+  await deleteDoc(doc(db, 'guaguas', id));
 }
 export async function leerRegalo(id) {
   if (MOCK) return null;

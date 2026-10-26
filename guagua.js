@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.26.12';
+import * as nube from './nube.js?v=2026.10.26.13';
 import {
   dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.26.12';
+} from './masa.js?v=2026.10.26.13';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1304,7 +1304,8 @@ function enCanasta(e, memoria, opciones = {}, lado = 1600) {
   const cosa = memoria ? b.vela : b.taza;
   // sin canasta, la taza (o la vela) se mide contra la guagua: un poco más alta que su cintura
   const Ax = caja.max.x - caja.min.x, talla = Math.max(H, Math.min(A, Ax * 1.4) * 0.7);   // echada, la talla es su largo, no su alto
-  const k = (conCanasta ? alto * (memoria ? 1.5 : 1.15) : talla * (memoria ? 0.62 : 0.46)) / (memoria ? 1.65 : 1.2);
+  const medida = H * (echada(e) ? 0.68 : 0.36);         // la taza no se achica con la canasta bajita del echado (y desde arriba se ve más chica)
+  const k = (conCanasta ? medida * (memoria ? 1.5 : 1.15) : talla * (memoria ? 0.62 : 0.46)) / (memoria ? 1.65 : 1.2);
   /* Lado a lado y sin tocarse: la guagua a la izquierda, la taza (o la vela) a la
      derecha, con un respiro entre las dos; la canasta mide lo que ocupan juntas. */
   const ancho = conCanasta ? A : Ax;                    // sin canasta, la taza va junto al costado de la figura
@@ -2469,19 +2470,6 @@ function sincronizarControles() {
    se preparan apenas cambia algo, y el botón solo usa lo que ya está listo. */
 let preparado = null, turnoTarjeta = 0, reloj = null, relojNube = null;
 const publicados = new Map();      // receta → id del regalo, para no publicar dos veces la misma
-/* Con cuenta, el regalo se publica en /guaguas y el enlace es corto (#g=…).
-   Sin cuenta, o si la nube falla, la receta va entera en el enlace (#r=…). */
-async function enlaceDeRegalo(cod) {
-  if (!nube.actual()) return { url: direccion() + '#r=' + cod, id: null };
-  try {
-    let id = publicados.get(cod);
-    if (!id) { id = await nube.publicarRegalo(cod); publicados.set(cod, id); }
-    return { url: direccion() + '#g=' + id, id };
-  } catch (e) {
-    avisa(nube.explicar(e), 'error');
-    return { url: direccion() + '#r=' + cod, id: null };
-  }
-}
 /* ─── compartir ────────────────────────────────────────────
    ✓ guarda; Compartir es todo lo demás. Se le pone nombre y se elige cómo y en
    qué formato; cada camino pide solo lo suyo y la tarjeta cambia en vivo:
@@ -2599,20 +2587,31 @@ async function refrescarTarjeta() {
   botonesListos(true);
   enlaceCorto(preparado);
 }
-/* Con cuenta, el enlace corto se publica en cuanto la tarjeta se queda
-   quieta un momento; si no alcanza, se comparte el largo, que también sirve. */
+/* El enlace corto: la guagua se publica en /guaguas (con cuenta o sin ella) en
+   cuanto la tarjeta se queda quieta un momento. Si la nube no responde a tiempo,
+   se comparte el largo (#r=…), que también sirve.
+   Mientras se escribe el nombre o el mensaje, cada versión nueva reemplaza a la
+   anterior que nadie compartió todavía: en /guaguas queda solo lo que se compartió. */
+let sinCompartir = null;
+function olvidarPublicada(id) {
+  nube.borrarRegalo(id).catch(() => {});
+  publicados.forEach((v, k) => { if (v === id) publicados.delete(k); });
+}
 function enlaceCorto(pr) {
-  if (!nube.actual()) return;
+  if (!nube.disponible()) return;
   const ya = publicados.get(pr.cod);
   if (ya) { pr.id = ya; pr.url = direccion() + '#g=' + ya; return; }
   clearTimeout(relojNube);
   relojNube = setTimeout(async () => {
     try {
       const id = await nube.publicarRegalo(pr.cod);
+      if (pr !== preparado) { olvidarPublicada(id); return; }   // ya cambió mientras se publicaba
+      if (sinCompartir && sinCompartir !== id) olvidarPublicada(sinCompartir);
+      sinCompartir = id;
       publicados.set(pr.cod, id);
       pr.id = id; pr.url = direccion() + '#g=' + id;
     } catch (e) { /* se queda el enlace largo */ }
-  }, 1200);
+  }, 900);
 }
 /* El texto que acompaña al enlace: corto y con ganas de abrirlo y de hacer la propia. */
 const textoRegalo = (e = estado) => {
@@ -2668,7 +2667,7 @@ function montarRegalo() {
   $('#c-atras').addEventListener('click', () => { if (pasoC === 'como') $('#d-compartir').close(); else irPasoC('como'); });
   $('#c-seguir').addEventListener('click', () => { if (como === 'presume') enviar(); else irPasoC(como); });
   // lo que pasa después de compartir no hace esperar a la hoja de compartir
-  const despues = (pr) => { guardarMia(pr.id).catch(() => {}); };
+  const despues = (pr) => { if (pr.id === sinCompartir) sinCompartir = null; guardarMia(pr.id).catch(() => {}); };
   const descargar = (pr) => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(pr.blob);
@@ -2697,7 +2696,8 @@ function montarRegalo() {
   ['#c-mandar', '#c-recordar'].forEach((sel) => $(sel).addEventListener('click', enviar));
   $$('#d-compartir [data-copiar]').forEach((b) => b.addEventListener('click', () => { if (preparado) { copiar(preparado.url, b); despues(preparado); } }));
   $$('#d-compartir [data-descargar]').forEach((b) => b.addEventListener('click', () => { if (preparado) { descargar(preparado); despues(preparado); } }));
-  $('#r-entrar').addEventListener('click', () => abrirCuenta());
+  // se cerró sin compartir: lo publicado de antemano no se queda en la nube
+  $('#d-compartir').addEventListener('close', () => { if (sinCompartir) { olvidarPublicada(sinCompartir); sinCompartir = null; } });
 }
 
 /* ══════════════════ TU CANASTA ══════════════════════════════ */
@@ -3010,7 +3010,6 @@ function pintarCuentaBarra() {
   const u = nube.actual();
   $('#cuenta-punto').hidden = !u;
   $('#abrir-cuenta').setAttribute('aria-label', u ? `Tu cuenta: ${u.nombre || u.correo}` : 'Tu cuenta: entrar');
-  $('#r-entrar').hidden = !nube.disponible() || !!u;
 }
 async function alCambiarCuenta(u) {
   $('#cuenta-fuera').hidden = !!u;
