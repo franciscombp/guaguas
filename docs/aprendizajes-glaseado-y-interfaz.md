@@ -389,3 +389,15 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   cabecita alta con piquito, la cola en abanico inclinada hacia abajo y el ala en dos capas pegada al
   costado. Unas plumas hechas con chorizos delgados quedaban flotando; dos bolitas planas encimadas se leen
   mejor como ala.
+
+## 17. El Dormilón, desde un modelo
+
+- Con bolitas y chorizos no salía: el Dormilón ahora es un **modelo hecho aparte** (Meshy, 1 579 vértices,
+  3 094 triángulos, sin texturas) guardado en `modelos/dormilon.js` como posiciones int16 e índices uint16 en
+  base64 (~37 KB). Se pasa de «y arriba, cara a +z» a la lata acostada (z arriba, frente a −y).
+- Viaja en la receta como una pieza más, el tipo 4: `[4, cuál, escala, x, y, z]`. `sano` solo acepta modelos
+  que existen; se puede mover y quitar como cualquier pieza, no se tiñe, y se hornea, se dora, se baña y se
+  muerde igual que el resto del pan.
+- La carita en chocolate va encima de la que trae tallada: los puntos están anotados en el espacio del
+  archivo y se tiran rayos desde el frente. Ojo con las capturas de referencia: la cámara ortográfica
+  estaba corrida, y la primera cara salió 0.15 a la derecha.

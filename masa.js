@@ -9,6 +9,7 @@
        para eso reciben una `sonda` (el visor en el juego, `Sonda` aquí).
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from './vendor/three.module.min.js';
+import DORMILON from './modelos/dormilon.js?v=2026.10.26.10';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const Q = 100;                       // las coordenadas viajan en centésimas
@@ -130,12 +131,36 @@ const elige = (arr, r) => arr[Math.floor((r || Math.random)() * arr.length)];
 const limita = (v, a, b) => Math.min(b, Math.max(a, v));
 const bolita = (c, s, rot, punta) => [0, ent(c.x), ent(c.y), ent(c.z), ent(s.x), ent(s.y), ent(s.z), Math.round((rot || 0) * 100)]
   .concat(punta ? [0, Math.round(punta * 100)] : []);
+/* Los modelos: una pieza hecha aparte, en malla, que viaja como
+   [4, cuál, escala, x, y, z]. El archivo trae la malla con «y» hacia arriba
+   y la cara hacia +z; en la lata va acostada: z arriba y el frente hacia -y. */
+const MODELOS = [DORMILON];
+const modelo = (id, esc, c) => [4, id, ent(esc), ent(c.x), ent(c.y), ent(c.z)];
+const _mallas = [];
+function mallaDeModelo(id) {
+  if (_mallas[id]) return _mallas[id];
+  const m = MODELOS[id];
+  const crudo = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0)).buffer;
+  const P = new Int16Array(crudo(m.posiciones)), pos = new Float32Array(P.length);
+  for (let i = 0; i < P.length; i += 3) {
+    const k = m.escala / 32767;
+    pos[i] = P[i] * k; pos[i + 1] = -P[i + 2] * k; pos[i + 2] = P[i + 1] * k;   // de «y arriba» a acostada
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setIndex(new THREE.BufferAttribute(new Uint16Array(crudo(m.indices)), 1));
+  g.computeBoundingBox();
+  return (_mallas[id] = g);
+}
+/* Del espacio del archivo (y arriba, cara a +z) al de la pieza, en la lata. */
+const enModelo = (p, X, Y, Z) => V(X * p[2] / Q + p[3] / Q, -Z * p[2] / Q + p[4] / Q, Y * p[2] / Q + p[5] / Q);
 const chorizo = (r, pts) => [1, ent(r)].concat(...pts.map((p) => [ent(p.x), ent(p.y), ent(p.z)]));
 /* El color de masa va aparte para no tocar las piezas de siempre: la bolita
    lleva un noveno número; el chorizo teñido es el tipo 3, [3, grosor, masa, x, y, z…]. */
 const masaDe = (p) => (p[0] === 0 ? p[8] || 0 : p[0] === 3 ? p[2] : 0);
-const iniPuntos = (p) => (p[0] === 3 ? 3 : 2);
+const iniPuntos = (p) => (p[0] === 3 || p[0] === 4 ? 3 : 2);
 function conMasa(p, m) {
+  if (p[0] === 4) return p;                    // un modelo no se tiñe
   if (p[0] === 0) return p[9] ? p.slice(0, 8).concat([m, p[9]]) : m ? p.slice(0, 8).concat([m]) : p.slice(0, 8);
   const pts = p.slice(iniPuntos(p));
   return m ? [3, p[1], m].concat(pts) : [1, p[1]].concat(pts);
@@ -195,29 +220,11 @@ const MOLDES = {
       bolita(V(-0.46, 0.58, 0.08), V(0.16, 0.32, 0.1), 0.25),
     ];
   },
-  // un perrito dormido, hecho bollito: el cuerpo es un pan redondo y alto
-  // enrollado en espiral (la punta se mete hacia el centro, como un caracol);
-  // la cabeza descansa abajo a la izquierda, montada en el borde del cuerpo,
-  // con una oreja doblada hacia atrás encima y la otra colgando hacia la mesa;
-  // una patita asoma bajo la cara y la cola sale por abajo a la derecha
+  // un perrito dormido, hecho bollito: este no se arma con bolitas, es un
+  // modelo aparte (modelos/dormilon.js), apoyado en la lata
   dormilon() {
-    // el bollito: una cúpula redonda y, hundida en ella, la tira enrollada
-    // que le deja el surco de caracol; la tira empieza escondida tras la cabeza
-    const espiral = [];
-    for (let i = 0; i <= 16; i++) {
-      const t = i / 16, a = -2.2 - t * Math.PI * 2 * 1.2, r = 0.78 - t * 0.62;
-      const z = 0.16 + 0.6 * Math.sqrt(Math.max(0, 1 - (r / 0.96) ** 2)) - 0.2;
-      espiral.push(V(0.22 + Math.cos(a) * r, 1.5 + Math.sin(a) * r, z));
-    }
-    return [
-      bolita(V(0.22, 1.5, 0.18), V(0.96, 0.94, 0.66)),                // el cuerpo, un bollito alto
-      chorizo(0.31, espiral),                                          // la tira enrollada encima
-      bolita(V(-0.46, 0.6, 0.12), V(0.58, 0.54, 0.48)),                // la cabeza, apoyada adelante
-      bolita(V(-0.4, 0.98, 0.6), V(0.34, 0.2, 0.09), 0.6),           // la oreja doblada hacia atrás, sobre el cuerpo
-      bolita(V(-1.06, 0.52, -0.04), V(0.19, 0.34, 0.1), -0.45),       // la oreja que cuelga hacia la mesa
-      bolita(V(-0.04, 0.16, -0.12), V(0.17, 0.15, 0.11)),             // la patita bajo la cara
-      chorizo(0.1, [V(0.8, 0.95, -0.12), V(1.12, 0.52, -0.13), V(1.34, 0.42, -0.13)]),  // la cola
-    ];
+    const e = 2.8, piso = mallaDeModelo(0).boundingBox.min.z;
+    return [modelo(0, e, V(0.05, 1.1, PISO - piso * e))];
   },
 
   caballito() {
@@ -399,6 +406,15 @@ function aplanar(g) {
   return g;
 }
 function geometriaPieza(p) {
+  if (p[0] === 4) {
+    const g = mallaDeModelo(p[1]).clone(), e = p[2] / Q;
+    g.scale(e, e, e).translate(p[3] / Q, p[4] / Q, p[5] / Q);
+    const pos = g.attributes.position, uv = new Float32Array(pos.count * 2);
+    for (let i = 0; i < pos.count; i++) { uv[i * 2] = pos.getX(i) * 0.5; uv[i * 2 + 1] = (pos.getY(i) + pos.getZ(i)) * 0.5; }
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    g.computeVertexNormals();
+    return g;
+  }
   if (p[0] === 0) return aplanar(elipsoide(V(p[1], p[2], p[3]).divideScalar(Q), V(p[4], p[5], p[6]).divideScalar(Q), p[7] / 100, (p[9] || 0) / 100));
   const pts = [];
   for (let i = iniPuntos(p); i < p.length; i += 3) pts.push(V(p[i], p[i + 1], p[i + 2]).divideScalar(Q));
@@ -504,6 +520,7 @@ function sano(d) {
     }
     if (p[0] === 1) return p.length >= 5 && (p.length - 2) % 3 === 0 && p[1] > 0;
     if (p[0] === 3) return p.length >= 6 && (p.length - 3) % 3 === 0 && p[1] > 0 && MASAS[p[2]] && Number.isInteger(p[2]);
+    if (p[0] === 4) return p.length === 6 && MODELOS[p[1]] && Number.isInteger(p[1]) && p[2] >= 50 && p[2] <= 600;
     return false;
   });
   const o = lista(d.o, 800).filter((op) => {
@@ -587,6 +604,32 @@ function caraPintada(hit, tam, sonda, dormido = false) {
     const t = i / 8;
     return [-0.26 + t * 0.52, -0.3 - Math.sin(t * Math.PI) * 0.1];
   }));
+  return ops;
+}
+/* La carita del Dormilón va sobre la que trae tallada el modelo: los dos
+   arquitos de los ojos y la boquita abierta, en chocolate. Los puntos están
+   en el espacio del archivo (cara hacia +z); se tiran rayos desde el frente. */
+const CARA_DORMILON = {
+  ojos: [
+    [[-0.275, 0.000], [-0.258, -0.011], [-0.238, -0.014], [-0.218, -0.006], [-0.204, 0.012], [-0.197, 0.032]],
+    [[-0.152, 0.050], [-0.132, 0.042], [-0.112, 0.041], [-0.094, 0.049], [-0.083, 0.062], [-0.079, 0.076]],
+  ],
+  boca: [-0.200, -0.058, 0.013, 0.017],
+};
+function caraDelModelo(pieza, sonda) {
+  const ops = [];
+  const linea = (pts) => {
+    const op = [0, 7, 0];
+    pts.forEach(([X, Y]) => {
+      const q = enModelo(pieza, X, Y, 0.6);
+      const h = sonda.rayoLocal(q, V(0, 1, 0), false);
+      if (h) { const c = puntoDeCrema(h, BOQUILLAS[0]); op.push(ent(c.x), ent(c.y), ent(c.z)); }
+    });
+    if (op.length > 6) ops.push(op);
+  };
+  CARA_DORMILON.ojos.forEach(linea);
+  const [bx, by, rx, ry] = CARA_DORMILON.boca;
+  linea(Array.from({ length: 11 }, (_, i) => { const a = i / 10 * Math.PI * 2; return [bx + Math.sin(a) * rx, by + Math.cos(a) * ry]; }));
   return ops;
 }
 function chapitas(hit, tam, ops, sonda) {
@@ -681,6 +724,8 @@ function sorpresa(estado, sonda, opciones = {}) {
 
   /* La cara va en la bolita más alta que sea cabeza de verdad. Si está
      al centro, es una guagua: se le pintan ojos, nariz y sonrisa. Si está a un lado, es un animal mirando hacia allá. */
+  const conModelo = estado.a.find((p) => p[0] === 4);
+  if (conModelo && !tieneCara(estado)) return ops.concat(caraDelModelo(conModelo, sonda));
   if (!alta || tieneCara(estado)) return ops;
   const cab = alta;
   const cx = cab[1] / Q * esc, cy = cab[2] / Q * esc, rx = cab[4] / Q, ry = cab[5] / Q;
@@ -760,5 +805,5 @@ function amasarReceta(args = {}) {
 }
 
 export {
-  amasarReceta, COCCION, dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa,
+  amasarReceta, COCCION, dormida, modelo, MODELOS, caraDelModelo, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa,
 };
