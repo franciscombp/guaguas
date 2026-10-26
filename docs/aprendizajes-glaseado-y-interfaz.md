@@ -367,3 +367,8 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   pantalla baja el contenido se partía en dos columnas. Se fija `nowrap` en la nuestra.
 - **La taza es de barro**: mate, color tierra, con una franja apenas más oscura. La loza blanca con
   filete fucsia brillaba más que la guagua.
+- **Ícono y portada al día**: el ícono es la guagua de ahora (carita pintada en el pan, glaseado) dentro
+  de la canasta tostada, sobre el morado noche; los PNG salen del mismo SVG con el fondo hasta las
+  esquinas (el sistema los redondea). La portada (og.jpg, 1200 × 630) usa la misma escena 3D y el mismo
+  fondo que las tarjetas: «Decora tu guagua de pan». Los enlaces llevan ?v=2 para que WhatsApp y los
+  navegadores no se queden con la imagen vieja.
