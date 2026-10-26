@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.26.21';
+import * as nube from './nube.js?v=2026.10.26.22';
 import {
   dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.26.21';
+} from './masa.js?v=2026.10.26.22';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1594,7 +1594,9 @@ async function tarjeta(e, formato = 'historia', x = {}) {
   if (memoria) { fondo.addColorStop(0, '#1e1826'); fondo.addColorStop(1, '#2d2434'); } else { fondo.addColorStop(0, '#2e0f36'); fondo.addColorStop(1, '#5a1c50'); }
   ctx.fillStyle = fondo; ctx.fillRect(0, 0, W, H);
   fondoVivo(ctx, W, H, memoria, azar(e.o.length + (cuadrada ? 3 : 5)));
-  const arriba = cuadrada ? M : 250, abajo = cuadrada ? H - M : H - 250;
+  // vertical (historias): arriba, lo que tapa la barra de Instagram; abajo, un hueco libre para que
+  // pongan el sticker del enlace sin tapar nada (y debajo, la barra de responder)
+  const arriba = cuadrada ? M : 200, abajo = cuadrada ? H - M : H - 450;
   const dorado = memoria ? '#d9c39a' : '#ffc93c', crema = memoria ? '#efe6dc' : '#ffffff';
   ctx.textBaseline = 'alphabetic';
 

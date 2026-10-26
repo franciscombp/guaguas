@@ -472,3 +472,6 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   la imagen) guarda la guagua en tu canasta, la marca como guardada (sin aviso de «salir sin guardar»), cierra
   las hojas y te deja en «Las mías», con medio segundo para leer el «¡Copiado!». Con la hoja del sistema
   ocurre cuando termina de compartir; si se cancela, te quedas en Compártela.
+- **Vertical con hueco para el enlace de Instagram**: la tarjeta vertical deja libres los últimos 450 px (de
+  1920) para que pongan el sticker del enlace sin tapar nada, y arriba arranca en 200 px (lo que tapa la barra
+  de la historia). Con 560 px libres la escena quedaba demasiado chica.
