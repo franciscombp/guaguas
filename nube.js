@@ -15,7 +15,7 @@
    Para probar contra los emuladores: abrir en localhost con ?emuladores
    (auth en el 9099 y Firestore en el 8080, ver firebase/firebase.json).
    ══════════════════════════════════════════════════════════════ */
-import { firebaseConfig } from './nube-config.js?v=2026.10.26.19';
+import { firebaseConfig } from './nube-config.js?v=2026.10.26.20';
 
 const SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
 const RECETA_MAX = 12000;
@@ -112,6 +112,13 @@ export async function crearCuenta(correo, clave, nombre) {
     usuario = Object.assign({}, usuario, { nombre });
     oyentes.forEach((fn) => fn(usuario));
   }
+}
+/* El nombre con el que firma sus guaguas: se guarda en la cuenta (displayName). */
+export async function cambiarNombre(nombre) {
+  if (MOCK) return mockPoner(Object.assign({}, usuario, { nombre }));
+  await fb.a.updateProfile(auth.currentUser, { displayName: nombre });
+  usuario = Object.assign({}, usuario, { nombre });
+  oyentes.forEach((fn) => fn(usuario));
 }
 export async function recuperarClave(correo) {
   if (MOCK) {

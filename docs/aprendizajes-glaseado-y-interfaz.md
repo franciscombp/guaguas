@@ -457,3 +457,14 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   lo niegan y se reintenta. Funciona con las reglas viejas; las nuevas además exigen el formato del ID.
 - **Probar con el emulador**: `firebase emulators:start --only auth,firestore` en `firebase/` y abrir con
   `?emuladores`. En este contenedor Chromium necesita `--no-proxy-server` para llegar a localhost.
+
+## 20. Firma, dedicatoria y cierre
+
+- **La firma** («De» en Envíasela, «Con cariño» en memoria): Google trae el nombre completo, así que por
+  defecto se usa solo el primero, y en Tu cuenta hay un campo «¿Cómo firmas tus guaguas?» que lo guarda en
+  el navegador y en la cuenta (`updateProfile`). La primera vez que se entra con Google, la hoja se queda
+  abierta con ese campo listo. Al crear cuenta con correo, el mismo campo pide el apodo.
+- **La dedicatoria manda**: el mensaje va más grande que «Para · De» (58/46 px contra 40/32) y con aire
+  arriba y abajo (44/24 px).
+- **El cierre** dice «Decora y comparte una guagua de pan en finados.una.red» y baja de tamaño solo si no
+  cabe en una línea.

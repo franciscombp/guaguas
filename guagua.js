@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.26.19';
+import * as nube from './nube.js?v=2026.10.26.20';
 import {
   dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.26.19';
+} from './masa.js?v=2026.10.26.20';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1436,7 +1436,7 @@ function rotuloFinados() {
    red encima) y cuadrado 1:1 (1080 × 1080, márgenes de 64 px). Los textos largos
    se achican o pasan a otra línea: nunca se cortan. */
 const ETIQUETA = 'FINADOS · NOVIEMBRE 2026';
-const CIERRE = 'Decora y comparte la tuya · finados.una.red';
+const CIERRE = 'Decora y comparte una guagua\u00a0de\u00a0pan en finados.una.red';
 const SYNE = 'Syne, Inter, system-ui, sans-serif', INTER = 'Inter, system-ui, sans-serif';
 /* Parte un texto en líneas que caben en `ancho`. Solo si `partir`, una palabra
    que sola no cabe se corta por letras (el último recurso, para un nombre larguísimo). */
@@ -1607,7 +1607,12 @@ async function tarjeta(e, formato = 'historia', x = {}) {
   if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
   // abajo se lee: el cierre en 30–38 px y la firma en 34–42; en memoria, el cierre un paso más discreto
   const firma = como === 'memoria' ? (x.de ? 'Con cariño, ' + x.de : 'Con cariño') : '';
-  const fCierre = memoria ? `600 ${cuadrada ? 26 : 32}px ${INTER}` : `700 ${cuadrada ? 30 : 38}px ${INTER}`;
+  // el cierre entra en una línea: si no cabe, baja de tamaño
+  let tCierre = memoria ? (cuadrada ? 26 : 32) : (cuadrada ? 30 : 38);
+  const pesoCierre = memoria ? 600 : 700;
+  ctx.font = `${pesoCierre} ${tCierre}px ${INTER}`;
+  while (ctx.measureText(CIERRE).width > ancho && tCierre > 20) { tCierre--; ctx.font = `${pesoCierre} ${tCierre}px ${INTER}`; }
+  const fCierre = `${pesoCierre} ${tCierre}px ${INTER}`;
   const cCierre = memoria ? 'rgba(239,230,220,.72)' : dorado;
   const fFirma = `700 ${cuadrada ? 34 : 42}px ${INTER}`;
   let pisoZona;
@@ -1677,14 +1682,18 @@ async function tarjeta(e, formato = 'historia', x = {}) {
   }
   if (como === 'alguien' && !ETIQUETA_DE_REGALO) {
     const pd = [`Para: ${e.p || '…'}`, e.d && `De: ${e.d}`].filter(Boolean).join(' · ');
-    pila.push(texto(ajustar(ctx, pd, { peso: 700, familia: INTER, max: cuadrada ? 42 : 52, min: 30, ancho, lineas: 2 }), crema, 1.22));
+    pila.push(texto(ajustar(ctx, pd, { peso: 700, familia: INTER, max: cuadrada ? 32 : 40, min: 26, ancho, lineas: 2 }), crema, 1.22));
   }
+  // la dedicatoria manda sobre los nombres: más grande, y con aire arriba y abajo
+  let iMensaje = -1;
   if (e.m) {
-    pila.push(texto(ajustar(ctx, '“' + e.m + '”', { peso: 500, estilo: 'italic ', familia: INTER, max: cuadrada ? 36 : 44, min: 28, ancho: ancho - 20, lineas: 2 }),
-      memoria ? 'rgba(239,230,220,.92)' : 'rgba(255,255,255,.92)', 1.28));
+    iMensaje = pila.length;
+    pila.push(texto(ajustar(ctx, '“' + e.m + '”', { peso: 500, estilo: 'italic ', familia: INTER, max: cuadrada ? 46 : 58, min: 30, ancho: ancho - 20, lineas: 3 }),
+      memoria ? 'rgba(239,230,220,.92)' : 'rgba(255,255,255,.92)', 1.24));
   }
   if (!cuadrada && firma) pila.push(texto({ t: 42, ls: [firma], font: fFirma }, crema, 1.2));
-  const hueco = (i) => (i === iEscena || i === iEscena + 1 ? (cuadrada ? 14 : 28) : 12);   // más aire alrededor de la escena
+  const hueco = (i) => (i === iMensaje || i === iMensaje + 1 ? (cuadrada ? 24 : 44)      // la dedicatoria, con aire
+    : i === iEscena || i === iEscena + 1 ? (cuadrada ? 14 : 28) : 12);                     // más aire alrededor de la escena
   const fijo = pila.reduce((s2, p2, i) => s2 + (p2 ? p2.alto : 0) + (i ? hueco(i) : 0), 0);
   const { img: esc, boca } = escenaDe(e, memoria, { canasta: x.canasta, colada: x.colada });
   const altoLibre = Math.max(140, pisoZona - techoZona - fijo);
@@ -2546,9 +2555,11 @@ function limpiar(v, max) {
     .replace(/"([^"]*)"/g, '“$1”').replace(/"/g, '”')
     .slice(0, max).trim();
 }
+/* Google trae el nombre completo; para firmar basta el primero (se cambia en Tu cuenta). */
+const primerNombre = (n) => String(n || '').trim().split(/\s+/)[0] || '';
 function quienSoy() {
   const u = nube.actual && nube.actual();
-  return estado.d || almacen.leer('guagua:firma', '') || (u && (u.nombre || '')) || '';
+  return estado.d || almacen.leer('guagua:firma', '') || primerNombre(u && u.nombre);
 }
 function pintarComo() {
   $$('#d-compartir [data-como]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.como === como)));
@@ -3177,6 +3188,7 @@ async function alCambiarCuenta(u) {
   $('#cuenta-dentro').hidden = !u;
   if (u) {
     $('#c-nombre').textContent = u.nombre || u.correo;
+    if (document.activeElement !== $('#c-apodo')) $('#c-apodo').value = almacen.leer('guagua:firma', '') || primerNombre(u.nombre);
     $('#c-correo').textContent = u.nombre ? '(' + u.correo + ')' : '';
     // lo que estaba guardado solo en este navegador sube a la cuenta, una sola vez
     const clave = 'guagua:subidas:' + u.uid;
@@ -3207,16 +3219,33 @@ function montarCuenta() {
     error('');
   };
   $('#c-cambiar').addEventListener('click', () => ponerModo(modoCuenta === 'crear' ? 'entrar' : 'crear'));
+  // con Google, la primera vez se queda abierta para elegir cómo firmar (viene el nombre completo)
   $('#c-google').addEventListener('click', () => intentar(async () => {
     await nube.entrarConGoogle();
-    $('#d-cuenta').close();
-    avisa('Listo, entraste con Google.', 'ok');
+    if (almacen.leer('guagua:firma', '')) { $('#d-cuenta').close(); avisa('Listo, entraste con Google.', 'ok'); return; }
+    avisa('Listo, entraste. Elige cómo firmas tus guaguas.', 'ok');
+    setTimeout(() => { $('#c-apodo').focus(); $('#c-apodo').select(); }, 50);
   }));
+  $('#c-apodo-form').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const apodo = limpiar($('#c-apodo').value, 24);
+    if (!apodo) { $('#c-apodo').focus(); return; }
+    almacen.poner('guagua:firma', apodo);
+    intentar(async () => {
+      await nube.cambiarNombre(apodo);
+      $('#d-cuenta').close();
+      avisa('Listo: firmas como ' + apodo + '.', 'ok');
+    });
+  });
   $('#c-form').addEventListener('submit', (ev) => {
     ev.preventDefault();
     const correo = $('#c-correo-in').value.trim(), clave = $('#c-clave').value;
     intentar(async () => {
-      if (modoCuenta === 'crear') await nube.crearCuenta(correo, clave, $('#c-nombre-in').value.trim().slice(0, 40));
+      if (modoCuenta === 'crear') {
+        const apodo = limpiar($('#c-nombre-in').value, 24);
+        if (apodo) almacen.poner('guagua:firma', apodo);
+        await nube.crearCuenta(correo, clave, apodo);
+      }
       else await nube.entrarConCorreo(correo, clave);
       $('#c-clave').value = '';
       $('#d-cuenta').close();
