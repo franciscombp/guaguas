@@ -437,3 +437,23 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   hilo rojo, sobre el tejido de abajo a la izquierda para no tapar la cara. «Para …» en Syne y «de …» chiquito
   (o «con cariño» si no hay remitente). Si la escena es chica (cuadrada), la etiqueta asoma hacia el margen.
   **Apagada por ahora** (`ETIQUETA_DE_REGALO = false` en guagua.js): no convenció; vuelve la línea «Para · De».
+
+## 19. La galería y los enlaces de 7 letras
+
+- **Galería** = tercera pestaña de la canasta. Sale de la colección `galeria` (no de `guaguas`, que guarda los
+  regalos con para quién y mensaje): cada documento lleva la receta **sin p, d, m, t ni l**, el nombre y el
+  molde. Se lee de 12 en 12 por `creada` descendente con «Ver más»; las miniaturas se renderizan en el
+  navegador con `foto()` (no se suben imágenes: solo puede aparecer pan).
+- **Consentimiento**: solo al **presumir**, con el interruptor «Mostrarla en la galería» (encendido por
+  defecto, recordado). Se publica al compartir de verdad, no al preparar la tarjeta. Cada guagua de la canasta
+  tiene a lo más una entrada (`guagua:en-galeria` en el navegador); si cambió, la nueva reemplaza a la vieja.
+  Apagar el interruptor, quitarla desde la galería o sacarla de la canasta la borra de la galería.
+- Desde la galería: «Decorar una igual» abre una copia en el taller, sin nombre ni dedicatoria.
+- **Reglas**: `galeria` se lista (límite 48 por consulta) y se lee sin cuenta; se crea con sesión (anónima
+  vale) validando campos; no se edita; la borra su dueño. Hay que **publicar las reglas** en Firebase para
+  que funcione; mientras tanto la pestaña dice «La galería todavía no está abierta».
+- **Enlaces cortos de 7 letras** (`#g=Ab3dE7k`): el ID lo genera la app (62⁷ ≈ 3,5 billones) con
+  `crypto.getRandomValues` sin sesgo. Si choca con uno existente, el `setDoc` cuenta como edición, las reglas
+  lo niegan y se reintenta. Funciona con las reglas viejas; las nuevas además exigen el formato del ID.
+- **Probar con el emulador**: `firebase emulators:start --only auth,firestore` en `firebase/` y abrir con
+  `?emuladores`. En este contenedor Chromium necesita `--no-proxy-server` para llegar a localhost.

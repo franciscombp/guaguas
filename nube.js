@@ -15,7 +15,7 @@
    Para probar contra los emuladores: abrir en localhost con ?emuladores
    (auth en el 9099 y Firestore en el 8080, ver firebase/firebase.json).
    ══════════════════════════════════════════════════════════════ */
-import { firebaseConfig } from './nube-config.js?v=2026.10.26.17';
+import { firebaseConfig } from './nube-config.js?v=2026.10.26.18';
 
 const SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
 const RECETA_MAX = 12000;
@@ -163,10 +163,26 @@ export async function publicarRegalo(receta) {
   if (MOCK || !fb) throw Object.assign(new Error('sin nube'), { code: 'unavailable' });
   if (receta.length > RECETA_MAX) throw new Error('receta demasiado grande');
   const u = await sesion();
-  const { doc, collection, setDoc, serverTimestamp } = fb.f;
-  const ref = doc(collection(db, 'guaguas'));
-  await setDoc(ref, { dueno: u.uid, receta, creada: serverTimestamp(), v: 3 });
-  return ref.id;
+  const { doc, setDoc, serverTimestamp } = fb.f;
+  // el ID es el enlace: 7 letras y números al azar (62⁷, unos 3,5 billones). Si
+  // por casualidad ya existe, las reglas no dejan pisarlo (sería una edición) y
+  // se prueba con otro.
+  for (let intento = 0; ; intento++) {
+    const id = idCorto();
+    try {
+      await setDoc(doc(db, 'guaguas', id), { dueno: u.uid, receta, creada: serverTimestamp(), v: 3 });
+      return id;
+    } catch (e) {
+      if (e.code !== 'permission-denied' || intento >= 2) throw e;
+    }
+  }
+}
+const LETRAS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+function idCorto(n = 7) {
+  const azar = crypto.getRandomValues(new Uint8Array(n * 2));
+  let id = '';
+  for (let i = 0; i < azar.length && id.length < n; i++) if (azar[i] < 248) id += LETRAS[azar[i] % 62];   // sin sesgo: 248 = 62 × 4
+  return id.length === n ? id : idCorto(n);
 }
 export async function borrarRegalo(id) {
   if (MOCK || !fb || !auth.currentUser) return;
@@ -178,6 +194,38 @@ export async function leerRegalo(id) {
   const { doc, getDoc } = fb.f;
   const s = await getDoc(doc(db, 'guaguas', id));
   return s.exists() ? s.data().receta : null;
+}
+
+/* ─── la galería: /galeria/{id} ────────────────────────────── */
+/* Las que se presumen y su autor deja en la galería. Solo va la guagua y su
+   nombre: la receta llega aquí ya sin para quién, de quién ni mensaje. */
+export const GALERIA_PAGINA = 12;
+export const miUid = () => (auth && auth.currentUser ? auth.currentUser.uid : null);
+export async function publicarEnGaleria(receta, nombre, molde) {
+  if (MOCK || !fb) throw Object.assign(new Error('sin nube'), { code: 'unavailable' });
+  if (receta.length > RECETA_MAX) throw new Error('receta demasiado grande');
+  const u = await sesion();
+  const { doc, collection, setDoc, serverTimestamp } = fb.f;
+  const ref = doc(collection(db, 'galeria'));
+  await setDoc(ref, { dueno: u.uid, receta, nombre: String(nombre || '').slice(0, 40), molde: String(molde || 'guagua').slice(0, 20), creada: serverTimestamp(), v: 3 });
+  return ref.id;
+}
+/* Una página de la galería, de la más nueva a la más vieja; `despues` es el
+   cursor que devolvió la página anterior. */
+export async function leerGaleria(despues = null) {
+  if (MOCK || !fb) return { items: [], cursor: null };
+  const { collection, query, orderBy, limit, startAfter, getDocs } = fb.f;
+  const partes = [collection(db, 'galeria'), orderBy('creada', 'desc')];
+  if (despues) partes.push(startAfter(despues));
+  partes.push(limit(GALERIA_PAGINA));
+  const s = await getDocs(query(...partes));
+  const items = s.docs.map((d) => ({ id: d.id, ...d.data() }));
+  return { items, cursor: s.docs.length === GALERIA_PAGINA ? s.docs[s.docs.length - 1] : null };
+}
+export async function quitarDeGaleria(id) {
+  if (MOCK || !fb || !auth.currentUser) return;
+  const { doc, deleteDoc } = fb.f;
+  await deleteDoc(doc(db, 'galeria', id));
 }
 
 /* ─── la vitrina: /usuarios/{uid}/vitrina/{id} ─────────────── */

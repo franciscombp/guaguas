@@ -88,8 +88,8 @@
 }
 </script>
 <link rel="stylesheet" href="vendor/ds/mal/mal.css?v=1.0.18">
-<meta name="guagua-version" content="2026.10.26.17">
-<link rel="stylesheet" href="guagua.css?v=2026.10.26.17">
+<meta name="guagua-version" content="2026.10.26.18">
+<link rel="stylesheet" href="guagua.css?v=2026.10.26.18">
 </head>
 <body class="juego-cuerpo">
 <noscript><p style="padding:24px;color:#fff">Guagua de pan es un juego para amasar en 3D una guagua de pan, hornearla y decorarla con glaseado y figuras de mazapán, y compartirla en una canasta con colada morada por el Día de los Difuntos en Ecuador. Necesita JavaScript activado. <a href="privacidad.html" style="color:#ffc93c">Tratamiento de datos</a>.</p></noscript>
@@ -139,11 +139,13 @@
   <div class="segmento" role="group" aria-label="Qué guaguas ver">
     <button type="button" data-vitrina="mia" aria-pressed="true">Las mías <span class="segmento__n" id="cuenta-mia">0</span></button>
     <button type="button" data-vitrina="recibida" aria-pressed="false">Me regalaron <span class="segmento__n" id="cuenta-recibida">0</span></button>
+    <button type="button" data-vitrina="galeria" aria-pressed="false">Galería</button>
   </div>
   <div class="canasta__cuerpo">
     <button class="pendiente" id="seguir-borrador" type="button" hidden><span><b>Tienes una sin terminar</b><span class="pendiente__d" id="seguir-borrador-d"></span></span><span class="pendiente__ir">Seguir</span></button>
     <div class="rejilla" id="vitrina-rej"></div>
     <p class="vacia" id="vitrina-vacia" hidden></p>
+    <button class="b b--ter galeria__mas" id="galeria-mas" type="button" hidden>Ver más</button>
   </div>
   <div class="canasta__pie">
     <button class="b b--pri" id="amasar-otra" type="button"><svg class="icono" aria-hidden="true"><use href="#x-mas"/></svg> Amasar otra</button>
@@ -371,6 +373,7 @@
         <button class="radio" type="button" role="radio" data-como="memoria" aria-checked="false"><span><b>En memoria de alguien</b><span>para recordar a quien ya no está</span></span><i aria-hidden="true"></i></button>
       </div>
       <div class="pila compartir__fin">
+        <label class="interruptor" id="c-galeria-fila"><span><b>Mostrarla en la galería</b><span>solo la guagua y su nombre</span></span><input type="checkbox" id="c-galeria" role="switch"><i aria-hidden="true"></i></label>
         <button class="b b--pri" id="c-seguir" type="button">Siguiente</button>
         <div class="fila-ter" id="c-extra-presume"><button class="b b--ter" data-descargar type="button">Guardar la imagen</button><button class="b b--ter" data-copiar type="button">Copiar el enlace</button></div>
       </div>
@@ -421,6 +424,7 @@
   <div class="hoja__cab"><h2 id="d-datos-t">Al compartirla</h2><button class="redondo redondo--plano" type="button" data-cierra aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#x-cerrar"/></svg></button></div>
   <p class="hoja__texto">Tu guagua se guarda en la nube para que su enlace sea corto y se abra en cualquier teléfono. La ve solo quien tenga el enlace.</p>
   <p class="hoja__texto">Lo que escribas (para quién, de parte de quién, el mensaje) viaja con ella. No usamos esos datos para nada más.</p>
+  <p class="hoja__texto">Si la presumes con «Mostrarla en la galería», ahí aparece solo la guagua y su nombre. La puedes quitar cuando quieras.</p>
   <a class="b b--ter" href="privacidad.html" target="_blank" rel="noopener">Tratamiento de datos personales</a>
 </dialog>
 
@@ -493,7 +497,7 @@
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js": "./vendor/firebase/firebase-auth.js",
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js": "./vendor/firebase/firebase-firestore-lite.js"
 } }</script>
-<script type="module" src="guagua.js?v=2026.10.26.17"></script>
+<script type="module" src="guagua.js?v=2026.10.26.18"></script>
 <!-- contar visitas: Cloudflare Web Analytics, sin cookies ni identificar a nadie -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "ca3813c8ad6e439f8ef4f3f9f93a0bea"}'></script>
 </body>

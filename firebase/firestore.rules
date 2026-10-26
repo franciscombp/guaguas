@@ -7,7 +7,7 @@ rules_version = '2';
 // Modelo de datos que suponen estas reglas
 //
 // Colección: guaguas
-// ID: automático de Firestore (20 caracteres al azar: es el enlace corto)
+// ID: 7 letras y números al azar, lo genera la app (es el enlace corto; los viejos tienen 20)
 // Campos:
 //   - dueno: string (obligatorio, inmutable) uid de quien la comparte (su cuenta, o una sesión anónima si no entró)
 //   - receta: string (obligatorio, 1–12000) la guagua codificada, igual que en el enlace largo
@@ -16,6 +16,13 @@ rules_version = '2';
 // Toda guagua compartida se guarda aquí (con o sin cuenta): de aquí saldrá la galería.
 // Acceso: cualquiera la abre por su ID, porque quien recibe un regalo puede no tener
 // cuenta. Nadie puede listar la colección. Un regalo no se edita; su dueño lo puede borrar.
+//
+// Colección: galeria
+// ID: automático de Firestore
+// Campos: dueno (uid, cuenta o anónimo), receta (sin p, d, m: solo la guagua),
+//   nombre (0–40), molde (1–20), creada (hora del servidor), v (3)
+// Acceso: cualquiera la lista (de a 48 como mucho) y la abre; nadie la edita;
+// su autor la puede quitar. La app la lee con orderBy('creada', 'desc').
 //
 // Colección: usuarios/{uid}/vitrina
 // ID: lo genera la app
@@ -51,6 +58,16 @@ service cloud.firestore {
         && data.creada is timestamp
         && data.v is int && data.v == 3;
     }
+    function isValidGaleria(data) {
+      return data.keys().hasAll(['dueno', 'receta', 'nombre', 'molde', 'creada', 'v'])
+        && data.keys().hasOnly(['dueno', 'receta', 'nombre', 'molde', 'creada', 'v'])
+        && data.dueno is string
+        && validString(data.receta, 1, 12000)
+        && validString(data.nombre, 0, 40)
+        && validString(data.molde, 1, 20)
+        && data.creada is timestamp
+        && data.v is int && data.v == 3;
+    }
     function isValidVitrina(data) {
       return data.keys().hasAll(['tipo', 'receta', 'fecha'])
         && data.keys().hasOnly(['tipo', 'receta', 'guagua', 'fecha'])
@@ -65,7 +82,22 @@ service cloud.firestore {
       allow get: if true;
       allow list: if false;
       allow create: if isAuthenticated()
+        && guaguaId.matches('^[A-Za-z0-9]{6,40}$')
         && isValidGuagua(request.resource.data)
+        && request.resource.data.dueno == request.auth.uid
+        && request.resource.data.creada == request.time;
+      allow update: if false;
+      allow delete: if isAuthenticated() && resource.data.dueno == request.auth.uid;
+    }
+
+    // ─── la galería: las que su autor decidió mostrar ────────
+    // Solo la guagua y su nombre (la receta llega sin para quién, de quién ni
+    // mensaje). Cualquiera la ve; nadie la edita; su autor la puede quitar.
+    match /galeria/{itemId} {
+      allow get: if true;
+      allow list: if request.query.limit <= 48;
+      allow create: if isAuthenticated()
+        && isValidGaleria(request.resource.data)
         && request.resource.data.dueno == request.auth.uid
         && request.resource.data.creada == request.time;
       allow update: if false;

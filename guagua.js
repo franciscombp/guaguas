@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.26.17';
+import * as nube from './nube.js?v=2026.10.26.18';
 import {
   dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.26.17';
+} from './masa.js?v=2026.10.26.18';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -2565,6 +2565,8 @@ function pintarComo() {
   $('#c-colada use').setAttribute('href', como === 'memoria' ? '#x-vela' : '#x-taza');
   $('#c-seguir').textContent = como === 'presume' ? 'Compartir' : 'Siguiente';
   $('#c-extra-presume').hidden = como !== 'presume';
+  $('#c-galeria-fila').hidden = como !== 'presume' || !nube.disponible();
+  $('#c-galeria').checked = almacen.leer(GALERIA_SI, true);
   if (pasoC === 'como') $('#c-paso').textContent = como === 'presume' ? '' : '1 de 2';
   const vista = $('#c-vista');
   vista.classList.toggle('compartir__vista--cuadrada', formatoC === 'cuadrada');
@@ -2716,7 +2718,11 @@ function montarRegalo() {
   $('#c-atras').addEventListener('click', () => { if (pasoC === 'como') $('#d-compartir').close(); else irPasoC('como'); });
   $('#c-seguir').addEventListener('click', () => { if (como === 'presume') enviar(); else irPasoC(como); });
   // lo que pasa después de compartir no hace esperar a la hoja de compartir
-  const despues = (pr) => { if (pr.id === sinCompartir) sinCompartir = null; guardarMia(pr.id).catch(() => {}); };
+  const despues = (pr) => {
+    if (pr.id === sinCompartir) sinCompartir = null;
+    guardarMia(pr.id).catch(() => {});
+    if (como === 'presume' && $('#c-galeria').checked && nube.disponible()) alaGaleria().catch(() => {});
+  };
   const descargar = (pr) => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(pr.blob);
@@ -2746,8 +2752,82 @@ function montarRegalo() {
   $$('#d-compartir [data-copiar]').forEach((b) => b.addEventListener('click', () => { if (preparado) { copiar(preparado.url, b); despues(preparado); } }));
   $$('#d-compartir [data-descargar]').forEach((b) => b.addEventListener('click', () => { if (preparado) { descargar(preparado); despues(preparado); } }));
   $('#c-datos').addEventListener('click', () => abrir('#d-datos'));
+  // apagar el interruptor también la quita de la galería, si ya estaba
+  $('#c-galeria').addEventListener('change', (ev) => {
+    almacen.poner(GALERIA_SI, ev.target.checked);
+    if (!ev.target.checked && estado.id) sacarDeGaleria(estado.id);
+  });
   // se cerró sin compartir: lo publicado de antemano no se queda en la nube
   $('#d-compartir').addEventListener('close', () => { if (sinCompartir) { olvidarPublicada(sinCompartir); sinCompartir = null; } });
+}
+
+/* ══════════════════ LA GALERÍA ══════════════════════════════ */
+/* Las que se presumen pueden ir a la galería (el interruptor de Compártela,
+   encendido por defecto y recordado). Va solo la guagua y su nombre: la receta
+   sube sin para quién, de quién, mensaje ni vale. Cada guagua de tu canasta
+   tiene a lo más una en la galería; si cambió, la nueva reemplaza a la vieja. */
+const GALERIA_SI = 'guagua:galeria', EN_GALERIA = 'guagua:en-galeria';
+async function alaGaleria() {
+  if (!estado.id) return;
+  const cod = await codificar(Object.assign(receta(), { p: '', d: '', m: '' }, { t: undefined, l: undefined }));
+  const mapa = almacen.leer(EN_GALERIA, {}), ya = mapa[estado.id];
+  if (ya && ya.h === cod) return;
+  const id = await nube.publicarEnGaleria(cod, estado.n || nombreDe(estado), estado.f);
+  if (ya) nube.quitarDeGaleria(ya.g).catch(() => {});
+  mapa[estado.id] = { g: id, h: cod };
+  almacen.poner(EN_GALERIA, mapa);
+}
+function sacarDeGaleria(idGuagua) {
+  const mapa = almacen.leer(EN_GALERIA, {}), ya = mapa[idGuagua];
+  if (!ya) return;
+  nube.quitarDeGaleria(ya.g).catch(() => {});
+  delete mapa[idGuagua];
+  almacen.poner(EN_GALERIA, mapa);
+}
+let cursorGaleria = null;
+async function pintarGaleria(turno, mas = false) {
+  const rej = $('#vitrina-rej'), vacia = $('#vitrina-vacia'), boton = $('#galeria-mas');
+  if (!mas) { rej.textContent = ''; cursorGaleria = null; vacia.hidden = false; vacia.textContent = 'Abriendo la galería…'; }
+  boton.hidden = true;
+  let pagina;
+  try {
+    if (!(await nube.iniciar())) throw Object.assign(new Error('sin nube'), { code: 'unavailable' });
+    pagina = await nube.leerGaleria(mas ? cursorGaleria : null);
+  } catch (err) {
+    if (turno !== turnoVitrina) return;
+    vacia.hidden = false;
+    vacia.textContent = err && err.code === 'permission-denied'
+      ? 'La galería todavía no está abierta. Vuelve pronto.'
+      : 'No se pudo abrir la galería. Revisa tu conexión y vuelve a intentarlo.';
+    return;
+  }
+  if (turno !== turnoVitrina) return;
+  cursorGaleria = pagina.cursor;
+  if (!mas) {
+    vacia.hidden = !!pagina.items.length;
+    vacia.textContent = 'Todavía no hay guaguas en la galería. Presume la tuya y sé quien la estrene.';
+  }
+  const mio = nube.miUid();
+  for (const g of pagina.items) {
+    let e;
+    try { e = await decodificar(g.receta); } catch (err) { continue; }
+    if (turno !== turnoVitrina) return;
+    if (!e.a.length) continue;
+    const cuando = g.creada && g.creada.toDate ? g.creada.toDate().getTime() : Date.now();
+    const item = { t: 'galeria', gid: g.id, f: cuando, tuya: !!mio && g.dueno === mio };
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'pieza';
+    const c = foto(e, 240, 300);
+    c.className = 'pieza__img'; c.setAttribute('aria-hidden', 'true');
+    const t = document.createElement('span'); t.className = 'pieza__nombre';
+    t.textContent = nombreDe(e);
+    const s = document.createElement('span'); s.className = 'pieza__meta';
+    s.textContent = (item.tuya ? 'la tuya · ' : '') + fecha(cuando);
+    b.append(c, t, s);
+    b.addEventListener('click', () => abrirPieza(item, e));
+    rej.appendChild(b);
+  }
+  boton.hidden = !cursorGaleria;
 }
 
 /* ══════════════════ TU CANASTA ══════════════════════════════ */
@@ -2759,8 +2839,18 @@ async function pintarVitrina(cual) {
   const turno = ++turnoVitrina;          // si llega otra pintada mientras se espera a la nube, gana la última
   $$('[data-vitrina]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.vitrina === pestana)));
   const rej = $('#vitrina-rej');
+  $('#galeria-mas').hidden = true;
+  $('.canasta__sub').textContent = pestana === 'galeria'
+    ? 'Las guaguas que la gente presumió este Finados. Toca una para verla de cerca.'
+    : 'Aquí están las guaguas que has creado y las que te han regalado';
   const todas = await listaVitrina();
   if (turno !== turnoVitrina) return;
+  if (pestana === 'galeria') {
+    $('#cuenta-mia').textContent = todas.filter((x) => x.t === 'mia').length;
+    $('#cuenta-recibida').textContent = todas.filter((x) => x.t === 'recibida').length;
+    pintarCuentaBarra();
+    return pintarGaleria(turno);
+  }
   const lista = todas.filter((x) => x.t === pestana);
   pintarCuentaBarra();
   $('#cuenta-mia').textContent = todas.filter((x) => x.t === 'mia').length;
@@ -2796,8 +2886,12 @@ function abrirPieza(item, e) {
   $('#p-quien').hidden = !quien;
   $('#p-mensaje').textContent = e.m || '';
   $('#p-mensaje').hidden = !e.m;
+  const enGaleria = item.t === 'galeria';
+  if (enGaleria) { $('#p-quien').textContent = (item.tuya ? 'La tuya, en la galería · ' : 'En la galería · ') + fecha(item.f); $('#p-quien').hidden = false; }
   $('#p-editar').hidden = item.t !== 'mia';
-  $('#p-compartir').textContent = item.t === 'mia' ? 'Compartirla' : 'Reenviarla';
+  $('#p-compartir').textContent = item.t === 'mia' ? 'Compartirla' : enGaleria ? 'Decorar una igual' : 'Reenviarla';
+  $('#p-borrar').textContent = enGaleria ? 'Quitarla de la galería' : 'Sacar de la canasta';
+  $('#p-borrar').hidden = enGaleria && !item.tuya;
   abrir('#d-pieza');
   if (!visorPieza) visorPieza = new Visor($('#p-lienzo'));
   visorPieza.giro = -0.25; Object.assign(visorPieza, posturaDe(e));
@@ -2806,6 +2900,7 @@ function abrirPieza(item, e) {
 }
 function montarVitrina() {
   $$('[data-vitrina]').forEach((b) => b.addEventListener('click', () => pintarVitrina(b.dataset.vitrina)));
+  $('#galeria-mas').addEventListener('click', () => pintarGaleria(turnoVitrina, true));
   $('#amasar-otra').addEventListener('click', () => nueva());
   $('#seguir-borrador').addEventListener('click', () => {
     const b = almacen.leer(BORRADOR, null);
@@ -2831,6 +2926,12 @@ function montarVitrina() {
       abrirCompartir();
       return;
     }
+    if (item.t === 'galeria') {             // una copia para ti: la decoras a tu gusto y es tuya
+      cargarEnTaller(Object.assign({}, e, { n: '', p: '', d: '', m: '' }), null);
+      masaDelMolde = JSON.stringify(e.a);
+      mostrar('taller');
+      return;
+    }
     const enlace = direccion() + (item.g ? '#g=' + item.g : '#r=' + item.e);
     if (navigator.share) {
       navigator.share({ title: 'Una guagua de pan', text: textoRegalo(e), url: enlace })
@@ -2838,8 +2939,18 @@ function montarVitrina() {
     } else copiar(enlace);
   });
   $('#p-borrar').addEventListener('click', () => {
+    if (piezaActual.item.t === 'galeria') {
+      if (!confirm('¿Quitar esta guagua de la galería? En tu canasta se queda.')) return;
+      const gid = piezaActual.item.gid, mapa = almacen.leer(EN_GALERIA, {});
+      Object.keys(mapa).forEach((k) => { if (mapa[k].g === gid) delete mapa[k]; });
+      almacen.poner(EN_GALERIA, mapa);
+      nube.quitarDeGaleria(gid).then(() => pintarVitrina()).catch((err) => avisa(nube.explicar(err), 'error'));
+      $('#d-pieza').close();
+      return;
+    }
     if (!confirm('¿Sacar esta guagua de tu canasta? No se puede deshacer.')) return;
     sacarDeVitrina(piezaActual.item.id);
+    sacarDeGaleria(piezaActual.item.id);           // si estaba en la galería, también se va de ahí
     if (estado.id === piezaActual.item.id) estado.id = null;
     $('#d-pieza').close();
     pintarVitrina();
@@ -3011,7 +3122,7 @@ function arrancar() {
   const leerHash = async () => {
     const largo = location.hash.match(/^#r=([zj][A-Za-z0-9_-]+)$/);
     if (largo) { recibir(largo[1]); return; }
-    const corto = location.hash.match(/^#g=([A-Za-z0-9]{10,40})$/);
+    const corto = location.hash.match(/^#g=([A-Za-z0-9]{6,40})$/);
     if (!corto) return;
     if (!(await arranqueNube)) { avisa('Para abrir este regalo hace falta conexión con la nube.', 'error'); return; }
     try {
