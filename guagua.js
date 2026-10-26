@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.26.4';
+import * as nube from './nube.js?v=2026.10.26.5';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.26.4';
+} from './masa.js?v=2026.10.26.5';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1122,12 +1122,13 @@ function foto(e, w, h, extra) {
    colada espesa encima y pedacitos de piña, frutilla y mortiño. */
 function taza3d() {
   const g = new THREE.Group();
-  const loza = new THREE.MeshPhysicalMaterial({ color: '#f6ede2', roughness: 0.3, clearcoat: 0.7, side: THREE.DoubleSide });
+  // de barro, como los jarritos de la colada: mate y del color de la tierra, para que no le robe la mirada a la guagua
+  const loza = new THREE.MeshStandardMaterial({ color: '#9b5a36', roughness: 0.88, side: THREE.DoubleSide });
   const perfil = [[0, 0], [0.5, 0], [0.56, 0.05], [0.6, 0.6], [0.64, 1.15], [0.62, 1.2], [0.58, 1.18], [0.55, 0.15], [0, 0.15]]
     .map(([x, y]) => new THREE.Vector2(x, y));
   const cuerpo = new THREE.Mesh(new THREE.LatheGeometry(perfil, 64), loza);
-  const filete = new THREE.Mesh(new THREE.CylinderGeometry(0.627, 0.618, 0.12, 64, 1, true),
-    new THREE.MeshStandardMaterial({ color: '#e01b6a', roughness: 0.35 }));
+  const filete = new THREE.Mesh(new THREE.CylinderGeometry(0.627, 0.618, 0.08, 64, 1, true),
+    new THREE.MeshStandardMaterial({ color: '#7c4227', roughness: 0.9 }));   // una franja apenas más oscura, como pintada a mano
   filete.position.y = 0.82;
   const asa = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.075, 16, 40, Math.PI), loza);
   asa.rotation.z = -Math.PI / 2; asa.position.set(0.6, 0.64, 0);

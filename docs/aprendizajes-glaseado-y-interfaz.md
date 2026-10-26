@@ -365,3 +365,5 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   queda debajo de la barra de Safari.
 - Ojo con los nombres de clase: el sistema de diseño ya tenía `.compartir` con `flex-wrap: wrap`; en una
   pantalla baja el contenido se partía en dos columnas. Se fija `nowrap` en la nuestra.
+- **La taza es de barro**: mate, color tierra, con una franja apenas más oscura. La loza blanca con
+  filete fucsia brillaba más que la guagua.
