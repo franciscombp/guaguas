@@ -24,7 +24,7 @@ Acepta los mismos parámetros que `crear_guagua`: `molde`, `nombre`, `para`, `de
 
 - **`despensa`** — qué hay: moldes, cremas, vales, cocciones y mensajes sugeridos.
 - **`crear_guagua`** — amasa una guagua y devuelve `enlace`, `resumen` y la `receta`.
-  - `molde`: `guagua`, `tradicional`, `guaguau` (perrito), `caballito`, `chanchito`, `gallinita`.
+  - `molde`: `guagua`, `tradicional`, `guaguau` (perrito), `caballito`, `chanchito`, `gallinita`, `palomita`.
   - `nombre`, `para`, `de`, `mensaje` (≤ 160 caracteres, en español).
   - `dedicada: true` para alguien que ya no está (sale con velita y «En memoria de…»).
   - `vale`: `1` vale por una guagua de verdad · `2` invitación a colada morada · `3` pásala.

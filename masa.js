@@ -67,6 +67,7 @@ const NOMBRES = {
     'Pepita', 'Martita', 'Manuelito', 'Lolita', 'Teresita', 'Anita', 'Pachita', 'Tomasito', 'Clarita', 'Inesita'],
   caballito: ['Rayo', 'Canela', 'Trueno', 'Lucero', 'Pegaso', 'Pinto', 'Bayo', 'Palomo', 'Azabache', 'Galope'],
   chanchito: ['Rosado', 'Bellota', 'Lechoncito', 'Gordito', 'Cachito', 'Tomasín', 'Trufa'],
+  palomita: ['Palomita', 'Blanquita', 'Paz', 'Plumón', 'Cucurrú', 'Paloma'],
   gallinita: ['Cocoroca', 'Pinta', 'Pollita', 'Josefina', 'Plumita', 'Clueca'],
   libre: ['Criatura', 'Animalito', 'Sorpresa', 'Bichito', 'Invento', 'Misterio'],
 };
@@ -255,6 +256,21 @@ const MOLDES = {
       bolita(V(1.08, 1.74, 0), V(0.07, 0.13, 0.06)),
       chorizo(0.07, [V(0.52, 2.42, 0), V(0.62, 2.58, 0), V(0.74, 2.46, 0), V(0.86, 2.6, 0), V(0.96, 2.45, 0)]),
       bolita(V(-0.08, 1.24, 0.5), V(0.55, 0.34, 0.2), -0.25),
+    ];
+  },
+  // una palomita parada, de perfil: pechito redondo, cabecita alta con su
+  // piquito, el ala pegada al costado y la cola en abanico hacia atrás
+  palomita() {
+    return [
+      chorizo(0.06, [V(0.22, 0.72, 0.16), V(0.16, 0.1, 0.16)]),        // las patitas
+      chorizo(0.06, [V(0.22, 0.72, -0.16), V(0.16, 0.1, -0.16)]),
+      bolita(V(-0.1, 1.24, 0), V(0.95, 0.6, 0.58), 0.12),             // el cuerpo, un poquito inclinado
+      bolita(V(0.48, 1.4, 0), V(0.5, 0.54, 0.52)),                    // el pechito
+      bolita(V(0.82, 2.04, 0), V(0.33, 0.33, 0.3)),                   // la cabecita
+      bolita(V(1.16, 1.98, 0), V(0.13, 0.06, 0.07), -0.15),           // el piquito
+      bolita(V(-1.08, 1.04, 0), V(0.56, 0.22, 0.14), 0.32),           // la cola en abanico
+      bolita(V(-0.18, 1.44, 0.4), V(0.64, 0.3, 0.16), 0.24),          // el ala, en dos capas de plumas
+      bolita(V(-0.42, 1.3, 0.46), V(0.5, 0.2, 0.12), 0.3),
     ];
   },
   libre() { return []; },
@@ -525,8 +541,8 @@ function punto(k) {
 }
 /* Hay cara si hay pasas, una máscara de las de antes o puntitos de chocolate finos. */
 const tieneCara = (e) => e.o.some((op) => op[0] === 4 || op[0] === 5 || (op[0] === 0 && op[1] === 7 && op[2] <= 1));
-const queEs = (e) => ({ guagua: 'una guagua', tradicional: 'una guagua', guaguau: 'un guaguau', dormilon: 'un perrito dormilón', caballito: 'un caballito', chanchito: 'un chanchito', gallinita: 'una gallinita' }[e.f] || 'un animalito');
-const nombreDe = (e) => e.n || ({ guagua: 'Guagua', tradicional: 'Guagua', guaguau: 'Guaguau', dormilon: 'Dormilón', caballito: 'Caballito', chanchito: 'Chanchito', gallinita: 'Gallinita' }[e.f] || 'Animalito');
+const queEs = (e) => ({ guagua: 'una guagua', tradicional: 'una guagua', guaguau: 'un guaguau', dormilon: 'un perrito dormilón', caballito: 'un caballito', chanchito: 'un chanchito', gallinita: 'una gallinita', palomita: 'una palomita' }[e.f] || 'un animalito');
+const nombreDe = (e) => e.n || ({ guagua: 'Guagua', tradicional: 'Guagua', guaguau: 'Guaguau', dormilon: 'Dormilón', caballito: 'Caballito', chanchito: 'Chanchito', gallinita: 'Gallinita', palomita: 'Palomita' }[e.f] || 'Animalito');
 /* El chorro de la manga se apoya sobre lo que tocaste, levantado
    medio grosor por la normal, para que quede encima y no adentro. */
 const puntoDeCrema = (hit, r) => hit.p.clone().addScaledVector(hit.n, r * 0.55);

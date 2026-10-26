@@ -25,10 +25,11 @@ const DESCRIPCION_MOLDE = {
   guagua: 'la guagua de siempre: cuerpo de huevo y cabeza redonda, de pie',
   tradicional: 'la de panadería: más larga, con colita cónica',
   guaguau: 'un perrito de pan echado, que se mira desde arriba',
-  dormilon: 'un perrito dormido hecho un ovillo: el cuerpo es una media dona, con la cabeza apoyada, orejitas caídas y ojos cerrados',
+  dormilon: 'un perrito dormido hecho un ovillo: el cuerpo es un bollito enrollado en espiral, con la cabeza apoyada en el borde, orejitas caídas y ojos cerrados',
   caballito: 'un caballito de perfil',
   chanchito: 'un chanchito gordito',
   gallinita: 'una gallinita con su cresta',
+  palomita: 'una palomita con su ala y su cola en abanico',
 };
 /* Amasa, hornea y decora, todo sin pantalla (ver amasarReceta en ../masa.js). */
 async function amasar(args) {

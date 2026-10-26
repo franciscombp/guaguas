@@ -385,3 +385,7 @@ el morado casi no aparece en el glaseado (aparece en la colada).
 - **Llega dormido**: al pasar a Decora sin adornos, el Dormilón ya trae su carita (arquitos cerrados con una
   pestañita hacia afuera y la boquita abierta, roncando). Es la misma `sorpresa` con `soloCara`, así que si se
   vuelve a amasar y se regresa, la cara vuelve a aparecer, y la sorpresa no le pinta otra encima.
+- **La palomita**: un molde de pie, de perfil como la gallinita, pero sin cresta: pechito redondo adelante,
+  cabecita alta con piquito, la cola en abanico inclinada hacia abajo y el ala en dos capas pegada al
+  costado. Unas plumas hechas con chorizos delgados quedaban flotando; dos bolitas planas encimadas se leen
+  mejor como ala.

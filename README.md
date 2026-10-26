@@ -5,7 +5,7 @@ Una guagua de pan en 3D, en tres actos, para regalar por el Día de Difuntos:
 1. **Amasar.** Bolitas (arrastrar hacia el lado las hace anchas; hacia arriba, altas) y chorizos
    (se estiran con el dedo). Lo que cae encima de otra pieza se pega. Hay moldes: guagua,
    guagua tradicional (más larga, con colita cónica), guaguau (un perrito echado, que se
-   decora visto desde arriba), caballito, chanchito, gallinita y la lata vacía.
+   decora visto desde arriba), caballito, chanchito, gallinita, palomita y la lata vacía.
 2. **Hornear.** La masa se infla y se dora en seis segundos; hay que sacarla en su punto. Antes
    queda blanca, después se quema, y la panadera lo comenta.
 3. **Decorar.** Manga de crema con pincel y tres boquillas, rosetas, grageas, pasas, carita y
@@ -130,7 +130,7 @@ amasa la guagua en el navegador de quien la abre y la muestra como regalo:
 https://finados.una.red/?molde=dormilon&nombre=Lobita&para=Lobita&de=Francisco&dedicada=1&decoracion=carita&mensaje=Duerme%20tranquila
 ```
 
-Parámetros: `molde` (guagua, tradicional, guaguau, dormilon, caballito, chanchito, gallinita),
+Parámetros: `molde` (guagua, tradicional, guaguau, dormilon, caballito, chanchito, gallinita, palomita),
 `nombre`, `para`, `de`, `mensaje`, `dedicada=1`, `vale` (1 guagua de verdad, 2 colada morada,
 3 pásala), `coccion` (blanquita, punto, tostada, quemada), `decoracion` (panaderia, carita,
 ninguna), `colores` (cremas por nombre, separadas por comas) y `semilla`. La dirección se

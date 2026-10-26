@@ -1,7 +1,7 @@
 /* ══════════════════════════════════════════════════════════════
    Guagua de pan · el juego, en 3D y en tres actos
      1. Amasar: bolitas y chorizos de masa cruda, que se pegan
-        donde caen. Hay moldes (guagua, caballito, chanchito,
+        donde caen. Hay moldes (guagua, caballito, chanchito, palomita,
         gallinita) para el que no quiera empezar de cero.
      2. Hornear: la masa se infla y se dora mientras corre el
         termómetro. Hay que sacarla a tiempo: antes queda blanca,
@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.26.8';
+import * as nube from './nube.js?v=2026.10.26.9';
 import {
   dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.26.8';
+} from './masa.js?v=2026.10.26.9';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -2273,7 +2273,7 @@ function montarTaller() {
     $('#d-moldes').close();
   }));
   $('#sorpresa-molde').addEventListener('click', () => {
-    const f = elige(['guagua', 'tradicional', 'guaguau', 'caballito', 'chanchito', 'gallinita'].filter((x) => x !== estado.f));
+    const f = elige(['guagua', 'tradicional', 'guaguau', 'caballito', 'chanchito', 'gallinita', 'palomita'].filter((x) => x !== estado.f));
     $(`[data-molde="${f}"]`).click();
   });
   $('#sorpresa').addEventListener('click', () => {
