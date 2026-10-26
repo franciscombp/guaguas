@@ -468,3 +468,7 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   arriba y abajo (44/24 px).
 - **El cierre** dice «Decora y comparte una guagua de pan en finados.una.red» y baja de tamaño solo si no
   cabe en una línea.
+- **Compartir termina el viaje**: cualquier forma de compartir (hoja del sistema, copiar el enlace o guardar
+  la imagen) guarda la guagua en tu canasta, la marca como guardada (sin aviso de «salir sin guardar»), cierra
+  las hojas y te deja en «Las mías», con medio segundo para leer el «¡Copiado!». Con la hoja del sistema
+  ocurre cuando termina de compartir; si se cancela, te quedas en Compártela.

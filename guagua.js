@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.26.20';
+import * as nube from './nube.js?v=2026.10.26.21';
 import {
   dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.26.20';
+} from './masa.js?v=2026.10.26.21';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -2729,10 +2729,20 @@ function montarRegalo() {
   $('#c-atras').addEventListener('click', () => { if (pasoC === 'como') $('#d-compartir').close(); else irPasoC('como'); });
   $('#c-seguir').addEventListener('click', () => { if (como === 'presume') enviar(); else irPasoC(como); });
   // lo que pasa después de compartir no hace esperar a la hoja de compartir
+  /* Ya se compartió: queda guardada en tu canasta, se cierra todo y vuelves a ella. */
   const despues = (pr) => {
     if (pr.id === sinCompartir) sinCompartir = null;
-    guardarMia(pr.id).catch(() => {});
+    const guardada = guardarMia(pr.id);
     if (como === 'presume' && $('#c-galeria').checked && nube.disponible()) alaGaleria().catch(() => {});
+    guardada.catch(() => {}).then(() => {
+      ultimaGuardada = huella();
+      guardarBorrador();
+      setTimeout(() => {
+        $$('dialog[open]').forEach((d) => d.close());
+        pestana = 'mia';
+        mostrar('canasta');
+      }, 450);                                   // un respiro para leer el «¡Copiado!»
+    });
   };
   const descargar = (pr) => {
     const a = document.createElement('a');
