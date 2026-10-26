@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.25.21';
+import * as nube from './nube.js?v=2026.10.26.1';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.25.21';
+} from './masa.js?v=2026.10.26.1';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1972,6 +1972,10 @@ function tocarDecorar(ev) {
   if (h === 'manga' || h === 'cobertura') {
     trazo = [8, estado.crema, h === 'cobertura' ? COBERTURA : estado.ancho, ...pn(hit)];
     taller.vistaPrevia(trazo);
+  } else if (h === 'pastelera') {               // la manga pastelera: un chorro en relieve con boquilla de estrella
+    const boq = 1 + estado.ancho, q = puntoDeCrema(hit, BOQUILLAS[boq]);
+    trazo = [0, estado.crema, boq, ent(q.x), ent(q.y), ent(q.z)];
+    taller.vistaPrevia(trazo);
   } else if (h === 'puntos') {                  // un punto de glaseado: una gotita plana
     fijar([7, estado.crema, ...pn(hit)]);
   }
@@ -2053,6 +2057,16 @@ function arrastrarDecorar(ev) {
   const hit = taller.tocar(ev);
   if (!hit) return;
   const op = trazo;
+  if (op[0] === 0) {                                // la pastelera: puntos sin normal, levantados medio grosor
+    const r = BOQUILLAS[op[2]], q = puntoDeCrema(hit, r);
+    const u = V(op[op.length - 3], op[op.length - 2], op[op.length - 1]).divideScalar(Q);
+    const d = q.distanceTo(u);
+    if (d < Math.max(r * 0.6, 0.025)) return;
+    if (d > 0.7 || op.length > 1200) { fijar(op); trazo = [0, op[1], op[2], ent(q.x), ent(q.y), ent(q.z)]; }   // saltó a otra pieza: otro chorro
+    else op.push(ent(q.x), ent(q.y), ent(q.z));
+    taller.vistaPrevia(trazo);
+    return;
+  }
   const u = V(op[op.length - 6], op[op.length - 5], op[op.length - 4]).divideScalar(Q);
   const paso = op[2] === COBERTURA ? 0.05 : 0.03;
   if (hit.p.distanceTo(u) < paso) return;
@@ -2163,14 +2177,14 @@ function elegirHerramienta(h) {
   estado.herramienta = h;
   $('#taller').dataset.herramienta = h;
   $$('.bandeja .manga').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.herramienta === h)));
-  $('#grosor-fila').hidden = h !== 'manga';
+  $('#grosor-fila').hidden = h !== 'manga' && h !== 'pastelera';
 }
 let colorDeFigura = false;
 function abrirColor(deFigura) {
   colorDeFigura = deFigura && !!colocando;
   const actual = colorDeFigura ? colocando.color : estado.crema;
   $('#d-color-t').textContent = colorDeFigura ? 'Color de la figura' : 'Color del glaseado';
-  $('#grosor-fila').hidden = colorDeFigura || estado.herramienta !== 'manga';
+  $('#grosor-fila').hidden = colorDeFigura || (estado.herramienta !== 'manga' && estado.herramienta !== 'pastelera');
   $$('#cremas .color').forEach((x, j) => x.setAttribute('aria-pressed', String(j === actual)));
   abrir('#d-color');
 }

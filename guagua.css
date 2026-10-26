@@ -211,13 +211,16 @@ body.juego-cuerpo{margin:0;background:var(--noche);color:var(--crema);font-famil
 .horno__fin{display:flex;flex-direction:column;align-items:center;gap:6px}
 
 /* decorar: la bandeja de mangas, como el Marcado */
-.bandeja{position:relative;display:flex;align-items:flex-end;gap:14px;height:100px;padding:0 16px 0 22px;border-radius:30px;overflow:hidden;
+.bandeja{position:relative;display:flex;align-items:flex-end;gap:12px;height:100px;padding:0 16px 0 22px;border-radius:30px;overflow:hidden;
   border:1px solid var(--vidrio-borde);background:var(--vidrio);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
 .manga{flex:none;width:44px;height:96px;padding:0;border:0;background:none;cursor:pointer;margin-bottom:-24px;transition:margin var(--dur-2) var(--mal-ease, ease)}
 .manga svg{width:44px;height:96px;display:block}
 .manga[aria-pressed="true"]{margin-bottom:0}
+/* la brocha sube menos: su cabeza de color, que es lo que se ve, no se corta arriba */
+.manga[data-herramienta="cobertura"][aria-pressed="true"]{margin-bottom:-16px}
+.manga[data-herramienta="cobertura"]{margin-bottom:-34px}
 .manga__bolsa{fill:var(--manga, #ff4f9a)}
-.manga[data-herramienta="cobertura"] .manga__bolsa{fill:#3b1d0e}
+.manga[data-herramienta="cobertura"] .manga__bolsa{fill:var(--manga, #3b1d0e)}   /* la brocha, mojada del color elegido */
 .bandeja__fin{margin-left:auto;align-self:center;display:flex;gap:10px}
 .bandeja .redondo{width:44px;height:44px;background:rgba(255,255,255,.16)}
 .bandeja .redondo[aria-pressed="true"]{background:var(--rosa)}

@@ -351,3 +351,6 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   La canasta va en mimbre tostado (más oscuro que el pan) para que la guagua dorada resalte.
 - **Guardada se cierra hacia la canasta**: si ya está guardada, cerrar esa hoja (✕, fondo o Esc) lleva
   a tu canasta; solo «Compartirla» y «Amasar otra» siguen su propio camino.
+- **Vuelve la manga pastelera**: junto al hilo, la manga con boquilla de estrella (op 0, el chorro en
+  relieve), con los mismos tres grosores. La brocha toma el color elegido en su cabeza, y sube menos al
+  elegirla para que esa cabeza no se corte arriba de la bandeja.
