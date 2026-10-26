@@ -57,8 +57,8 @@
 }
 </script>
 <link rel="stylesheet" href="vendor/ds/mal/mal.css?v=1.0.18">
-<meta name="guagua-version" content="2026.10.26.2">
-<link rel="stylesheet" href="guagua.css?v=2026.10.26.2">
+<meta name="guagua-version" content="2026.10.26.3">
+<link rel="stylesheet" href="guagua.css?v=2026.10.26.3">
 </head>
 <body class="juego-cuerpo">
 <svg width="0" height="0" class="sr-only" aria-hidden="true" focusable="false">
@@ -89,6 +89,9 @@
   <symbol id="x-papelera" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
   <symbol id="x-flor" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2.5"/><path d="M12 9.5C9 3 15 3 12 9.5M14.5 12C21 9 21 15 14.5 12M12 14.5C15 21 9 21 12 14.5M9.5 12C3 15 3 9 9.5 12"/></g></symbol>
   <symbol id="x-otra" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="3"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2M14 11v6M11 14h6"/></g></symbol>
+  <symbol id="x-canasta" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10a6 6 0 0 1 12 0"/><path d="M3 10h18l-2 9a2 2 0 0 1-2 1.6H7A2 2 0 0 1 5 19z"/><path d="M8 13.5v4M12 13.5v4M16 13.5v4"/></g></symbol>
+  <symbol id="x-taza" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 11h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3.5c-.8 1 .8 2 0 3M12 3.5c-.8 1 .8 2 0 3"/></g></symbol>
+  <symbol id="x-vela" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="10" width="6" height="11" rx="1"/><path d="M12 3c1.5 1.8 1.5 3.6 0 5c-1.5-1.4-1.5-3.2 0-5z"/></g></symbol>
   <symbol id="x-guagua" viewBox="0 0 30 30"><rect width="30" height="30" rx="8" fill="#fff6ea"/><ellipse cx="15" cy="19" rx="6" ry="8" fill="#c97a24"/><circle cx="15" cy="9" r="4.5" fill="#c97a24"/><path d="M10 17l2-2 2 2 2-2 2 2 2-2" fill="none" stroke="#e8442e" stroke-width="1.3"/></symbol>
 </svg>
 
@@ -319,7 +322,11 @@
   <div class="compartir">
     <div class="compartir__vistaw">
       <img class="compartir__vista" id="c-vista" alt="La tarjeta que vas a compartir" width="1080" height="1920">
-      <button class="compartir__formato" id="c-formato" type="button" data-formato="cuadrada" aria-label="Cambiar a cuadrado"><svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="7" width="10" height="10" rx="2"/><rect x="15" y="3" width="6" height="18" rx="1.5"/></g></svg></button>
+      <div class="compartir__opciones" role="group" aria-label="Opciones de la tarjeta">
+        <button class="compartir__formato" id="c-canasta" type="button" aria-pressed="true" aria-label="Con canasta"><svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#x-canasta"/></svg></button>
+        <button class="compartir__formato" id="c-colada" type="button" aria-pressed="true" aria-label="Con la colada"><svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#x-taza"/></svg></button>
+        <button class="compartir__formato" id="c-formato" type="button" data-formato="cuadrada" aria-label="Cambiar a cuadrado"><svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="7" width="10" height="10" rx="2"/><rect x="15" y="3" width="6" height="18" rx="1.5"/></g></svg></button>
+      </div>
     </div>
 
     <!-- 1 · cómo y en qué formato -->
@@ -442,6 +449,6 @@
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js": "./vendor/firebase/firebase-auth.js",
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js": "./vendor/firebase/firebase-firestore-lite.js"
 } }</script>
-<script type="module" src="guagua.js?v=2026.10.26.2"></script>
+<script type="module" src="guagua.js?v=2026.10.26.3"></script>
 </body>
 </html>

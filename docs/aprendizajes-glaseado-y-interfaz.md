@@ -356,3 +356,7 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   elegirla para que esa cabeza no se corte arriba de la bandeja.
 - **El mantel no compite**: sus flores bordadas van en un solo tono, apenas más claro que el morado del
   mantel, y los círculos punteados más tenues. Lo que tiene color es la guagua.
+- **Canasta y colada, opcionales**: junto al botón de formato hay dos más, canasta y colada (en memoria,
+  la vela), encendidos por defecto; tachados y tenues cuando están apagados. Las figuras echadas (el
+  guaguau, el dormilón) empiezan sin canasta: acostadas, la canasta parece una bandeja. Sin canasta, la
+  taza se mide contra la talla de la figura (su largo si va echada) y va junto a su costado.

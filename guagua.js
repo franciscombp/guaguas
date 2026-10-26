@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.26.2';
+import * as nube from './nube.js?v=2026.10.26.3';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.26.2';
+} from './masa.js?v=2026.10.26.3';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1289,7 +1289,8 @@ function retrato(e, lado = 1400) {
    velita) a su lado y unas flores de mazapán asomando. Todo en la misma escena, así
    el tejido tapa de verdad lo que va adentro y las sombras caen donde deben. Devuelve
    la imagen recortada y dónde queda la boca de la taza (para el vapor o el brillo). */
-function enCanasta(e, memoria, lado = 1600) {
+function enCanasta(e, memoria, opciones = {}, lado = 1600) {
+  const conCanasta = opciones.canasta !== false, conColada = opciones.colada !== false;
   const b = estudioBodegon(lado);
   Object.assign(b, posturaDe(e));
   b.cabeceo = echada(e) ? 0.8 : 0.22;
@@ -1300,43 +1301,53 @@ function enCanasta(e, memoria, lado = 1600) {
   const H = caja.max.y - caja.min.y, A = Math.max(caja.max.x - caja.min.x, caja.max.z - caja.min.z);
   const alto = H * (echada(e) ? 0.55 : 0.36);
   const cosa = memoria ? b.vela : b.taza;
-  const k = alto * (memoria ? 1.5 : 1.15) / (memoria ? 1.65 : 1.2);
+  // sin canasta, la taza (o la vela) se mide contra la guagua: un poco más alta que su cintura
+  const Ax = caja.max.x - caja.min.x, talla = Math.max(H, Math.min(A, Ax * 1.4) * 0.7);   // echada, la talla es su largo, no su alto
+  const k = (conCanasta ? alto * (memoria ? 1.5 : 1.15) : talla * (memoria ? 0.62 : 0.46)) / (memoria ? 1.65 : 1.2);
   /* Lado a lado y sin tocarse: la guagua a la izquierda, la taza (o la vela) a la
      derecha, con un respiro entre las dos; la canasta mide lo que ocupan juntas. */
-  const rc = (memoria ? 0.42 : 0.64) * k, aire = A * 0.08, fila = A + aire + 2 * rc;
+  const ancho = conCanasta ? A : Ax;                    // sin canasta, la taza va junto al costado de la figura
+  const rc = conColada ? (memoria ? 0.42 : 0.64) * k : 0, aire = conColada ? ancho * 0.08 : 0, fila = ancho + aire + 2 * rc;
   const R = Math.max(fila / 2 * 1.12, H * 0.5, A * 0.62);
-  if (b.canasta) { b.scene.remove(b.canasta); b.vaciar(b.canasta); }
-  b.canasta = canasta3d(R, alto, H - alto + R * 0.25);
+  if (b.canasta) { b.scene.remove(b.canasta); b.vaciar(b.canasta); b.canasta = null; }
   const cx = (caja.min.x + caja.max.x) / 2, cz = (caja.min.z + caja.max.z) / 2;
-  const medio = cx + fila / 2 - A / 2;                  // el centro de la canasta
-  b.canasta.position.set(medio, caja.min.y - R * 0.05, cz);
-  b.scene.add(b.canasta);
-  cosa.visible = true;
-  cosa.scale.setScalar(k);
-  cosa.rotation.y = memoria ? 0 : Math.PI * 0.38;          // el asa de la taza, hacia atrás y a la derecha
-  cosa.position.set(medio + fila / 2 - rc, caja.min.y + R * 0.04, cz - R * 0.06);
-  // flores de mazapán asomando atrás, entre la guagua y la taza
-  const flores = new THREE.Group();
-  [[0.15, -0.42, 1.55, 6], [0.38, -0.32, 1.32, 1], [-0.05, -0.5, 1.4, memoria ? 6 : 0]].forEach(([fx, fz, fy, c]) => {
-    const fl = b.mazapan('flor', memoria ? 6 : c);
-    fl.scale.setScalar(R * 1.5);
-    fl.position.set(medio + fx * R, caja.min.y + alto * fy, cz - R * 0.3 + fz * R);
-    fl.lookAt(fl.position.clone().add(V(-0.3, 0.4, 1)));
-    flores.add(fl);
-  });
-  b.canasta.add(flores); flores.position.sub(b.canasta.position);
-  const marco = new THREE.Box3().setFromObject(b.canasta).union(new THREE.Box3().setFromObject(b.pan)).union(new THREE.Box3().setFromObject(cosa));
+  const medio = cx + fila / 2 - ancho / 2;              // el centro de lo que va junto
+  if (conCanasta) {
+    b.canasta = canasta3d(R, alto, H - alto + R * 0.25);
+    b.canasta.position.set(medio, caja.min.y - R * 0.05, cz);
+    b.scene.add(b.canasta);
+    // flores de mazapán asomando atrás, entre la guagua y la taza
+    const flores = new THREE.Group();
+    [[0.15, -0.42, 1.55, 6], [0.38, -0.32, 1.32, 1], [-0.05, -0.5, 1.4, memoria ? 6 : 0]].forEach(([fx, fz, fy, c]) => {
+      const fl = b.mazapan('flor', memoria ? 6 : c);
+      fl.scale.setScalar(R * 1.5);
+      fl.position.set(medio + fx * R, caja.min.y + alto * fy, cz - R * 0.3 + fz * R);
+      fl.lookAt(fl.position.clone().add(V(-0.3, 0.4, 1)));
+      flores.add(fl);
+    });
+    b.canasta.add(flores); flores.position.sub(b.canasta.position);
+  }
+  if (conColada) {
+    cosa.visible = true;
+    cosa.scale.setScalar(k);
+    cosa.rotation.y = memoria ? 0 : Math.PI * 0.38;        // el asa de la taza, hacia atrás y a la derecha
+    cosa.position.set(medio + fila / 2 - rc, caja.min.y + (conCanasta ? R * 0.04 : 0), cz - (conCanasta ? R * 0.06 : 0));
+  }
+  const marco = new THREE.Box3().setFromObject(b.pan);
+  if (conCanasta) marco.union(new THREE.Box3().setFromObject(b.canasta));
+  if (conColada) marco.union(new THREE.Box3().setFromObject(cosa));
   const centro = marco.getCenter(V()), r = marco.getSize(V()).length() / 2;
   const d = r / Math.sin(THREE.MathUtils.degToRad(b.camara.fov / 2)) * 0.98;
-  b.camara.position.set(centro.x, centro.y + Math.sin(0.28) * d, centro.z + Math.cos(0.28) * d);
+  const mira = echada(e) && !conCanasta ? 0.55 : 0.28;     // el perrito echado se ve mejor un poco desde arriba
+  b.camara.position.set(centro.x, centro.y + Math.sin(mira) * d, centro.z + Math.cos(mira) * d);
   b.camara.lookAt(centro);
   b.renderer.render(b.scene, b.camara);
-  const boca = cosa.localToWorld(cosa.userData.boca.clone()).project(b.camara);
+  const boca = conColada ? cosa.localToWorld(cosa.userData.boca.clone()).project(b.camara) : null;
   const { img, r: rec } = recortado(b, lado);
   // la bodega queda como estaba: sin canasta, la taza y la vela en su lugar
-  b.scene.remove(b.canasta);
+  if (b.canasta) b.scene.remove(b.canasta);
   cosa.visible = false; cosa.scale.setScalar(1); cosa.position.set(0, -0.12, 0);
-  return { img, boca: { x: (boca.x + 1) / 2 * lado - rec.x, y: (1 - boca.y) / 2 * lado - rec.y } };
+  return { img, boca: boca && { x: (boca.x + 1) / 2 * lado - rec.x, y: (1 - boca.y) / 2 * lado - rec.y } };
 }
 /* La taza de colada o la velita, solas, y dónde queda su boca en la imagen. */
 function adorno(memoria, lado = 900) {
@@ -1479,9 +1490,9 @@ function ajustar(ctx, texto, { peso, familia, max, min, ancho, lineas = 2, estil
 /* La escena 3D es lo más lento: se guarda la última y solo se vuelve a armar si
    cambia la guagua (no si cambian los textos o el formato). */
 let escenaGuardada = null;
-function escenaDe(e, memoria) {
-  const clave = JSON.stringify([e.f, e.a, e.k, e.o, e.capa || 0, memoria]);
-  if (!escenaGuardada || escenaGuardada.clave !== clave) escenaGuardada = { clave, ...enCanasta(e, memoria) };
+function escenaDe(e, memoria, opciones = {}) {
+  const clave = JSON.stringify([e.f, e.a, e.k, e.o, e.capa || 0, memoria, opciones.canasta !== false, opciones.colada !== false]);
+  if (!escenaGuardada || escenaGuardada.clave !== clave) escenaGuardada = { clave, ...enCanasta(e, memoria, opciones) };
   return escenaGuardada;
 }
 const sustantivo = (e) => queEs(e).replace(/^(una|un) /, '');
@@ -1625,7 +1636,7 @@ async function tarjeta(e, formato = 'historia', x = {}) {
   if (!cuadrada && firma) pila.push(texto({ t: 42, ls: [firma], font: fFirma }, crema, 1.2));
   const hueco = (i) => (i === iEscena || i === iEscena + 1 ? (cuadrada ? 14 : 28) : 12);   // más aire alrededor de la escena
   const fijo = pila.reduce((s2, p2, i) => s2 + (p2 ? p2.alto : 0) + (i ? hueco(i) : 0), 0);
-  const { img: esc, boca } = escenaDe(e, memoria);
+  const { img: esc, boca } = escenaDe(e, memoria, { canasta: x.canasta, colada: x.colada });
   const altoLibre = Math.max(140, pisoZona - techoZona - fijo);
   const ke = Math.min((cuadrada ? ancho * 0.86 : ancho) / esc.width, (cuadrada ? Math.min(altoLibre, H * 0.52) : altoLibre) / esc.height);
   const ew = esc.width * ke, eh = esc.height * ke;
@@ -1657,8 +1668,8 @@ async function tarjeta(e, formato = 'historia', x = {}) {
   }
   pila.forEach((p2, i) => { if (i !== iEscena) p2.dibujar(posiciones[i]); });
   ctx.drawImage(esc, ex, ey, ew, eh);
-  const px = ex + boca.x * ke, py = ey + boca.y * ke;
-  if (memoria) {
+  const px = boca ? ex + boca.x * ke : 0, py = boca ? ey + boca.y * ke : 0;
+  if (!boca) { /* sin colada ni vela: ni vapor ni brillo */ } else if (memoria) {
     const brillo = ctx.createRadialGradient(px, py, 4, px, py, 120 * ke * 1.6);
     brillo.addColorStop(0, 'rgba(255,200,120,.32)'); brillo.addColorStop(1, 'rgba(255,200,120,0)');
     ctx.fillStyle = brillo; ctx.beginPath(); ctx.arc(px, py, 120 * ke * 1.6, 0, Math.PI * 2); ctx.fill();
@@ -2474,6 +2485,8 @@ async function enlaceDeRegalo(cod) {
    · envíasela a alguien: para (obligatorio), de y un mensaje; en cuadrado, porque va por chat.
    · en memoria de alguien: a quién recuerdas (obligatorio) y un mensaje; en cuadrado. */
 let como = 'presume', pasoC = 'como', formatoC = 'historia';
+// la canasta y la colada: van por defecto, salvo la canasta para las figuras echadas (el guaguau no cabe bien)
+let conCanasta = true, conColada = true;
 const FORMATO_DE = { presume: 'historia', alguien: 'cuadrada', memoria: 'historia' };
 const OBLIGATORIO = { alguien: '#r-para', memoria: '#s-memoria' };
 const ACCIONES = ['#c-mandar', '#c-recordar', '[data-copiar]', '[data-descargar]'];
@@ -2499,6 +2512,13 @@ function pintarComo() {
   $('#c-formato').dataset.formato = otro;
   $('#c-formato').setAttribute('aria-label', otro === 'cuadrada' ? 'Cambiar a cuadrado' : 'Cambiar a vertical');
   $('#c-formato').title = $('#c-formato').getAttribute('aria-label');
+  $('#c-canasta').setAttribute('aria-pressed', String(conCanasta));
+  $('#c-colada').setAttribute('aria-pressed', String(conColada));
+  $('#c-canasta').title = conCanasta ? 'Quitar la canasta' : 'Poner la canasta';
+  const cosa = como === 'memoria' ? 'la vela' : 'la colada';
+  $('#c-colada').title = (conColada ? 'Quitar ' : 'Poner ') + cosa;
+  $('#c-colada').setAttribute('aria-label', 'Con ' + cosa);
+  $('#c-colada use').setAttribute('href', como === 'memoria' ? '#x-vela' : '#x-taza');
   $('#c-seguir').textContent = como === 'presume' ? 'Compartir' : 'Siguiente';
   $('#c-extra-presume').hidden = como !== 'presume';
   if (pasoC === 'como') $('#c-paso').textContent = como === 'presume' ? '' : '1 de 2';
@@ -2532,6 +2552,7 @@ function abrirCompartir() {
   $('#s-memoria').value = estado.t === 'm' ? estado.p : '';
   $('#r-mensaje').value = estado.t === 'm' ? '' : estado.m;
   $('#s-mensaje').value = estado.t === 'm' ? estado.m : '';
+  conCanasta = !echada(estado); conColada = true;
   $('#c-vista').removeAttribute('src');
   abrir('#d-compartir');
   irPasoC('como');
@@ -2548,7 +2569,7 @@ function leerFormulario() {
   } else {
     Object.assign(estado, { t: '', p: '', m: '', l: 0 });   // presúmela: tu creación, sin destinatario
   }
-  return { como, de: quienSoy() };
+  return { como, de: quienSoy(), canasta: conCanasta, colada: conColada };
 }
 function botonesListos(listo) {
   const falta = OBLIGATORIO[como] && !limpiar($(OBLIGATORIO[como]).value, 24);
@@ -2631,6 +2652,8 @@ function montarRegalo() {
   });
   $$('#d-compartir [data-como]').forEach((b) => b.addEventListener('click', () => { if (como !== b.dataset.como) elegirComo(b.dataset.como); }));
   // el botoncito junto a la vista previa: cambia entre vertical y cuadrado
+  $('#c-canasta').addEventListener('click', () => { conCanasta = !conCanasta; pintarComo(); refrescarTarjeta(); });
+  $('#c-colada').addEventListener('click', () => { conColada = !conColada; pintarComo(); refrescarTarjeta(); });
   $('#c-formato').addEventListener('click', () => {
     formatoC = formatoC === 'cuadrada' ? 'historia' : 'cuadrada';
     pintarComo(); refrescarTarjeta();
