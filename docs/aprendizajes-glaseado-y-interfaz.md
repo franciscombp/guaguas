@@ -354,3 +354,5 @@ el morado casi no aparece en el glaseado (aparece en la colada).
 - **Vuelve la manga pastelera**: junto al hilo, la manga con boquilla de estrella (op 0, el chorro en
   relieve), con los mismos tres grosores. La brocha toma el color elegido en su cabeza, y sube menos al
   elegirla para que esa cabeza no se corte arriba de la bandeja.
+- **El mantel no compite**: sus flores bordadas van en un solo tono, apenas más claro que el morado del
+  mantel, y los círculos punteados más tenues. Lo que tiene color es la guagua.

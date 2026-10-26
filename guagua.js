@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.26.1';
+import * as nube from './nube.js?v=2026.10.26.2';
 import {
   DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.26.1';
+} from './masa.js?v=2026.10.26.2';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -113,22 +113,23 @@ function mantel() {
   if (_mantel) return _mantel;
   const N = 1024, c = lienzo(N, N), x = c.getContext('2d'), M = N / 2;
   x.fillStyle = '#5a1c5e'; x.fillRect(0, 0, N, N);
-  const hilos = ['#e01b6a', '#ffc93c', '#93c84a', '#8fd0f2', '#ff77ab'];
+  // las flores bordadas, de un solo tono y apenas más claras que el mantel: acompañan, no distraen
+  const hilo = '#7c3277', centro = '#8e4588';
   for (let a = 1; a <= 9; a++) {
     const r = a * 54, n = Math.floor((Math.PI * 2 * r) / 52);
     if (a % 2) {
       for (let i = 0; i < n; i++) {
         const t = (i / n) * Math.PI * 2, fx = M + Math.cos(t) * r, fy = M + Math.sin(t) * r;
-        x.fillStyle = hilos[(i + a) % hilos.length];
+        x.fillStyle = hilo;
         for (let k = 0; k < 5; k++) {
           const q = (k / 5) * Math.PI * 2 + t;
           x.beginPath(); x.arc(fx + Math.cos(q) * 7, fy + Math.sin(q) * 7, 5, 0, Math.PI * 2); x.fill();
         }
-        x.fillStyle = '#ffe9a8';
+        x.fillStyle = centro;
         x.beginPath(); x.arc(fx, fy, 3.5, 0, Math.PI * 2); x.fill();
       }
     } else {
-      x.strokeStyle = 'rgba(255,201,60,.55)'; x.lineWidth = 3; x.setLineDash([9, 7]);
+      x.strokeStyle = 'rgba(255,201,60,.22)'; x.lineWidth = 3; x.setLineDash([9, 7]);
       x.beginPath(); x.arc(M, M, r, 0, Math.PI * 2); x.stroke();
       x.setLineDash([]);
     }
