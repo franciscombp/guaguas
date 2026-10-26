@@ -396,8 +396,11 @@ dialog.hoja--entera[open]{animation:none}
 .compartir__formato[aria-pressed="false"]::after{content:"";position:absolute;width:22px;height:2px;background:currentColor;transform:rotate(-45deg);border-radius:1px}
 .compartir__formato{position:relative}
 .con-teclado .compartir__vistaw{display:none}
-.compartir__paso{flex:1;display:flex;flex-direction:column;gap:14px;min-height:0}
-.compartir__fin{margin-top:auto}
+.compartir__paso{flex:1 0 auto;display:flex;flex-direction:column;gap:14px}
+/* las acciones van fijas abajo; lo de arriba (la tarjeta, los campos) se desplaza detrás de ellas */
+.compartir__fin{margin-top:auto;position:sticky;bottom:0;z-index:2;
+  margin-inline:calc(-1 * var(--orilla));padding:14px var(--orilla) calc(var(--pie) + 6px + var(--debajo));
+  background:linear-gradient(180deg, rgba(27,16,51,0), rgba(27,16,51,.94) 22px, #1b1033 60%)}
 
 /* ─── vidrio líquido en los controles del taller ─── */
 .juego .redondo:not(.redondo--pri),.juego .paso,.deshacer,.bandeja,.tool i,.contexto{
@@ -425,11 +428,13 @@ dialog.hoja--entera{height:var(--alto);max-height:var(--alto)}
 .canasta__pie{padding-bottom:calc(var(--pie) + var(--debajo))}
 .canasta__cuerpo{padding-bottom:calc(120px + var(--debajo))}
 .regalo__tarjeta{padding-bottom:calc(var(--pie) + var(--debajo))}
-.compartir,.hoja__cuerpo{padding-bottom:calc(var(--pie) + 4px + var(--debajo))}
+.hoja__cuerpo{padding-bottom:calc(var(--pie) + 4px + var(--debajo))}
+.compartir{padding-bottom:0;overscroll-behavior:contain;flex-wrap:nowrap;align-items:stretch}   /* el DS tiene su propio .compartir con wrap: aquí no */
 
 /* ─── con el teclado abierto ─── */
 .con-teclado dialog.hoja--entera{height:var(--vv);max-height:var(--vv);transform:translateY(var(--vv-arriba, 0px))}
-.con-teclado .compartir,.con-teclado .hoja__cuerpo{padding-bottom:10px}
+.con-teclado .hoja__cuerpo{padding-bottom:10px}
+.con-teclado .compartir__fin{padding-bottom:10px}
 .con-teclado .compartir__vista,.con-teclado .compartir .fila-ter,.con-teclado .regalar__nota,.con-teclado .sobre{display:none}
 /* las hojas de abajo (ponle nombre) se apoyan sobre el teclado */
 .con-teclado dialog.hoja:not(.hoja--entera){inset:auto 0 auto 0;top:calc(var(--vv-arriba, 0px) + var(--vv));transform:translateY(-100%);

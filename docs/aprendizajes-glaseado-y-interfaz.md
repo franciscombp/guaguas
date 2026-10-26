@@ -360,3 +360,8 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   la vela), encendidos por defecto; tachados y tenues cuando están apagados. Las figuras echadas (el
   guaguau, el dormilón) empiezan sin canasta: acostadas, la canasta parece una bandeja. Sin canasta, la
   taza se mide contra la talla de la figura (su largo si va echada) y va junto a su costado.
+- **Las acciones de Compártela van fijas abajo** (`position: sticky` dentro del área que se desplaza), con
+  un degradado que las separa; la tarjeta y los campos se desplazan detrás. Así «Copiar el enlace» nunca
+  queda debajo de la barra de Safari.
+- Ojo con los nombres de clase: el sistema de diseño ya tenía `.compartir` con `flex-wrap: wrap`; en una
+  pantalla baja el contenido se partía en dos columnas. Se fija `nowrap` en la nuestra.
