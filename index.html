@@ -88,8 +88,8 @@
 }
 </script>
 <link rel="stylesheet" href="vendor/ds/mal/mal.css?v=1.0.18">
-<meta name="guagua-version" content="2026.10.26.18">
-<link rel="stylesheet" href="guagua.css?v=2026.10.26.18">
+<meta name="guagua-version" content="2026.10.26.19">
+<link rel="stylesheet" href="guagua.css?v=2026.10.26.19">
 </head>
 <body class="juego-cuerpo">
 <noscript><p style="padding:24px;color:#fff">Guagua de pan es un juego para amasar en 3D una guagua de pan, hornearla y decorarla con glaseado y figuras de mazapán, y compartirla en una canasta con colada morada por el Día de los Difuntos en Ecuador. Necesita JavaScript activado. <a href="privacidad.html" style="color:#ffc93c">Tratamiento de datos</a>.</p></noscript>
@@ -366,7 +366,7 @@
 
     <!-- 1 · cómo y en qué formato -->
     <section class="compartir__paso" data-paso="como" aria-labelledby="d-compartir-t">
-      <h2 class="hoja__titulo" id="d-compartir-t">¿Cómo la compartes?</h2>
+      <h2 class="sr-only" id="d-compartir-t">¿Cómo la compartes?</h2>
       <div class="radios" role="radiogroup" aria-labelledby="d-compartir-t">
         <button class="radio" type="button" role="radio" data-como="presume" aria-checked="true"><span><b>Presúmela</b><span>en tus historias o tu perfil</span></span><i aria-hidden="true"></i></button>
         <button class="radio" type="button" role="radio" data-como="alguien" aria-checked="false"><span><b>Envíasela a alguien</b><span>para compartir una colada de verdad</span></span><i aria-hidden="true"></i></button>
@@ -381,7 +381,7 @@
 
     <!-- envíasela a alguien · para, de y un mensaje -->
     <section class="compartir__paso" data-paso="alguien" hidden aria-labelledby="c-alguien-t">
-      <h2 class="hoja__titulo" id="c-alguien-t">¿Para quién es?</h2>
+      <h2 class="sr-only" id="c-alguien-t">¿Para quién es?</h2>
       <div class="campo"><label for="r-para">Para</label><input id="r-para" maxlength="24" autocomplete="off" placeholder="¿Para quién es?" enterkeyhint="next" required></div>
       <div class="campo"><label for="r-de">De</label><input id="r-de" maxlength="24" autocomplete="nickname" placeholder="Tu nombre" enterkeyhint="next"></div>
       <div class="campo"><label for="r-mensaje">Mensaje <span class="campo__opc">(opcional)</span></label><textarea id="r-mensaje" maxlength="120" rows="2" placeholder="¿Compartimos una colada de verdad este finados?"></textarea></div>
@@ -394,7 +394,7 @@
 
     <!-- en memoria · a quién y unas palabras -->
     <section class="compartir__paso" data-paso="memoria" hidden aria-labelledby="c-memoria-t">
-      <h2 class="hoja__titulo" id="c-memoria-t">En memoria de alguien</h2>
+      <h2 class="sr-only" id="c-memoria-t">En memoria de alguien</h2>
       <div class="campo"><label for="s-memoria">¿A quién recuerdas?</label><input id="s-memoria" maxlength="24" autocomplete="off" placeholder="Nombre o apodo" enterkeyhint="next" required></div>
       <div class="campo"><label for="s-mensaje">Mensaje <span class="campo__opc">(opcional)</span></label><textarea id="s-mensaje" maxlength="120" rows="2" placeholder="La decoré pensando en ti"></textarea></div>
       <div class="pila compartir__fin">
@@ -497,7 +497,7 @@
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js": "./vendor/firebase/firebase-auth.js",
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js": "./vendor/firebase/firebase-firestore-lite.js"
 } }</script>
-<script type="module" src="guagua.js?v=2026.10.26.18"></script>
+<script type="module" src="guagua.js?v=2026.10.26.19"></script>
 <!-- contar visitas: Cloudflare Web Analytics, sin cookies ni identificar a nadie -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "ca3813c8ad6e439f8ef4f3f9f93a0bea"}'></script>
 </body>
