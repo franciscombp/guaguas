@@ -194,27 +194,31 @@ const MOLDES = {
       bolita(V(-0.46, 0.58, 0.08), V(0.16, 0.32, 0.1), 0.25),
     ];
   },
-  // un perrito dormido, hecho un ovillo: el cuerpo es una media dona gruesa
-  // y la cabeza descansa en la abertura, con las orejas caídas y la cola metida
+  // un perrito dormido, hecho bollito: el cuerpo es un pan redondo y alto
+  // enrollado en espiral (la punta se mete hacia el centro, como un caracol);
+  // la cabeza descansa abajo a la izquierda, montada en el borde del cuerpo,
+  // con una oreja doblada hacia atrás encima y la otra colgando hacia la mesa;
+  // una patita asoma bajo la cara y la cola sale por abajo a la derecha
   dormilon() {
-    // el cuerpo es un pan redondo: un anillo grueso cerrado, con apenas un
-    // hoyito al centro, más alto que la cabeza; la cabeza se apoya abajo a la
-    // izquierda, fuera del anillo, con una oreja plana en el plato y la otra
-    // doblada encima; la cola asoma por abajo a la derecha
-    const anillo = [];
-    for (let i = 0; i < 16; i++) {
-      const a = i / 16 * Math.PI * 2;
-      anillo.push(V(Math.cos(a) * 0.62, 1.82 + Math.sin(a) * 0.62, 0.3));
+    // el bollito: una cúpula redonda y, hundida en ella, la tira enrollada
+    // que le deja el surco de caracol; la tira empieza escondida tras la cabeza
+    const espiral = [];
+    for (let i = 0; i <= 16; i++) {
+      const t = i / 16, a = -2.2 - t * Math.PI * 2 * 1.2, r = 0.78 - t * 0.62;
+      const z = 0.16 + 0.6 * Math.sqrt(Math.max(0, 1 - (r / 0.96) ** 2)) - 0.2;
+      espiral.push(V(0.22 + Math.cos(a) * r, 1.5 + Math.sin(a) * r, z));
     }
-    anillo.push(anillo[0].clone());
     return [
-      chorizo(0.66, anillo),                                          // el cuerpo, con apenas un hoyito
-      bolita(V(-0.5, 0.64, 0.1), V(0.54, 0.48, 0.4)),                 // la cabeza, pegada al cuerpo y mirando al frente
-      bolita(V(-1.06, 0.74, -0.1), V(0.32, 0.2, 0.09), 0.2),          // la oreja plana en el plato
-      bolita(V(-0.34, 1.0, 0.52), V(0.2, 0.32, 0.1), 0.7),            // la oreja doblada, apoyada en el cuerpo
-      chorizo(0.11, [V(0.5, 0.78, -0.08), V(0.88, 0.42, -0.1), V(1.15, 0.5, -0.1)]),  // la cola, desde debajo del cuerpo
+      bolita(V(0.22, 1.5, 0.18), V(0.96, 0.94, 0.66)),                // el cuerpo, un bollito alto
+      chorizo(0.31, espiral),                                          // la tira enrollada encima
+      bolita(V(-0.46, 0.6, 0.12), V(0.58, 0.54, 0.48)),                // la cabeza, apoyada adelante
+      bolita(V(-0.4, 0.98, 0.6), V(0.34, 0.2, 0.09), 0.6),           // la oreja doblada hacia atrás, sobre el cuerpo
+      bolita(V(-1.06, 0.52, -0.04), V(0.19, 0.34, 0.1), -0.45),       // la oreja que cuelga hacia la mesa
+      bolita(V(-0.04, 0.16, -0.12), V(0.17, 0.15, 0.11)),             // la patita bajo la cara
+      chorizo(0.1, [V(0.8, 0.95, -0.12), V(1.12, 0.52, -0.13), V(1.34, 0.42, -0.13)]),  // la cola
     ];
   },
+
   caballito() {
     const pata = (a, b, z) => chorizo(30 * SC, [C(a[0], a[1], z), C(b[0], b[1], z)]);
     return [
@@ -546,12 +550,18 @@ function caraPintada(hit, tam, sonda, dormido = false) {
     if (op.length > 6) ops.push(op);
   };
   const ojo = tam === 0 ? 0 : 1;
-  if (dormido) {                                 // dormido: dos arquitos cerrados y la nariz redonda
-    [-0.3, 0.3].forEach((u) => linea(7, 0, Array.from({ length: 6 }, (_, i) => {
-      const t = i / 5;
-      return [u - 0.14 + t * 0.28, 0.14 - Math.sin(t * Math.PI) * 0.07];   // «︶», relajados
-    })));
-    punto(7, 1, 0, -0.26);
+  if (dormido) {                                 // dormido: dos arquitos cerrados con pestañita y la boquita abierta, roncando
+    [-0.3, 0.3].forEach((u) => {
+      linea(7, 0, Array.from({ length: 7 }, (_, i) => {
+        const t = i / 6;
+        return [u - 0.16 + t * 0.32, 0.12 - Math.sin(t * Math.PI) * 0.09];   // «︶», relajados
+      }));
+      linea(7, 0, [[u + Math.sign(u) * 0.14, 0.07], [u + Math.sign(u) * 0.2, 0.02]]);   // una pestañita hacia afuera
+    });
+    linea(7, 0, Array.from({ length: 11 }, (_, i) => {   // la boquita, un óvalo abierto
+      const a = i / 10 * Math.PI * 2;
+      return [Math.sin(a) * 0.06, -0.3 + Math.cos(a) * 0.08];
+    }));
   } else {
     punto(7, ojo, -0.3, 0.12);                   // los ojos, de chocolate
     punto(7, ojo, 0.3, 0.12);

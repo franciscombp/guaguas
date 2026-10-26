@@ -372,3 +372,16 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   esquinas (el sistema los redondea). La portada (og.jpg, 1200 × 630) usa la misma escena 3D y el mismo
   fondo que las tarjetas: «Decora tu guagua de pan». Los enlaces llevan ?v=2 para que WhatsApp y los
   navegadores no se queden con la imagen vieja.
+
+## 16. El Dormilón, un bollito
+
+- **El cuerpo no es una dona**: un anillo grueso se leía como rosca con hoyo, y una espiral de tira gruesa
+  como croissant. Lo que se parece al pan de la foto es una **cúpula redonda y alta** con una tira más
+  delgada enrollada encima y medio hundida: así queda el surco de caracol sin que se vea un agujero. La tira
+  empieza escondida detrás de la cabeza, para que su punta no se vea cortada.
+- **La cabeza va montada en el borde**, abajo a la izquierda y más baja que la cúpula; una oreja doblada
+  hacia atrás encima, la otra colgando hacia la mesa, una patita bajo la cara y la cola delgada saliendo por
+  abajo a la derecha.
+- **Llega dormido**: al pasar a Decora sin adornos, el Dormilón ya trae su carita (arquitos cerrados con una
+  pestañita hacia afuera y la boquita abierta, roncando). Es la misma `sorpresa` con `soloCara`, así que si se
+  vuelve a amasar y se regresa, la cara vuelve a aparecer, y la sorpresa no le pinta otra encima.
