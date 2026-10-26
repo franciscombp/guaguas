@@ -401,3 +401,7 @@ el morado casi no aparece en el glaseado (aparece en la colada).
 - La carita en chocolate va encima de la que trae tallada: los puntos están anotados en el espacio del
   archivo y se tiran rayos desde el frente. Ojo con las capturas de referencia: la cámara ortográfica
   estaba corrida, y la primera cara salió 0.15 a la derecha.
+- **En la canasta, el echado se mira desde arriba**: con la cámara a la altura de siempre, el borde de la
+  canasta le tapaba la carita al Dormilón. Ahora los echados se fotografían más desde arriba (0.62 rad) y su
+  canasta es más bajita (42 % de su alto). Las flores son un ramito de ocho, agrupadas entre la guagua y la
+  taza; en abanico parecían una guirnalda flotando.

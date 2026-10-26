@@ -9,7 +9,7 @@
        para eso reciben una `sonda` (el visor en el juego, `Sonda` aquí).
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from './vendor/three.module.min.js';
-import DORMILON from './modelos/dormilon.js?v=2026.10.26.11';
+import DORMILON from './modelos/dormilon.js?v=2026.10.26.12';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const Q = 100;                       // las coordenadas viajan en centésimas
