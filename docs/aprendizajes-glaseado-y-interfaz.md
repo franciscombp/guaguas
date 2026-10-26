@@ -432,3 +432,7 @@ el morado casi no aparece en el glaseado (aparece en la colada).
 - **Visitas con Cloudflare Web Analytics**: `finados.una.red` es un CNAME a GitHub Pages sin proxy (nube gris),
   así que la inyección automática de la zona `una.red` no le llega. Se creó un sitio aparte para ese host y el
   beacon va a mano al final de `index.html` y `privacidad.html`. No usa cookies; la política lo dice.
+- **La etiqueta de regalo** (como en el wireframe): en «Envíasela a alguien», el «Para · De» ya no es una línea
+  de texto; es una etiqueta de cartulina crema con punta y ojalillo, colgada del borde de la canasta con un
+  hilo rojo, sobre el tejido de abajo a la izquierda para no tapar la cara. «Para …» en Syne y «de …» chiquito
+  (o «con cariño» si no hay remitente). Si la escena es chica (cuadrada), la etiqueta asoma hacia el margen.

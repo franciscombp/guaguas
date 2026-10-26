@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.26.15';
+import * as nube from './nube.js?v=2026.10.26.16';
 import {
   dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.26.15';
+} from './masa.js?v=2026.10.26.16';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1537,6 +1537,51 @@ function fondoVivo(ctx, W, H, memoria, rnd) {
   v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, memoria ? 'rgba(0,0,0,.32)' : 'rgba(10,0,20,.3)');
   ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
 }
+/* La etiqueta de regalo, como en las canastas de verdad: cartulina crema con
+   punta y ojalillo, «Para …» grande y «de …» chiquito. Va sobre el tejido de
+   abajo a la izquierda, para no taparle la cara a la guagua. */
+function etiquetaDeRegalo(ctx, e, ex, ey, ew, eh, cuadrada, conCanasta) {
+  const para = 'Para ' + (e.p || '…'), de = e.d ? 'de ' + e.d : 'con cariño';
+  const maxAncho = Math.max(ew * 0.56, ctx.canvas.width * 0.44);   // si la escena es chica, la etiqueta asoma hacia el margen
+  let t1 = cuadrada ? 46 : 56, t2 = cuadrada ? 26 : 32;
+  const medir = () => {
+    ctx.font = `800 ${t1}px ${SYNE}`; const a1 = ctx.measureText(para).width;
+    ctx.font = `600 ${t2}px ${INTER}`; const a2 = ctx.measureText(de).width;
+    return Math.max(a1, a2);
+  };
+  let aTexto = medir();
+  while (aTexto + t1 * 1.9 > maxAncho && t1 > 26) { t1 -= 2; t2 = Math.max(18, t2 - 1); aTexto = medir(); }
+  const pad = t1 * 0.5, alto = t1 * 1.05 + t2 * 1.25 + pad * 1.4, punta = alto * 0.38;
+  const ancho = Math.min(maxAncho, aTexto + pad * 2) + punta;
+  const derecha = ex + ew * 0.06 + Math.min(ancho, ew * 0.56), izquierda = Math.max(40, derecha - ancho);
+  const cx = izquierda + ancho / 2, cy = ey + eh * (conCanasta ? 0.8 : 0.84);
+  const ang = -0.07;
+  const ojo = { x: ancho / 2 - punta * 0.55, y: 0 };                 // el ojalillo, en la punta
+  // el hilo: del ojalillo sube al borde de la canasta
+  if (conCanasta) {
+    const hx = cx + Math.cos(ang) * ojo.x, hy = cy + Math.sin(ang) * ojo.x;
+    const fx = ex + ew * 0.5, fy = ey + eh * 0.6;
+    ctx.strokeStyle = '#d63a22'; ctx.lineWidth = cuadrada ? 3 : 4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(hx, hy); ctx.quadraticCurveTo(hx + (fx - hx) * 0.2, fy + (hy - fy) * 0.15, fx, fy); ctx.stroke();
+  }
+  ctx.save();
+  ctx.translate(cx, cy); ctx.rotate(ang);
+  const x0 = -ancho / 2, x1 = ancho / 2 - punta, y0 = -alto / 2, y1 = alto / 2;
+  ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+  ctx.fillStyle = '#fff6ea';
+  ctx.beginPath(); ctx.moveTo(x0 + 10, y0); ctx.lineTo(x1, y0); ctx.lineTo(ancho / 2, 0); ctx.lineTo(x1, y1); ctx.lineTo(x0 + 10, y1);
+  ctx.quadraticCurveTo(x0, y1, x0, y1 - 10); ctx.lineTo(x0, y0 + 10); ctx.quadraticCurveTo(x0, y0, x0 + 10, y0); ctx.closePath(); ctx.fill();
+  ctx.shadowColor = 'transparent';
+  ctx.strokeStyle = '#d9c9b0'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#d9c9b0'; ctx.beginPath(); ctx.arc(ojo.x, ojo.y, alto * 0.07, 0, Math.PI * 2); ctx.fill();
+  ctx.textAlign = 'left';
+  ctx.font = `800 ${t1}px ${SYNE}`; ctx.fillStyle = '#1b1033';
+  ctx.fillText(para, x0 + pad, y0 + pad * 0.7 + t1 * 0.86, x1 - x0 - pad * 1.2);
+  ctx.font = `600 ${t2}px ${INTER}`; ctx.fillStyle = '#6b5a7b';
+  ctx.fillText(de, x0 + pad, y0 + pad * 0.7 + t1 * 1.05 + t2 * 0.95, x1 - x0 - pad * 1.2);
+  ctx.restore();
+  ctx.textAlign = 'center';
+}
 async function tarjeta(e, formato = 'historia', x = {}) {
   try { await Promise.all([document.fonts.load('800 80px Syne'), document.fonts.load('600 30px Inter'), document.fonts.load('italic 400 30px Inter')]); } catch (err) { /* sin fuentes, igual sale */ }
   const cuadrada = formato === 'cuadrada', W = 1080, H = cuadrada ? 1080 : 1920, M = 64, ancho = W - M * 2;
@@ -1628,10 +1673,6 @@ async function tarjeta(e, formato = 'historia', x = {}) {
       ctx.font = `700 ${ti}px ${INTER}`; ctx.fillStyle = dorado; ctx.fillText(rotulo, W / 2, y0 + ah / 2 + ti * 0.36);
     } });
   }
-  if (como === 'alguien') {
-    const pd = [`Para: ${e.p || '…'}`, e.d && `De: ${e.d}`].filter(Boolean).join(' · ');
-    pila.push(texto(ajustar(ctx, pd, { peso: 700, familia: INTER, max: cuadrada ? 42 : 52, min: 30, ancho, lineas: 2 }), crema, 1.22));
-  }
   if (e.m) {
     pila.push(texto(ajustar(ctx, '“' + e.m + '”', { peso: 500, estilo: 'italic ', familia: INTER, max: cuadrada ? 36 : 44, min: 28, ancho: ancho - 20, lineas: 2 }),
       memoria ? 'rgba(239,230,220,.92)' : 'rgba(255,255,255,.92)', 1.28));
@@ -1671,6 +1712,8 @@ async function tarjeta(e, formato = 'historia', x = {}) {
   }
   pila.forEach((p2, i) => { if (i !== iEscena) p2.dibujar(posiciones[i]); });
   ctx.drawImage(esc, ex, ey, ew, eh);
+  // envíasela: la etiqueta de regalo, colgada del borde de la canasta con un hilo rojo
+  if (como === 'alguien') etiquetaDeRegalo(ctx, e, ex, ey, ew, eh, cuadrada, x.canasta !== false);
   const px = boca ? ex + boca.x * ke : 0, py = boca ? ey + boca.y * ke : 0;
   if (!boca) { /* sin colada ni vela: ni vapor ni brillo */ } else if (memoria) {
     const brillo = ctx.createRadialGradient(px, py, 4, px, py, 120 * ke * 1.6);
