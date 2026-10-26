@@ -15,7 +15,7 @@
    Para probar contra los emuladores: abrir en localhost con ?emuladores
    (auth en el 9099 y Firestore en el 8080, ver firebase/firebase.json).
    ══════════════════════════════════════════════════════════════ */
-import { firebaseConfig } from './nube-config.js?v=2026.10.26.5';
+import { firebaseConfig } from './nube-config.js?v=2026.10.26.6';
 
 const SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
 const RECETA_MAX = 12000;
@@ -33,7 +33,7 @@ export function alCambiar(fn) { oyentes.add(fn); if (fb) fn(usuario); return () 
 /* Modo de diseño: sin Firebase. Las cuentas se simulan en este navegador y
    la nube no guarda nada (los regalos van con su receta entera en el enlace).
    Para volver a la nube real, poner MOCK en false. */
-const MOCK = true;
+const MOCK = false;
 const MOCK_CLAVE = 'guagua:mock:usuario';
 const mockLeer = () => { try { return JSON.parse(localStorage.getItem(MOCK_CLAVE)) || null; } catch (e) { return null; } };
 function mockPoner(u) {
