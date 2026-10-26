@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.26.22';
+import * as nube from './nube.js?v=2026.10.26.23';
 import {
   dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.26.22';
+} from './masa.js?v=2026.10.26.23';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -2603,6 +2603,10 @@ function elegirComo(c) {
   pintarComo(); refrescarTarjeta();
 }
 function abrirCompartir() {
+  // si la guagua ya tenía enlace (guardado en la canasta, quizá desde otro teléfono), se reusa
+  const enlaces = almacen.leer(ENLACES, {});
+  const guardada = estado.id && !enlaces[estado.id] && vitrina().find((x) => x.id === estado.id && x.g);
+  if (guardada) { enlaces[estado.id] = { g: guardada.g, compartida: true }; almacen.poner(ENLACES, enlaces); }
   // cada camino arranca de lo que ya tenía la guagua
   como = estado.t === 'm' ? 'memoria' : estado.p ? 'alguien' : 'presume';
   formatoC = FORMATO_DE[como];
@@ -2654,28 +2658,51 @@ async function refrescarTarjeta() {
 /* El enlace corto: la guagua se publica en /guaguas (con cuenta o sin ella) en
    cuanto la tarjeta se queda quieta un momento. Si la nube no responde a tiempo,
    se comparte el largo (#r=…), que también sirve.
-   Mientras se escribe el nombre o el mensaje, cada versión nueva reemplaza a la
-   anterior que nadie compartió todavía: en /guaguas queda solo lo que se compartió. */
-let sinCompartir = null;
-function olvidarPublicada(id) {
-  nube.borrarRegalo(id).catch(() => {});
-  publicados.forEach((v, k) => { if (v === id) publicados.delete(k); });
+   Cada guagua tiene UN enlace: la primera vez se crea y, si después cambia el
+   nombre, la dedicatoria o el mensaje, se actualiza el mismo (quien ya lo tiene ve
+   la versión nueva). Si nunca se compartió y se cierra Compártela, se borra. */
+const ENLACES = 'guagua:enlaces';                  // id de la guagua → { g: id del enlace, compartida }
+let colaNube = Promise.resolve();                  // de a uno: dos publicaciones a la vez duplicarían
+async function publicarVersion(pr, idGuagua) {
+  const mapa = almacen.leer(ENLACES, {}), ya = mapa[idGuagua];
+  let id = null;
+  if (ya) {
+    try { await nube.actualizarRegalo(ya.g, pr.cod); id = ya.g; } catch (e) {
+      // no se pudo actualizar (otra sesión, o ya no existe): uno nuevo, y el viejo sin compartir se va
+      if (!ya.compartida) nube.borrarRegalo(ya.g).catch(() => {});
+    }
+  }
+  if (!id) {
+    id = await nube.publicarRegalo(pr.cod);
+    mapa[idGuagua] = { g: id, compartida: !!(ya && ya.compartida) };
+    almacen.poner(ENLACES, mapa);
+  }
+  publicados.set(pr.cod, id);
+  pr.id = id; pr.url = direccion() + '#g=' + id;
 }
 function enlaceCorto(pr) {
   if (!nube.disponible()) return;
+  if (!estado.id) estado.id = nuevoId();
   const ya = publicados.get(pr.cod);
   if (ya) { pr.id = ya; pr.url = direccion() + '#g=' + ya; return; }
   clearTimeout(relojNube);
-  relojNube = setTimeout(async () => {
-    try {
-      const id = await nube.publicarRegalo(pr.cod);
-      if (pr !== preparado) { olvidarPublicada(id); return; }   // ya cambió mientras se publicaba
-      if (sinCompartir && sinCompartir !== id) olvidarPublicada(sinCompartir);
-      sinCompartir = id;
-      publicados.set(pr.cod, id);
-      pr.id = id; pr.url = direccion() + '#g=' + id;
-    } catch (e) { /* se queda el enlace largo */ }
+  const idGuagua = estado.id;
+  relojNube = setTimeout(() => {
+    colaNube = colaNube.then(() => (pr === preparado ? publicarVersion(pr, idGuagua) : null)).catch(() => { /* se queda el enlace largo */ });
   }, 900);
+}
+/* Compartida de verdad: su enlace ya está afuera y no se borra al cerrar. */
+function marcarCompartida(idGuagua) {
+  const mapa = almacen.leer(ENLACES, {});
+  if (mapa[idGuagua]) { mapa[idGuagua].compartida = true; almacen.poner(ENLACES, mapa); }
+}
+function olvidarSinCompartir(idGuagua) {
+  const mapa = almacen.leer(ENLACES, {}), ya = mapa[idGuagua];
+  if (!ya || ya.compartida) return;
+  colaNube = colaNube.then(() => nube.borrarRegalo(ya.g)).catch(() => {});
+  publicados.forEach((v, k) => { if (v === ya.g) publicados.delete(k); });
+  delete mapa[idGuagua];
+  almacen.poner(ENLACES, mapa);
 }
 /* El texto que acompaña al enlace: corto y con ganas de abrirlo y de hacer la propia. */
 const textoRegalo = (e = estado) => {
@@ -2733,7 +2760,7 @@ function montarRegalo() {
   // lo que pasa después de compartir no hace esperar a la hoja de compartir
   /* Ya se compartió: queda guardada en tu canasta, se cierra todo y vuelves a ella. */
   const despues = (pr) => {
-    if (pr.id === sinCompartir) sinCompartir = null;
+    marcarCompartida(estado.id);
     const guardada = guardarMia(pr.id);
     if (como === 'presume' && $('#c-galeria').checked && nube.disponible()) alaGaleria().catch(() => {});
     guardada.catch(() => {}).then(() => {
@@ -2781,23 +2808,26 @@ function montarRegalo() {
     if (!ev.target.checked && estado.id) sacarDeGaleria(estado.id);
   });
   // se cerró sin compartir: lo publicado de antemano no se queda en la nube
-  $('#d-compartir').addEventListener('close', () => { if (sinCompartir) { olvidarPublicada(sinCompartir); sinCompartir = null; } });
+  $('#d-compartir').addEventListener('close', () => { if (estado.id) olvidarSinCompartir(estado.id); });
 }
 
 /* ══════════════════ LA GALERÍA ══════════════════════════════ */
 /* Las que se presumen pueden ir a la galería (el interruptor de Compártela,
    encendido por defecto y recordado). Va solo la guagua y su nombre: la receta
-   sube sin para quién, de quién, mensaje ni vale. Cada guagua de tu canasta
+   sube sin para quién, de quién, mensaje ni vale; aparte va tu firma (la de Tu cuenta, o la del último «De»). Cada guagua de tu canasta
    tiene a lo más una en la galería; si cambió, la nueva reemplaza a la vieja. */
 const GALERIA_SI = 'guagua:galeria', EN_GALERIA = 'guagua:en-galeria';
 async function alaGaleria() {
   if (!estado.id) return;
   const cod = await codificar(Object.assign(receta(), { p: '', d: '', m: '' }, { t: undefined, l: undefined }));
+  const firma = limpiar(quienSoy(), 24), huellaG = cod + '|' + firma;
   const mapa = almacen.leer(EN_GALERIA, {}), ya = mapa[estado.id];
-  if (ya && ya.h === cod) return;
-  const id = await nube.publicarEnGaleria(cod, estado.n || nombreDe(estado), estado.f);
+  if (ya && ya.h === huellaG) return;
+  // con reglas viejas (sin «firma») la firma no pasa: entonces va sin ella
+  const id = await nube.publicarEnGaleria(cod, estado.n || nombreDe(estado), estado.f, firma)
+    .catch((e) => { if (firma && e.code === 'permission-denied') return nube.publicarEnGaleria(cod, estado.n || nombreDe(estado), estado.f); throw e; });
   if (ya) nube.quitarDeGaleria(ya.g).catch(() => {});
-  mapa[estado.id] = { g: id, h: cod };
+  mapa[estado.id] = { g: id, h: huellaG };
   almacen.poner(EN_GALERIA, mapa);
 }
 function sacarDeGaleria(idGuagua) {
@@ -2837,7 +2867,7 @@ async function pintarGaleria(turno, mas = false) {
     if (turno !== turnoVitrina) return;
     if (!e.a.length) continue;
     const cuando = g.creada && g.creada.toDate ? g.creada.toDate().getTime() : Date.now();
-    const item = { t: 'galeria', gid: g.id, f: cuando, tuya: !!mio && g.dueno === mio };
+    const item = { t: 'galeria', gid: g.id, f: cuando, tuya: !!mio && g.dueno === mio, firma: typeof g.firma === 'string' ? g.firma.slice(0, 24) : '' };
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'pieza';
     const c = foto(e, 240, 300);
@@ -2845,12 +2875,16 @@ async function pintarGaleria(turno, mas = false) {
     const t = document.createElement('span'); t.className = 'pieza__nombre';
     t.textContent = nombreDe(e);
     const s = document.createElement('span'); s.className = 'pieza__meta';
-    s.textContent = (item.tuya ? 'la tuya · ' : '') + fecha(cuando);
+    s.textContent = (item.firma ? 'de ' + item.firma + ' · ' : item.tuya ? 'la tuya · ' : '') + fecha(cuando);
     b.append(c, t, s);
     b.addEventListener('click', () => abrirPieza(item, e));
     rej.appendChild(b);
   }
   boton.hidden = !cursorGaleria;
+  if (!mas && !rej.children.length) {
+    vacia.hidden = false;
+    vacia.textContent = 'Todavía no hay guaguas en la galería. Presume la tuya y sé quien la estrene.';
+  }
 }
 
 /* ══════════════════ TU CANASTA ══════════════════════════════ */
@@ -2910,7 +2944,10 @@ function abrirPieza(item, e) {
   $('#p-mensaje').textContent = e.m || '';
   $('#p-mensaje').hidden = !e.m;
   const enGaleria = item.t === 'galeria';
-  if (enGaleria) { $('#p-quien').textContent = (item.tuya ? 'La tuya, en la galería · ' : 'En la galería · ') + fecha(item.f); $('#p-quien').hidden = false; }
+  if (enGaleria) {
+    $('#p-quien').textContent = (item.firma ? 'De ' + item.firma + (item.tuya ? ' (tú)' : '') + ', en la galería · ' : item.tuya ? 'La tuya, en la galería · ' : 'En la galería · ') + fecha(item.f);
+    $('#p-quien').hidden = false;
+  }
   $('#p-editar').hidden = item.t !== 'mia';
   $('#p-compartir').textContent = item.t === 'mia' ? 'Compartirla' : enGaleria ? 'Decorar una igual' : 'Reenviarla';
   $('#p-borrar').textContent = enGaleria ? 'Quitarla de la galería' : 'Sacar de la canasta';

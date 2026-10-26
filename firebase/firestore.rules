@@ -15,12 +15,14 @@ rules_version = '2';
 //   - v: int (obligatorio, 3) versión de la receta
 // Toda guagua compartida se guarda aquí (con o sin cuenta): de aquí saldrá la galería.
 // Acceso: cualquiera la abre por su ID, porque quien recibe un regalo puede no tener
-// cuenta. Nadie puede listar la colección. Un regalo no se edita; su dueño lo puede borrar.
+// cuenta. Nadie puede listar la colección. Su dueño le puede cambiar la receta (el enlace
+// sigue siendo el mismo) o borrarlo.
 //
 // Colección: galeria
 // ID: automático de Firestore
 // Campos: dueno (uid, cuenta o anónimo), receta (sin p, d, m: solo la guagua),
-//   nombre (0–40), molde (1–20), creada (hora del servidor), v (3)
+//   nombre (0–40), molde (1–20), firma (opcional, 1–24: cómo firma quien la compartió),
+//   creada (hora del servidor), v (3)
 // Acceso: cualquiera la lista (de a 48 como mucho) y la abre; nadie la edita;
 // su autor la puede quitar. La app la lee con orderBy('creada', 'desc').
 //
@@ -60,10 +62,11 @@ service cloud.firestore {
     }
     function isValidGaleria(data) {
       return data.keys().hasAll(['dueno', 'receta', 'nombre', 'molde', 'creada', 'v'])
-        && data.keys().hasOnly(['dueno', 'receta', 'nombre', 'molde', 'creada', 'v'])
+        && data.keys().hasOnly(['dueno', 'receta', 'nombre', 'molde', 'firma', 'creada', 'v'])
         && data.dueno is string
         && validString(data.receta, 1, 12000)
         && validString(data.nombre, 0, 40)
+        && (!('firma' in data) || validString(data.firma, 1, 24))
         && validString(data.molde, 1, 20)
         && data.creada is timestamp
         && data.v is int && data.v == 3;
@@ -86,13 +89,17 @@ service cloud.firestore {
         && isValidGuagua(request.resource.data)
         && request.resource.data.dueno == request.auth.uid
         && request.resource.data.creada == request.time;
-      allow update: if false;
+      // su dueño puede cambiarle solo la receta (nombre, dedicatoria, mensaje): el enlace es el mismo
+      allow update: if isAuthenticated()
+        && resource.data.dueno == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['receta'])
+        && validString(request.resource.data.receta, 1, 12000);
       allow delete: if isAuthenticated() && resource.data.dueno == request.auth.uid;
     }
 
     // ─── la galería: las que su autor decidió mostrar ────────
-    // Solo la guagua y su nombre (la receta llega sin para quién, de quién ni
-    // mensaje). Cualquiera la ve; nadie la edita; su autor la puede quitar.
+    // La guagua, su nombre y la firma de quien la compartió (la receta llega sin
+    // para quién, de quién ni mensaje). Cualquiera la ve; nadie la edita; su autor la puede quitar.
     match /galeria/{itemId} {
       allow get: if true;
       allow list: if request.query.limit <= 48;

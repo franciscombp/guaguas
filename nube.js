@@ -15,7 +15,7 @@
    Para probar contra los emuladores: abrir en localhost con ?emuladores
    (auth en el 9099 y Firestore en el 8080, ver firebase/firebase.json).
    ══════════════════════════════════════════════════════════════ */
-import { firebaseConfig } from './nube-config.js?v=2026.10.26.22';
+import { firebaseConfig } from './nube-config.js?v=2026.10.26.23';
 
 const SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
 const RECETA_MAX = 12000;
@@ -191,6 +191,13 @@ function idCorto(n = 7) {
   for (let i = 0; i < azar.length && id.length < n; i++) if (azar[i] < 248) id += LETRAS[azar[i] % 62];   // sin sesgo: 248 = 62 × 4
   return id.length === n ? id : idCorto(n);
 }
+/* Cambió el texto de una guagua ya publicada: el mismo enlace, la receta nueva. */
+export async function actualizarRegalo(id, receta) {
+  if (MOCK || !fb || !auth.currentUser) throw Object.assign(new Error('sin sesión'), { code: 'permission-denied' });
+  if (receta.length > RECETA_MAX) throw new Error('receta demasiado grande');
+  const { doc, updateDoc } = fb.f;
+  await updateDoc(doc(db, 'guaguas', id), { receta });
+}
 export async function borrarRegalo(id) {
   if (MOCK || !fb || !auth.currentUser) return;
   const { doc, deleteDoc } = fb.f;
@@ -204,17 +211,20 @@ export async function leerRegalo(id) {
 }
 
 /* ─── la galería: /galeria/{id} ────────────────────────────── */
-/* Las que se presumen y su autor deja en la galería. Solo va la guagua y su
-   nombre: la receta llega aquí ya sin para quién, de quién ni mensaje. */
+/* Las que se presumen y su autor deja en la galería. Va la guagua, su nombre y
+   la firma de quien la compartió: la receta llega aquí ya sin para quién, de
+   quién ni mensaje. */
 export const GALERIA_PAGINA = 12;
 export const miUid = () => (auth && auth.currentUser ? auth.currentUser.uid : null);
-export async function publicarEnGaleria(receta, nombre, molde) {
+export async function publicarEnGaleria(receta, nombre, molde, firma = '') {
   if (MOCK || !fb) throw Object.assign(new Error('sin nube'), { code: 'unavailable' });
   if (receta.length > RECETA_MAX) throw new Error('receta demasiado grande');
   const u = await sesion();
   const { doc, collection, setDoc, serverTimestamp } = fb.f;
   const ref = doc(collection(db, 'galeria'));
-  await setDoc(ref, { dueno: u.uid, receta, nombre: String(nombre || '').slice(0, 40), molde: String(molde || 'guagua').slice(0, 20), creada: serverTimestamp(), v: 3 });
+  const datos = { dueno: u.uid, receta, nombre: String(nombre || '').slice(0, 40), molde: String(molde || 'guagua').slice(0, 20), creada: serverTimestamp(), v: 3 };
+  if (firma) datos.firma = String(firma).slice(0, 24);       // cómo firma quien la compartió
+  await setDoc(ref, datos);
   return ref.id;
 }
 /* Una página de la galería, de la más nueva a la más vieja; `despues` es el

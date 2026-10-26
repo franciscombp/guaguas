@@ -475,3 +475,17 @@ el morado casi no aparece en el glaseado (aparece en la colada).
 - **Vertical con hueco para el enlace de Instagram**: la tarjeta vertical deja libres los últimos 450 px (de
   1920) para que pongan el sticker del enlace sin tapar nada, y arriba arranca en 200 px (lo que tapa la barra
   de la historia). Con 560 px libres la escena quedaba demasiado chica.
+
+## 21. Un enlace por guagua y la firma en la galería
+
+- **Un solo enlace por guagua**: antes, cada cambio de dedicatoria publicaba otra guagua (otro enlace). Ahora
+  `guagua:enlaces` guarda, por guagua, su enlace y si ya se compartió; los cambios hacen `updateDoc` de la
+  misma (las reglas dejan al dueño cambiar solo `receta`), y las publicaciones van en fila (`colaNube`) para
+  que dos a la vez no dupliquen. Si nunca se compartió y se cierra Compártela, se borra. Si no se puede
+  actualizar (otra sesión, reglas viejas), se crea otra y la vieja sin compartir se borra.
+- **La firma en la galería**: cada entrada lleva `firma` (opcional, 1–24), la de Tu cuenta o el último «De».
+  En la rejilla: «de Fran · 26 oct»; al abrirla: «De Fran (tú), en la galería». El interruptor dice «la guagua,
+  su nombre y tu firma», y la política también. Con reglas viejas se publica sin firma.
+- Emulador: el recargado en caliente de las reglas a veces se queda con la versión anterior; si una regla
+  nueva falla sin razón, reiniciar el emulador. Con `?emuladores` el proyecto es el de `nube-config.js`
+  (guaguas-de-pan), no `demo-guagua`.
