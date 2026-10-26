@@ -24,10 +24,10 @@
    ══════════════════════════════════════════════════════════════ */
 import * as THREE from 'three';
 import { RoomEnvironment } from './vendor/RoomEnvironment.js';
-import * as nube from './nube.js?v=2026.10.26.13';
+import * as nube from './nube.js?v=2026.10.26.14';
 import {
   dormida, DIRECCION, V, Q, ent, CREMAS, BOQUILLAS, BOQUILLA_LISA, ANCHOS, COBERTURA, FIGURAS, BANOS, GROSORES, MASAS, TAMANOS, GRAGEAS, MAX_BOCADOS, BOCADOS_TALLER, MAX_PIEZAS, MORDIDA, NOMBRES, MENSAJES, MENSAJES_MEMORIA, MENSAJE_GUAGUAU, VALES, enMemoria, echada, posturaDe, azar, elige, limita, bolita, chorizo, masaDe, iniPuntos, conMasa, SG, G, C, frenteDe, CUERPO, CABEZA, guaguaConBrazos, MOLDES, elipsoide, tubo, cinta, PISO, aplanar, geometriaPieza, moverPieza, base, b64, exprimir, PASOS, aDeltas, deDeltas, codificar, decodificar, deLaPrimeraHornada, sano, punto, tieneCara, queEs, nombreDe, puntoDeCrema, pn, caraPintada, chapitas, sorpresa, Sonda, amasarReceta,
-} from './masa.js?v=2026.10.26.13';
+} from './masa.js?v=2026.10.26.14';
 
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1136,7 +1136,7 @@ function taza3d() {
     new THREE.MeshStandardMaterial({ color: '#3d0a2e', roughness: 0.32, envMapIntensity: 0.25 }));
   colada.rotation.x = -Math.PI / 2; colada.position.y = 1.07;
   g.add(cuerpo, filete, asa, colada);
-  const r = azar(11), frutas = ['#f2c14e', '#d7263d', '#2b1d4f', '#f2c14e', '#d7263d'];
+  const r = azar(11), frutas = ['#7a1f4f', '#8e1b2e', '#2b1d4f', '#5e1538', '#a3243a'];   // mortiño, mora y frutilla: solo morados y rojos oscuros
   for (let i = 0; i < 9; i++) {
     const c = frutas[i % frutas.length], a = r() * Math.PI * 2, d = 0.1 + r() * 0.36;
     const m = new THREE.Mesh(c === '#2b1d4f' ? new THREE.SphereGeometry(0.045, 12, 8) : new THREE.BoxGeometry(0.09, 0.05, 0.09),
@@ -2696,6 +2696,7 @@ function montarRegalo() {
   ['#c-mandar', '#c-recordar'].forEach((sel) => $(sel).addEventListener('click', enviar));
   $$('#d-compartir [data-copiar]').forEach((b) => b.addEventListener('click', () => { if (preparado) { copiar(preparado.url, b); despues(preparado); } }));
   $$('#d-compartir [data-descargar]').forEach((b) => b.addEventListener('click', () => { if (preparado) { descargar(preparado); despues(preparado); } }));
+  $('#c-datos').addEventListener('click', () => abrir('#d-datos'));
   // se cerró sin compartir: lo publicado de antemano no se queda en la nube
   $('#d-compartir').addEventListener('close', () => { if (sinCompartir) { olvidarPublicada(sinCompartir); sinCompartir = null; } });
 }

@@ -423,3 +423,9 @@ el morado casi no aparece en el glaseado (aparece en la colada).
   Compártela sin compartir se borra la última.
 - La taza de colada del echado se mide con la altura de antes, no con su canasta más bajita (y un poco más
   grande, porque desde arriba se ve más chica).
+- **El aviso de datos no estorba**: en Compártela va como botón de ayuda (ⓘ) arriba a la derecha, que abre una
+  hojita con lo esencial y el enlace a la política; la nota fija abajo le quitaba espacio a los botones.
+- **La colada, solo morados y rojos oscuros**: la piña amarilla no se reconocía; los trocitos ahora son mortiño,
+  mora y frutilla.
+- **SEO**: `lang="es-EC"`, robots, autor, Twitter completo, JSON-LD con `@graph` (VideoGame + Person, imagen,
+  palabras clave, tema), `<noscript>` con la descripción, `robots.txt` y `sitemap.xml` (inicio y privacidad).

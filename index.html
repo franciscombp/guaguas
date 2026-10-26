@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-marca="taller">
+<html lang="es-EC" data-marca="taller">
 <head>
 <meta charset="utf-8">
 <!-- Una sola carpeta que se puede incrustar en cualquier sitio:
@@ -18,6 +18,9 @@
 <title>Guagua de pan · decora la tuya y compártela por Finados · UNA</title>
 <meta name="description" content="Amasa en 3D una guagua de pan, hornéala doradita y decórala con glaseado y figuras de mazapán. Compártela en una canasta con colada morada: presúmela, regálasela a alguien o dedícala a quien ya no está.">
 <link rel="canonical" href="https://finados.una.red/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="Francisco Maldonado">
+<meta name="keywords" content="guagua de pan, colada morada, finados, día de los difuntos, Ecuador, juego">
 <meta name="theme-color" content="#1b1033">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -34,7 +37,12 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Una guagua de pan decorada con glaseado, dentro de una canasta de mimbre con flores y una taza de barro con colada morada">
+<meta property="og:image:type" content="image/jpeg">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Guagua de pan · decora la tuya y compártela por Finados">
+<meta name="twitter:description" content="Amasa en 3D, hornéala doradita y decórala con glaseado y mazapán. Compártela en una canasta con colada morada.">
+<meta name="twitter:image" content="https://finados.una.red/og.jpg?v=2">
+<meta name="twitter:image:alt" content="Una guagua de pan decorada dentro de una canasta de mimbre con flores y una taza de colada morada">
 <link rel="icon" href="img/icono-guagua.svg?v=2" type="image/svg+xml">
 <link rel="icon" href="icono-192.png?v=2" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="icono-180.png?v=2">
@@ -43,25 +51,48 @@
 <script type="application/ld+json">
 {
  "@context": "https://schema.org",
- "@type": "VideoGame",
- "name": "Guagua de pan",
- "url": "https://finados.una.red/",
- "inLanguage": "es",
- "description": "Decora una guagua de pan con glaseado y compártela en una canasta por el Día de Difuntos.",
- "genre": "Casual",
- "playMode": "SinglePlayer",
- "gamePlatform": "Navegador web",
- "applicationCategory": "Game",
- "operatingSystem": "Cualquiera",
- "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
- "author": { "@id": "https://una.red/#fran" }
+ "@graph": [
+  {
+   "@type": "VideoGame",
+   "@id": "https://finados.una.red/#juego",
+   "name": "Guagua de pan",
+   "alternateName": "Decora tu guagua de pan",
+   "url": "https://finados.una.red/",
+   "image": "https://finados.una.red/og.jpg",
+   "inLanguage": "es-EC",
+   "description": "Amasa en 3D una guagua de pan, hornéala doradita y decórala con glaseado y figuras de mazapán. Compártela en una canasta con colada morada por el Día de los Difuntos.",
+   "keywords": "guagua de pan, colada morada, finados, día de los difuntos, Ecuador, juego, decorar pan, 2 de noviembre",
+   "about": [
+    { "@type": "Thing", "name": "Guagua de pan" },
+    { "@type": "Thing", "name": "Colada morada" },
+    { "@type": "Thing", "name": "Día de los Difuntos (Finados)" }
+   ],
+   "countryOfOrigin": { "@type": "Country", "name": "Ecuador" },
+   "genre": ["Casual", "Creativo"],
+   "playMode": "SinglePlayer",
+   "gamePlatform": "Navegador web",
+   "applicationCategory": "GameApplication",
+   "operatingSystem": "Cualquiera (navegador web)",
+   "isAccessibleForFree": true,
+   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+   "author": { "@id": "https://una.red/#fran" },
+   "publisher": { "@id": "https://una.red/#fran" }
+  },
+  {
+   "@type": "Person",
+   "@id": "https://una.red/#fran",
+   "name": "Francisco Maldonado",
+   "url": "https://una.red/"
+  }
+ ]
 }
 </script>
 <link rel="stylesheet" href="vendor/ds/mal/mal.css?v=1.0.18">
-<meta name="guagua-version" content="2026.10.26.13">
-<link rel="stylesheet" href="guagua.css?v=2026.10.26.13">
+<meta name="guagua-version" content="2026.10.26.14">
+<link rel="stylesheet" href="guagua.css?v=2026.10.26.14">
 </head>
 <body class="juego-cuerpo">
+<noscript><p style="padding:24px;color:#fff">Guagua de pan es un juego para amasar en 3D una guagua de pan, hornearla y decorarla con glaseado y figuras de mazapán, y compartirla en una canasta con colada morada por el Día de los Difuntos en Ecuador. Necesita JavaScript activado. <a href="privacidad.html" style="color:#ffc93c">Tratamiento de datos</a>.</p></noscript>
 <svg width="0" height="0" class="sr-only" aria-hidden="true" focusable="false">
   <symbol id="g-manga" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 4l9 4 3 3-5 5-3-3zM16 11l3 3M17.5 15.5c1 1.5 1.5 3 .5 4s-2.5.5-4-.5"/></symbol>
   <symbol id="g-roseta" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 5a3 3 0 0 1 4.5 3.9A3 3 0 0 1 15 15a3 3 0 0 1-6 0 3 3 0 0 1-1.5-6.1A3 3 0 0 1 12 5zM12 10.5a1.5 1.5 0 1 0 0 3"/></symbol>
@@ -319,7 +350,7 @@
   <div class="barra barra--hoja">
     <button class="redondo" id="c-atras" type="button" aria-label="Volver"><svg class="icono" aria-hidden="true"><use href="#x-atras"/></svg></button>
     <span class="paso paso--fijo"><b>Compártela</b><span id="c-paso"></span></span>
-    <span class="barra__hueco" aria-hidden="true"></span>
+    <button class="redondo" id="c-datos" type="button" aria-label="Qué pasa con tu guagua al compartirla"><svg class="icono" aria-hidden="true"><use href="#x-info"/></svg></button>
   </div>
   <div class="compartir">
     <div class="compartir__vistaw">
@@ -342,7 +373,6 @@
       <div class="pila compartir__fin">
         <button class="b b--pri" id="c-seguir" type="button">Siguiente</button>
         <div class="fila-ter" id="c-extra-presume"><button class="b b--ter" data-descargar type="button">Guardar la imagen</button><button class="b b--ter" data-copiar type="button">Copiar el enlace</button></div>
-        <p class="regalar__nota">Al compartirla, tu guagua se guarda en la nube para que su enlace sea corto. <a href="privacidad.html" target="_blank" rel="noopener">Tratamiento de datos</a></p>
       </div>
     </section>
 
@@ -384,6 +414,14 @@
     <button class="b b--sec" id="p-editar" type="button">Seguir decorando</button>
     <button class="b b--ter" id="p-borrar" type="button">Sacar de la canasta</button>
   </div>
+</dialog>
+
+<!-- al compartir: qué pasa con la guagua (ayuda de la esquina) -->
+<dialog class="hoja" id="d-datos" aria-labelledby="d-datos-t">
+  <div class="hoja__cab"><h2 id="d-datos-t">Al compartirla</h2><button class="redondo redondo--plano" type="button" data-cierra aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#x-cerrar"/></svg></button></div>
+  <p class="hoja__texto">Tu guagua se guarda en la nube para que su enlace sea corto y se abra en cualquier teléfono. La ve solo quien tenga el enlace.</p>
+  <p class="hoja__texto">Lo que escribas (para quién, de parte de quién, el mensaje) viaja con ella. No usamos esos datos para nada más.</p>
+  <a class="b b--ter" href="privacidad.html" target="_blank" rel="noopener">Tratamiento de datos personales</a>
 </dialog>
 
 <!-- la cuenta -->
@@ -455,6 +493,6 @@
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js": "./vendor/firebase/firebase-auth.js",
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-lite.js": "./vendor/firebase/firebase-firestore-lite.js"
 } }</script>
-<script type="module" src="guagua.js?v=2026.10.26.13"></script>
+<script type="module" src="guagua.js?v=2026.10.26.14"></script>
 </body>
 </html>
